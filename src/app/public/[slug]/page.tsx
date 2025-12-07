@@ -1,9 +1,9 @@
+import { format } from "date-fns";
+import { PawPrint, Clock } from "lucide-react";
 import { notFound } from "next/navigation";
-import { Activity, Clock } from "lucide-react";
 import { DashboardView } from "@/components/dashboard-view";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
-import { getDashboardBySlug, getActiveIncidents } from "@/lib/data";
-import { format } from "date-fns";
+import { getActiveIncidents, getDashboardBySlug } from "@/lib/data";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -27,7 +27,7 @@ export default async function PublicDashboardPage({ params }: Props) {
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Activity className="h-4 w-4 text-primary" />
+              <PawPrint className="h-4 w-4 text-primary" />
               <div>
                 <h1 className="text-sm font-medium font-mono">
                   {dashboard.name}
@@ -64,7 +64,14 @@ export default async function PublicDashboardPage({ params }: Props) {
       <footer className="border-t border-border mt-12">
         <div className="max-w-4xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
-            <span>powered by uptime_</span>
+            <a
+              href="https://pongo.sh"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors"
+            >
+              powered by pongo
+            </a>
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
               last updated {format(new Date(), "HH:mm:ss")}

@@ -1,19 +1,20 @@
 // src/app/monitors/[id]/page.tsx
+
+import { formatDistanceToNow } from "date-fns";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ResponseTimeChart } from "@/components/response-time-chart";
+import { StatsCard } from "@/components/stats-card";
 import { StatusBadge } from "@/components/status-badge";
 import { StatusTimeline } from "@/components/status-timeline";
-import { StatsCard } from "@/components/stats-card";
-import { ResponseTimeChart } from "@/components/response-time-chart";
+import { Button } from "@/components/ui/button";
 import {
-  getMonitor,
   getCheckResults,
-  getMonitorStats,
   getLatestCheckResult,
+  getMonitor,
+  getMonitorStats,
 } from "@/lib/data";
-import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -38,7 +39,7 @@ export default async function MonitorDetailPage({ params }: Props) {
   const status = latestResult?.status ?? "pending";
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div>
       {/* Header */}
       <div className="flex items-center gap-3 mb-8 pt-4">
         <Button variant="ghost" size="icon" asChild className="h-7 w-7">

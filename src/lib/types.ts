@@ -20,9 +20,12 @@ export interface Monitor {
   intervalSeconds: number;
   timeoutMs: number;
   isActive: boolean;
-  handler: () => Promise<MonitorResult>;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface MonitorWithHandler extends Monitor {
+  handler: () => Promise<MonitorResult>;
 }
 
 export interface CheckResult {

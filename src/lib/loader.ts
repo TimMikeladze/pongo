@@ -24,6 +24,7 @@ const DATA_DIR = path.join(process.cwd(), "data");
 
 /**
  * Load all monitor definitions from data/monitors/index.ts
+ * Note: handler is excluded as it cannot be serialized for client components
  */
 export async function loadMonitors(): Promise<Monitor[]> {
   return Object.entries(monitorConfigs).map(([id, config]) => ({
@@ -32,7 +33,6 @@ export async function loadMonitors(): Promise<Monitor[]> {
     intervalSeconds: parseDur(config.interval) / 1000,
     timeoutMs: config.timeout ? parseDur(config.timeout) : 30000,
     isActive: config.active ?? true,
-    handler: config.handler,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }));

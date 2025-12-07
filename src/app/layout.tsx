@@ -11,7 +11,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "uptime_",
+  title: "pongo",
   description: "Self-hosted uptime monitoring",
 };
 
@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${jetbrainsMono.className} antialiased`}>
-        <ThemeProvider defaultTheme="dark" storageKey="uptime-theme">
+        <ThemeProvider defaultTheme="dark" storageKey="pongo-theme">
           <AppShell>{children}</AppShell>
         </ThemeProvider>
       </body>

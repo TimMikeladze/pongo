@@ -1,41 +1,144 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import * as schema from "./schema";
+import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import * as sqliteSchema from "./schema.sqlite";
+import * as pgSchema from "./schema.pg";
 
 /**
- * Database file path
- * Uses DATABASE_URL env var or defaults to ./data/pongo.db
+ * Database driver type
+ * Set via DB_DRIVER environment variable
+ * Defaults to 'sqlite' for backwards compatibility
  */
-const databasePath = process.env.DATABASE_URL ?? "./data/pongo.db";
+export type DbDriver = "sqlite" | "pg";
+
+const dbDriver: DbDriver = (process.env.DB_DRIVER as DbDriver) ?? "sqlite";
 
 /**
- * SQLite database instance
- * Uses better-sqlite3 for synchronous, high-performance SQLite access
+ * Database instance type based on driver
  */
-const sqlite = new Database(databasePath);
+export type Database =
+  | BetterSQLite3Database<typeof sqliteSchema>
+  | PostgresJsDatabase<typeof pgSchema>;
+
+let _db: Database;
+let _closeDb: (() => void) | (() => Promise<void>);
 
 /**
- * Enable WAL mode for better concurrent read performance
- * This is especially useful for a monitoring application where
- * writes happen periodically but reads are frequent
+ * Initialize the database connection based on DB_DRIVER
  */
-sqlite.pragma("journal_mode = WAL");
+async function initDatabase(): Promise<Database> {
+  if (_db) return _db;
+
+  if (dbDriver === "pg") {
+    // PostgreSQL with postgres-js
+    const postgres = (await import("postgres")).default;
+    const { drizzle } = await import("drizzle-orm/postgres-js");
+
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+      throw new Error("DATABASE_URL is required for PostgreSQL");
+    }
+
+    const client = postgres(connectionString);
+    _db = drizzle(client, { schema: pgSchema });
+    _closeDb = async () => {
+      await client.end();
+    };
+  } else {
+    // SQLite with better-sqlite3 (default)
+    const Database = (await import("better-sqlite3")).default;
+    const { drizzle } = await import("drizzle-orm/better-sqlite3");
+
+    const databasePath = process.env.DATABASE_URL ?? "./data/pongo.db";
+    const sqlite = new Database(databasePath);
+
+    // Enable WAL mode for better concurrent read performance
+    sqlite.pragma("journal_mode = WAL");
+
+    _db = drizzle(sqlite, { schema: sqliteSchema });
+    _closeDb = () => {
+      sqlite.close();
+    };
+  }
+
+  return _db;
+}
+
+// Initialize on module load for synchronous access
+// This works because Next.js server components run in Node.js
+let dbPromise: Promise<Database> | null = null;
+
+function getDbPromise(): Promise<Database> {
+  if (!dbPromise) {
+    dbPromise = initDatabase();
+  }
+  return dbPromise;
+}
+
+// For synchronous SQLite access (backwards compatible)
+// Will throw if using PostgreSQL and db not initialized
+export function getDb(): Database {
+  if (!_db) {
+    // For SQLite, we can initialize synchronously
+    if (dbDriver === "sqlite") {
+      const Database = require("better-sqlite3");
+      const { drizzle } = require("drizzle-orm/better-sqlite3");
+
+      const databasePath = process.env.DATABASE_URL ?? "./data/pongo.db";
+      const sqlite = new Database(databasePath);
+      sqlite.pragma("journal_mode = WAL");
+
+      _db = drizzle(sqlite, { schema: sqliteSchema });
+      _closeDb = () => {
+        sqlite.close();
+      };
+    } else {
+      throw new Error(
+        "Database not initialized. Use getDbAsync() for PostgreSQL.",
+      );
+    }
+  }
+  return _db;
+}
 
 /**
- * Drizzle ORM database instance
- * Provides type-safe query building and schema access
+ * Get database instance asynchronously (works for both SQLite and PostgreSQL)
  */
-export const db = drizzle(sqlite, { schema });
+export async function getDbAsync(): Promise<Database> {
+  return getDbPromise();
+}
 
 /**
- * Export schema for use in queries
+ * Get the current database driver
  */
-export * from "./schema";
+export function getDbDriver(): DbDriver {
+  return dbDriver;
+}
+
+/**
+ * Get the appropriate schema based on the driver
+ */
+export function getSchema() {
+  return dbDriver === "pg" ? pgSchema : sqliteSchema;
+}
 
 /**
  * Close the database connection
  * Call this when shutting down the application
  */
-export function closeDatabase() {
-  sqlite.close();
+export async function closeDatabase(): Promise<void> {
+  if (_closeDb) {
+    await _closeDb();
+  }
 }
+
+// Export the synchronous db getter as default for backwards compatibility
+export const db = new Proxy({} as Database, {
+  get(_, prop) {
+    const database = getDb();
+    return (database as unknown as Record<string | symbol, unknown>)[prop];
+  },
+});
+
+// Re-export schemas
+export * from "./schema";
+export { sqliteSchema, pgSchema };

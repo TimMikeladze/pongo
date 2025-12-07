@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  Plus,
   Terminal,
   Activity,
   Clock,
@@ -8,6 +7,8 @@ import {
   CheckCircle,
   Zap,
   TrendingUp,
+  PawPrint,
+  Github,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MonitorCard } from "@/components/monitor-card";
@@ -108,13 +109,64 @@ export default async function OverviewPage() {
   const allResults = allResultsArrays.flat();
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8 pt-4">
+    <div>
+      {/* About Section */}
+      <div className="mb-10 pt-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <PawPrint className="h-4 w-4 text-primary" />
+            <div>
+              <h1 className="text-sm">pongo</h1>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                self-hosted, file-driven uptime monitoring
+              </p>
+            </div>
+          </div>
+          <a
+            href="https://github.com/TimMikeladze/pongo"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Github className="h-3 w-3" />
+            github.com/TimMikeladze/pongo
+          </a>
+        </div>
+        <div className="border border-border rounded bg-card p-4">
+          <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+            pongo is an open source uptime monitoring solution designed for
+            developers who prefer configuration as code. define your monitors as
+            simple typescript files, commit them to your repository, and deploy
+            anywhere that runs node. no complex setup wizards, no vendor lock-in
+            — just code.
+          </p>
+          <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+            track response times, uptime percentages, error rates, and latency
+            percentiles with real-time dashboards. create beautiful public
+            status pages to keep your users informed about service health.
+            configure alerts to get notified instantly via email, slack, or
+            webhooks when services degrade or go down.
+          </p>
+          <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+            no database required — pongo reads monitor definitions directly from
+            your filesystem. results are stored locally in sqlite, making it
+            lightweight, portable, and easy to backup. deploy on vercel,
+            railway, docker, or any platform that supports node.js.
+          </p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            built with next.js, typescript, and tailwind css. fully customizable
+            and extensible. check out the live demo below to see pongo in
+            action.
+          </p>
+        </div>
+      </div>
+
+      {/* System Overview Header */}
+      <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-2">
           <Terminal className="h-4 w-4 text-primary" />
           <div>
-            <h1 className="text-sm">system overview</h1>
+            <h2 className="text-sm">system overview</h2>
             <p className="text-[10px] text-muted-foreground mt-0.5">
               monitoring {monitors.length} endpoints
             </p>

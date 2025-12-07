@@ -8,10 +8,14 @@
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:pg:generate": "drizzle-kit generate --config=drizzle.config.pg.ts",
+    "db:pg:migrate": "drizzle-kit migrate --config=drizzle.config.pg.ts",
+    "db:pg:push": "drizzle-kit push --config=drizzle.config.pg.ts",
+    "db:pg:studio": "drizzle-kit studio --config=drizzle.config.pg.ts",
+    "db:sqlite:generate": "drizzle-kit generate --config=drizzle.config.sqlite.ts",
+    "db:sqlite:migrate": "drizzle-kit migrate --config=drizzle.config.sqlite.ts",
+    "db:sqlite:push": "drizzle-kit push --config=drizzle.config.sqlite.ts",
+    "db:sqlite:studio": "drizzle-kit studio --config=drizzle.config.sqlite.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -47,6 +51,7 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.45.0",
+    "postgres": "^3.4.5",
     "embla-carousel-react": "^8.6.0",
     "gray-matter": "^4.0.3",
     "input-otp": "^1.4.2",

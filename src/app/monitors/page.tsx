@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { Terminal, Zap } from "lucide-react";
 import { MonitorCard } from "@/components/monitor-card";
-import { getMonitors, getLatestCheckResult } from "@/lib/data";
+import { getMonitors } from "@/lib/data";
 
 export default async function MonitorsPage() {
   const monitors = await getMonitors();
@@ -9,7 +8,7 @@ export default async function MonitorsPage() {
   const pausedCount = monitors.length - activeCount;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-8 pt-4">
         <div className="flex items-center gap-3">

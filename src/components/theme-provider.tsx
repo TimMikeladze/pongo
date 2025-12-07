@@ -18,6 +18,9 @@ interface ThemeContextValue {
   density: Density;
   setDensity: (density: Density) => void;
   toggleDensity: () => void;
+  fullWidth: boolean;
+  setFullWidth: (fullWidth: boolean) => void;
+  toggleFullWidth: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -36,6 +39,7 @@ export function ThemeProvider({
   const [theme, setThemeState] = useState<Theme>(defaultTheme);
   const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("dark");
   const [density, setDensityState] = useState<Density>("normal");
+  const [fullWidth, setFullWidthState] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -47,6 +51,10 @@ export function ThemeProvider({
     const storedDensity = localStorage.getItem("density") as Density | null;
     if (storedDensity) {
       setDensityState(storedDensity);
+    }
+    const storedFullWidth = localStorage.getItem("fullWidth");
+    if (storedFullWidth) {
+      setFullWidthState(storedFullWidth === "true");
     }
   }, [storageKey]);
 
@@ -105,6 +113,15 @@ export function ThemeProvider({
     setDensity(newDensity);
   };
 
+  const setFullWidth = (newFullWidth: boolean) => {
+    localStorage.setItem("fullWidth", String(newFullWidth));
+    setFullWidthState(newFullWidth);
+  };
+
+  const toggleFullWidth = () => {
+    setFullWidth(!fullWidth);
+  };
+
   return (
     <ThemeContext.Provider
       value={{
@@ -114,6 +131,9 @@ export function ThemeProvider({
         density,
         setDensity,
         toggleDensity,
+        fullWidth,
+        setFullWidth,
+        toggleFullWidth,
       }}
     >
       {children}
@@ -131,6 +151,9 @@ export function useTheme() {
       density: "normal" as Density,
       setDensity: () => {},
       toggleDensity: () => {},
+      fullWidth: false,
+      setFullWidth: () => {},
+      toggleFullWidth: () => {},
     };
   }
   return context;
