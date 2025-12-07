@@ -36,6 +36,7 @@ export class Scheduler {
    */
   async loadMonitors(): Promise<void> {
     this.channels = await loadChannels();
+    console.log(`[scheduler] Loaded ${Object.keys(this.channels).length} channels`);
 
     for (const [id, rawConfig] of Object.entries(monitorConfigs)) {
       const config = rawConfig as MonitorConfig;
