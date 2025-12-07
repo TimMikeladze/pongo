@@ -31,7 +31,11 @@ export async function AnnouncementsList({
     : announcements;
 
   if (displayAnnouncements.length === 0) {
-    return null;
+    return (
+      <div className="text-center py-8 text-[11px] text-muted-foreground">
+        No announcements
+      </div>
+    );
   }
 
   return (
