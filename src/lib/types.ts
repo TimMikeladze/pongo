@@ -78,6 +78,7 @@ export interface Incident {
   updates: IncidentUpdate[];
   createdAt: string;
   resolvedAt?: string;
+  archived?: boolean;
 }
 
 export interface MaintenanceWindow {

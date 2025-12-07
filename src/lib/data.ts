@@ -64,7 +64,9 @@ export const getAnnouncements = cache(
 export const getIncidents = cache(
   async (dashboardId?: string): Promise<Incident[]> => {
     const all = await loadIncidents();
-    return all.filter((i) => !dashboardId || i.dashboardId === dashboardId);
+    return all
+      .filter((i) => !dashboardId || i.dashboardId === dashboardId)
+      .filter((i) => !i.archived);
   },
 );
 

@@ -139,6 +139,7 @@ export async function loadIncidents(): Promise<Incident[]> {
         updates,
         createdAt: stats.birthtime.toISOString(),
         resolvedAt: frontmatter.resolvedAt,
+        archived: frontmatter.archived,
       });
     } catch (error) {
       console.error(`Failed to load incident ${file}:`, error);

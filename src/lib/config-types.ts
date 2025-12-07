@@ -64,6 +64,7 @@ export interface IncidentFrontmatter {
   status: IncidentStatus;
   affectedMonitors: string[]; // monitor IDs
   resolvedAt?: string; // ISO date
+  archived?: boolean; // if true, not shown on dashboard
 }
 
 /**
