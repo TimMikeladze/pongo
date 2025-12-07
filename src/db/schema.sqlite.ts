@@ -43,6 +43,9 @@ export const checkResults = sqliteTable("check_results", {
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),
+
+  /** When this row was marked for archival (null = not archived) */
+  archivedAt: integer("archived_at", { mode: "timestamp_ms" }),
 });
 
 /**
@@ -70,4 +73,7 @@ export const checkResultsIndexes = {
 
   /** Index for status filtering */
   statusIdx: sql`CREATE INDEX IF NOT EXISTS idx_check_results_status ON check_results(status)`,
+
+  /** Index for archival queries - finds rows eligible for archival */
+  archivalIdx: sql`CREATE INDEX IF NOT EXISTS idx_check_results_archival ON check_results(checked_at) WHERE archived_at IS NULL`,
 };

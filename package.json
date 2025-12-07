@@ -16,9 +16,11 @@
     "db:sqlite:migrate": "drizzle-kit migrate --config=drizzle.config.sqlite.ts",
     "db:sqlite:push": "drizzle-kit push --config=drizzle.config.sqlite.ts",
     "db:sqlite:studio": "drizzle-kit studio --config=drizzle.config.sqlite.ts",
-    "scheduler": "bun run src/scheduler/index.ts"
+    "scheduler": "bun run src/scheduler/index.ts",
+    "archiver": "bun run src/archiver/index.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.946.0",
     "@hookform/resolvers": "^5.2.2",
     "@libsql/client": "^0.15.15",
     "@radix-ui/react-accordion": "^1.2.12",
@@ -64,6 +66,7 @@
     "next-themes": "^0.4.6",
     "nuqs": "^2.8.3",
     "p-limit": "^7.2.0",
+    "parquetjs-lite": "^0.8.7",
     "postgres": "^3.4.5",
     "react": "19.2.1",
     "react-day-picker": "^9.12.0",

@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -51,6 +52,9 @@ export const checkResults = pgTable(
     createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
       .notNull()
       .$defaultFn(() => new Date()),
+
+    /** When this row was marked for archival (null = not archived) */
+    archivedAt: timestamp("archived_at", { mode: "date", withTimezone: true }),
   },
   (table) => [
     index("idx_check_results_monitor_id").on(table.monitorId),
@@ -60,6 +64,7 @@ export const checkResults = pgTable(
       table.checkedAt,
     ),
     index("idx_check_results_status").on(table.status),
+    index("idx_check_results_archival").on(table.checkedAt).where(sql`archived_at IS NULL`),
   ],
 );
 
