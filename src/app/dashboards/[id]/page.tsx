@@ -1,37 +1,25 @@
-"use client"
-
-import { useParams, notFound, useRouter } from "next/navigation"
+// src/app/dashboards/[id]/page.tsx
+import { notFound } from "next/navigation"
 import Link from "next/link"
-import { useState } from "react"
-import { ArrowLeft, ExternalLink, Trash2, Plus, Megaphone } from "lucide-react"
+import { ArrowLeft, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { DashboardForm } from "@/components/dashboard-form"
 import { DashboardView } from "@/components/dashboard-view"
-import { AnnouncementForm } from "@/components/announcement-form"
 import { AnnouncementsList } from "@/components/announcements-list"
 import { IncidentsTimeline } from "@/components/incidents-timeline"
 import { MaintenanceSchedule } from "@/components/maintenance-schedule"
-import { useDashboard } from "@/lib/hooks"
-import { store } from "@/lib/store"
+import { getDashboard, getMonitors } from "@/lib/data"
 
-export default function DashboardDetailPage() {
-  const params = useParams()
-  const id = params.id as string
-  const router = useRouter()
-  const dashboard = useDashboard(id)
-  const [announcementDialogOpen, setAnnouncementDialogOpen] = useState(false)
+interface Props {
+  params: Promise<{ id: string }>
+}
+
+export default async function DashboardDetailPage({ params }: Props) {
+  const { id } = await params
+  const dashboard = await getDashboard(id)
 
   if (!dashboard) {
     notFound()
-  }
-
-  const handleDelete = () => {
-    if (confirm("Are you sure you want to delete this dashboard?")) {
-      store.deleteDashboard(dashboard.id)
-      router.push("/dashboards")
-    }
   }
 
   return (
@@ -48,20 +36,6 @@ export default function DashboardDetailPage() {
           <p className="text-muted-foreground text-[10px] font-mono">/public/{dashboard.slug}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Dialog open={announcementDialogOpen} onOpenChange={setAnnouncementDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="text-xs h-8 bg-transparent">
-                <Megaphone className="mr-2 h-3 w-3" />
-                Post Update
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle className="text-sm">Post Announcement</DialogTitle>
-              </DialogHeader>
-              <AnnouncementForm dashboardId={dashboard.id} onSuccess={() => setAnnouncementDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
           {dashboard.isPublic && (
             <Button variant="outline" size="sm" asChild className="text-xs h-8 bg-transparent">
               <Link href={`/public/${dashboard.slug}`} target="_blank">
@@ -70,15 +44,9 @@ export default function DashboardDetailPage() {
               </Link>
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDelete}
-            className="text-xs h-8 text-destructive hover:text-destructive bg-transparent"
-          >
-            <Trash2 className="mr-2 h-3 w-3" />
-            Delete
-          </Button>
+          <span className="text-[10px] text-muted-foreground">
+            <code className="bg-secondary px-1 rounded">data/dashboards/{id}.ts</code>
+          </span>
         </div>
       </div>
 
@@ -87,49 +55,34 @@ export default function DashboardDetailPage() {
           <TabsTrigger value="preview">Preview</TabsTrigger>
           <TabsTrigger value="announcements">Announcements</TabsTrigger>
           <TabsTrigger value="incidents">Incidents</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="preview">
-          <DashboardView dashboard={dashboard} />
+          <DashboardView dashboardId={dashboard.id} />
         </TabsContent>
 
         <TabsContent value="announcements" className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">All Announcements</h3>
-            <Dialog open={announcementDialogOpen} onOpenChange={setAnnouncementDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="text-xs h-7 bg-transparent">
-                  <Plus className="mr-1 h-3 w-3" />
-                  New
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle className="text-sm">Post Announcement</DialogTitle>
-                </DialogHeader>
-                <AnnouncementForm dashboardId={dashboard.id} onSuccess={() => setAnnouncementDialogOpen(false)} />
-              </DialogContent>
-            </Dialog>
+            <span className="text-[10px] text-muted-foreground">
+              from <code className="bg-secondary px-1 rounded">data/announcements/</code>
+            </span>
           </div>
-          <AnnouncementsList dashboardId={dashboard.id} showDelete />
+          <AnnouncementsList dashboardId={dashboard.id} />
         </TabsContent>
 
         <TabsContent value="incidents" className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">Incident History</h3>
+            <span className="text-[10px] text-muted-foreground">
+              from <code className="bg-secondary px-1 rounded">data/incidents/</code>
+            </span>
           </div>
           <IncidentsTimeline dashboardId={dashboard.id} />
 
           <div className="space-y-3">
             <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">Scheduled Maintenance</h3>
-            <MaintenanceSchedule dashboardId={dashboard.id} showDelete />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="settings">
-          <div className="max-w-2xl">
-            <DashboardForm dashboard={dashboard} />
+            <MaintenanceSchedule dashboardId={dashboard.id} />
           </div>
         </TabsContent>
       </Tabs>
