@@ -63,6 +63,34 @@ export function createServer(scheduler: Scheduler, port: number) {
     });
   });
 
+  // Trigger multiple monitors (for dashboard bulk trigger)
+  app.post("/monitors/trigger", async (c) => {
+    const body = await c.req.json<{ monitorIds: string[] }>();
+    const { monitorIds } = body;
+
+    if (!monitorIds || !Array.isArray(monitorIds)) {
+      return c.json({ error: "monitorIds array required" }, 400);
+    }
+
+    // Trigger all monitors in parallel
+    const results = await Promise.all(
+      monitorIds.map(async (id) => {
+        const found = await scheduler.trigger(id);
+        if (!found) {
+          return { id, error: "Monitor not found" };
+        }
+        const state = scheduler.getState(id);
+        return {
+          id,
+          status: state?.lastResult?.status ?? null,
+          responseTime: state?.lastResult?.responseTime ?? null,
+        };
+      }),
+    );
+
+    return c.json({ triggered: true, results });
+  });
+
   console.log(`[server] Starting HTTP API on port ${port}...`);
 
   return {

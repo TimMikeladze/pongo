@@ -8,7 +8,8 @@ import { DashboardView } from "@/components/dashboard-view";
 import { AnnouncementsList } from "@/components/announcements-list";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
 import { MaintenanceSchedule } from "@/components/maintenance-schedule";
-import { getDashboard, getMonitors } from "@/lib/data";
+import { TriggerAllButton } from "@/components/trigger-all-button";
+import { getDashboard } from "@/lib/data";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -37,13 +38,14 @@ export default async function DashboardDetailPage({ params }: Props) {
             /public/{dashboard.slug}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <TriggerAllButton monitorIds={dashboard.monitorIds} dashboardId={dashboard.id} />
           {dashboard.isPublic && (
             <Button
               variant="outline"
               size="sm"
               asChild
-              className="text-xs h-8 bg-transparent"
+              className="text-xs h-7 bg-transparent"
             >
               <Link href={`/public/${dashboard.slug}`} target="_blank">
                 <ExternalLink className="mr-2 h-3 w-3" />
