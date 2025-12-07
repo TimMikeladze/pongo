@@ -1,4 +1,4 @@
-import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import * as sqliteSchema from "./schema.sqlite";
 import * as pgSchema from "./schema.pg";
@@ -16,7 +16,7 @@ const dbDriver: DbDriver = (process.env.DB_DRIVER as DbDriver) ?? "sqlite";
  * Database instance type based on driver
  */
 export type Database =
-  | BetterSQLite3Database<typeof sqliteSchema>
+  | LibSQLDatabase<typeof sqliteSchema>
   | PostgresJsDatabase<typeof pgSchema>;
 
 let _db: Database;
@@ -44,19 +44,16 @@ async function initDatabase(): Promise<Database> {
       await client.end();
     };
   } else {
-    // SQLite with better-sqlite3 (default)
-    const Database = (await import("better-sqlite3")).default;
-    const { drizzle } = await import("drizzle-orm/better-sqlite3");
+    // SQLite with libsql (works in Bun)
+    const { createClient } = await import("@libsql/client");
+    const { drizzle } = await import("drizzle-orm/libsql");
 
-    const databasePath = process.env.DATABASE_URL ?? "./data/pongo.db";
-    const sqlite = new Database(databasePath);
+    const databasePath = process.env.DATABASE_URL ?? "file:./data/pongo.db";
+    const client = createClient({ url: databasePath });
 
-    // Enable WAL mode for better concurrent read performance
-    sqlite.pragma("journal_mode = WAL");
-
-    _db = drizzle(sqlite, { schema: sqliteSchema });
+    _db = drizzle(client, { schema: sqliteSchema });
     _closeDb = () => {
-      sqlite.close();
+      client.close();
     };
   }
 
@@ -78,24 +75,9 @@ function getDbPromise(): Promise<Database> {
 // Will throw if using PostgreSQL and db not initialized
 export function getDb(): Database {
   if (!_db) {
-    // For SQLite, we can initialize synchronously
-    if (dbDriver === "sqlite") {
-      const Database = require("better-sqlite3");
-      const { drizzle } = require("drizzle-orm/better-sqlite3");
-
-      const databasePath = process.env.DATABASE_URL ?? "./data/pongo.db";
-      const sqlite = new Database(databasePath);
-      sqlite.pragma("journal_mode = WAL");
-
-      _db = drizzle(sqlite, { schema: sqliteSchema });
-      _closeDb = () => {
-        sqlite.close();
-      };
-    } else {
-      throw new Error(
-        "Database not initialized. Use getDbAsync() for PostgreSQL.",
-      );
-    }
+    throw new Error(
+      "Database not initialized. Use getDbAsync() to initialize first.",
+    );
   }
   return _db;
 }
