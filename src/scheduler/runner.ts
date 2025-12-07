@@ -10,28 +10,33 @@ function sleep(ms: number): Promise<void> {
 }
 
 /**
- * Execute a monitor handler with timeout
+ * Execute a monitor handler with timeout using Promise.race
  */
 async function executeWithTimeout(
   monitor: ScheduledMonitor,
 ): Promise<MonitorResult> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), monitor.timeoutMs);
-
-  try {
-    const result = await monitor.config.handler();
-    clearTimeout(timeoutId);
-    return result;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    if (controller.signal.aborted) {
-      return {
+  const timeoutPromise = new Promise<MonitorResult>((resolve) => {
+    setTimeout(() => {
+      resolve({
         status: "down",
         responseTime: monitor.timeoutMs,
         message: `Timeout after ${monitor.timeoutMs}ms`,
-      };
-    }
-    throw error;
+      });
+    }, monitor.timeoutMs);
+  });
+
+  try {
+    const result = await Promise.race([
+      monitor.config.handler(),
+      timeoutPromise,
+    ]);
+    return result;
+  } catch (error) {
+    return {
+      status: "down",
+      responseTime: 0,
+      message: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 

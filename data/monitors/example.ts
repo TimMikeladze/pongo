@@ -1,7 +1,7 @@
 import { monitor } from "../../src/lib/config-types";
 
 export default monitor({
-  name: "Marketing Website",
+  name: "Example",
   interval: "5m",
   timeout: "30s",
 

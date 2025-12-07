@@ -21,6 +21,19 @@ export default monitor({
         };
       }
 
+      const body = await res.text();
+      const confirmationString = "GitHub lives!";
+      const hasConfirmation = body.includes(confirmationString);
+
+      if (!hasConfirmation) {
+        return {
+          status: "down",
+          responseTime,
+          statusCode: res.status,
+          message: `Missing confirmation: "${confirmationString}"`,
+        };
+      }
+
       return {
         status: responseTime > 1000 ? "degraded" : "up",
         responseTime,
