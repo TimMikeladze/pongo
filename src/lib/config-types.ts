@@ -17,7 +17,8 @@ export interface MonitorResult {
  */
 export interface MonitorConfig {
   name: string;
-  interval: string; // human-readable: "30s", "5m", "1h"
+  interval?: string; // human-readable: "30s", "5m", "1h" - optional if cron is set
+  cron?: string; // cron expression: "*/5 * * * *" - optional if interval is set
   timeout?: string; // human-readable, defaults to "30s"
   active?: boolean; // defaults to true
 
