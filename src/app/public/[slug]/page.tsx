@@ -22,9 +22,9 @@ export default async function PublicDashboardPage({ params }: Props) {
   const hasIssues = activeIncidents.length > 0;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border">
+    <div className="h-screen flex flex-col bg-background">
+      {/* Header - Fixed */}
+      <header className="flex-shrink-0 border-b border-border">
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -45,22 +45,24 @@ export default async function PublicDashboardPage({ params }: Props) {
         </div>
       </header>
 
-      {/* Content - Wider container for 90-day bars */}
-      <main className="max-w-4xl mx-auto px-6 py-8">
-        <DashboardView dashboardId={dashboard.id} isPublic />
+      {/* Content - Scrollable */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <DashboardView dashboardId={dashboard.id} isPublic />
 
-        {/* Past Incidents Section */}
-        <div className="mt-8 space-y-3">
-          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
-            past incidents
-          </h3>
-          <IncidentsTimeline dashboardId={dashboard.id} limit={10} />
+          {/* Past Incidents Section */}
+          <div className="mt-8 space-y-3">
+            <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              past incidents
+            </h3>
+            <IncidentsTimeline dashboardId={dashboard.id} limit={10} />
+          </div>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border mt-12">
-        <div className="max-w-4xl mx-auto px-6 py-6">
+      {/* Footer - Fixed */}
+      <footer className="flex-shrink-0 border-t border-border">
+        <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
