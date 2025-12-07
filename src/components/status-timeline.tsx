@@ -1,13 +1,18 @@
-"use client"
+"use client";
 
-import { cn } from "@/lib/utils"
-import type { CheckResult } from "@/lib/types"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { formatDistanceToNow } from "date-fns"
+import { cn } from "@/lib/utils";
+import type { CheckResult } from "@/lib/types";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { formatDistanceToNow } from "date-fns";
 
 interface StatusTimelineProps {
-  results: CheckResult[]
-  limit?: number
+  results: CheckResult[];
+  limit?: number;
 }
 
 const statusColors: Record<import("@/lib/types").MonitorStatus, string> = {
@@ -15,13 +20,16 @@ const statusColors: Record<import("@/lib/types").MonitorStatus, string> = {
   down: "bg-status-down",
   degraded: "bg-status-degraded",
   pending: "bg-status-pending",
-}
+};
 
 export function StatusTimeline({ results, limit = 30 }: StatusTimelineProps) {
-  const displayResults = results.slice(0, limit).reverse()
+  const displayResults = results.slice(0, limit).reverse();
 
   // Pad with empty slots if less than limit
-  const paddedResults: (CheckResult | null)[] = [...Array(Math.max(0, limit - displayResults.length)).fill(null), ...displayResults]
+  const paddedResults: (CheckResult | null)[] = [
+    ...Array(Math.max(0, limit - displayResults.length)).fill(null),
+    ...displayResults,
+  ];
 
   return (
     <TooltipProvider>
@@ -54,16 +62,21 @@ export function StatusTimeline({ results, limit = 30 }: StatusTimelineProps) {
                     {result.responseTimeMs}ms / {result.statusCode || "err"}
                   </p>
                   <p className="text-muted-foreground">
-                    {formatDistanceToNow(new Date(result.checkedAt), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(result.checkedAt), {
+                      addSuffix: true,
+                    })}
                   </p>
                 </div>
               </TooltipContent>
             </Tooltip>
           ) : (
-            <div key={`empty-${index}`} className="h-6 w-1 rounded-[1px] bg-secondary opacity-30" />
+            <div
+              key={`empty-${index}`}
+              className="h-6 w-1 rounded-[1px] bg-secondary opacity-30"
+            />
           ),
         )}
       </div>
     </TooltipProvider>
-  )
+  );
 }

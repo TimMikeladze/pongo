@@ -1,6 +1,11 @@
-import Link from "next/link"
-import { Bell, Palette, Database } from "lucide-react"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from "next/link";
+import { Bell, Palette, Database } from "lucide-react";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 const settingsLinks = [
   {
@@ -23,19 +28,24 @@ const settingsLinks = [
     icon: Database,
     disabled: true,
   },
-]
+];
 
 export default function SettingsPage() {
   return (
     <div className="p-8 max-w-3xl">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your uptime monitor configuration</p>
+        <p className="text-muted-foreground mt-1">
+          Manage your uptime monitor configuration
+        </p>
       </div>
 
       <div className="grid gap-4">
         {settingsLinks.map((item) => (
-          <Card key={item.href} className={item.disabled ? "opacity-50 pointer-events-none" : ""}>
+          <Card
+            key={item.href}
+            className={item.disabled ? "opacity-50 pointer-events-none" : ""}
+          >
             <Link href={item.href}>
               <CardHeader>
                 <div className="flex items-center gap-4">
@@ -53,5 +63,5 @@ export default function SettingsPage() {
         ))}
       </div>
     </div>
-  )
+  );
 }

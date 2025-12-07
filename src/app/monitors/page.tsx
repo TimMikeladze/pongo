@@ -1,12 +1,12 @@
-import Link from "next/link"
-import { Terminal, Zap } from "lucide-react"
-import { MonitorCard } from "@/components/monitor-card"
-import { getMonitors, getLatestCheckResult } from "@/lib/data"
+import Link from "next/link";
+import { Terminal, Zap } from "lucide-react";
+import { MonitorCard } from "@/components/monitor-card";
+import { getMonitors, getLatestCheckResult } from "@/lib/data";
 
 export default async function MonitorsPage() {
-  const monitors = await getMonitors()
-  const activeCount = monitors.filter((m) => m.isActive).length
-  const pausedCount = monitors.length - activeCount
+  const monitors = await getMonitors();
+  const activeCount = monitors.filter((m) => m.isActive).length;
+  const pausedCount = monitors.length - activeCount;
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -17,12 +17,14 @@ export default async function MonitorsPage() {
           <div>
             <h1 className="text-sm">monitors</h1>
             <p className="text-[10px] text-muted-foreground mt-0.5">
-              {monitors.length} total · {activeCount} active · {pausedCount} paused
+              {monitors.length} total · {activeCount} active · {pausedCount}{" "}
+              paused
             </p>
           </div>
         </div>
         <p className="text-[10px] text-muted-foreground">
-          defined in <code className="bg-secondary px-1 rounded">data/monitors/</code>
+          defined in{" "}
+          <code className="bg-secondary px-1 rounded">data/monitors/</code>
         </p>
       </div>
 
@@ -32,9 +34,12 @@ export default async function MonitorsPage() {
           <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
             <Zap className="h-5 w-5 text-primary" />
           </div>
-          <p className="text-xs text-muted-foreground mb-1">no monitors configured</p>
+          <p className="text-xs text-muted-foreground mb-1">
+            no monitors configured
+          </p>
           <p className="text-[10px] text-muted-foreground/70">
-            add .ts files to <code className="bg-secondary px-1 rounded">data/monitors/</code>
+            add .ts files to{" "}
+            <code className="bg-secondary px-1 rounded">data/monitors/</code>
           </p>
         </div>
       ) : (
@@ -45,5 +50,5 @@ export default async function MonitorsPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -1,12 +1,12 @@
-import { sql } from "drizzle-orm"
-import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core"
+import { sql } from "drizzle-orm";
+import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 /**
  * Monitor status enum values
  * Matches MonitorStatus from types.ts
  */
-export const monitorStatusEnum = ["up", "down", "degraded", "pending"] as const
-export type MonitorStatusEnum = (typeof monitorStatusEnum)[number]
+export const monitorStatusEnum = ["up", "down", "degraded", "pending"] as const;
+export type MonitorStatusEnum = (typeof monitorStatusEnum)[number];
 
 /**
  * Check results table - stores the results of monitor handler executions
@@ -43,17 +43,17 @@ export const checkResults = sqliteTable("check_results", {
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),
-})
+});
 
 /**
  * Type for inserting a new check result
  */
-export type NewCheckResult = typeof checkResults.$inferInsert
+export type NewCheckResult = typeof checkResults.$inferInsert;
 
 /**
  * Type for a check result from the database
  */
-export type CheckResult = typeof checkResults.$inferSelect
+export type CheckResult = typeof checkResults.$inferSelect;
 
 /**
  * Indexes for common queries - defined separately for migrations
@@ -70,4 +70,4 @@ export const checkResultsIndexes = {
 
   /** Index for status filtering */
   statusIdx: sql`CREATE INDEX IF NOT EXISTS idx_check_results_status ON check_results(status)`,
-}
+};

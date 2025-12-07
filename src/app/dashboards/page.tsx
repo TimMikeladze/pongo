@@ -1,28 +1,30 @@
 // src/app/dashboards/page.tsx
-import Link from "next/link"
-import { ExternalLink, Globe, Lock, LayoutDashboard } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { getDashboards, getMonitors, getLatestCheckResult } from "@/lib/data"
+import Link from "next/link";
+import { ExternalLink, Globe, Lock, LayoutDashboard } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { getDashboards, getMonitors, getLatestCheckResult } from "@/lib/data";
 
 export default async function DashboardsPage() {
-  const dashboards = await getDashboards()
-  const monitors = await getMonitors()
+  const dashboards = await getDashboards();
+  const monitors = await getMonitors();
 
   // Get status for each dashboard's monitors
   const dashboardsWithStatus = await Promise.all(
     dashboards.map(async (dashboard) => {
-      const dashboardMonitors = monitors.filter((m) => dashboard.monitorIds.includes(m.id))
+      const dashboardMonitors = monitors.filter((m) =>
+        dashboard.monitorIds.includes(m.id),
+      );
       const results = await Promise.all(
-        dashboardMonitors.map((m) => getLatestCheckResult(m.id))
-      )
-      const upCount = results.filter((r) => r?.status === "up").length
+        dashboardMonitors.map((m) => getLatestCheckResult(m.id)),
+      );
+      const upCount = results.filter((r) => r?.status === "up").length;
       return {
         dashboard,
         monitorCount: dashboardMonitors.length,
         upCount,
-      }
-    })
-  )
+      };
+    }),
+  );
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -32,11 +34,14 @@ export default async function DashboardsPage() {
           <LayoutDashboard className="h-4 w-4 text-primary" />
           <div>
             <h1 className="text-sm">dashboards</h1>
-            <p className="text-[10px] text-muted-foreground mt-0.5">status pages with multiple monitors</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              status pages with multiple monitors
+            </p>
           </div>
         </div>
         <p className="text-[10px] text-muted-foreground">
-          defined in <code className="bg-secondary px-1 rounded">data/dashboards/</code>
+          defined in{" "}
+          <code className="bg-secondary px-1 rounded">data/dashboards/</code>
         </p>
       </div>
 
@@ -44,9 +49,12 @@ export default async function DashboardsPage() {
       {dashboards.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 border border-dashed border-border rounded">
           <LayoutDashboard className="h-6 w-6 text-muted-foreground mb-3" />
-          <p className="text-xs text-muted-foreground mb-2">no dashboards configured</p>
+          <p className="text-xs text-muted-foreground mb-2">
+            no dashboards configured
+          </p>
           <p className="text-[10px] text-muted-foreground/70">
-            add .ts files to <code className="bg-secondary px-1 rounded">data/dashboards/</code>
+            add .ts files to{" "}
+            <code className="bg-secondary px-1 rounded">data/dashboards/</code>
           </p>
         </div>
       ) : (
@@ -58,7 +66,10 @@ export default async function DashboardsPage() {
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <Link href={`/dashboards/${dashboard.id}`} className="text-sm hover:text-primary transition-colors">
+                  <Link
+                    href={`/dashboards/${dashboard.id}`}
+                    className="text-sm hover:text-primary transition-colors"
+                  >
                     {dashboard.name}
                   </Link>
                   <div className="flex items-center gap-2 mt-1">
@@ -89,7 +100,9 @@ export default async function DashboardsPage() {
                 )}
               </div>
               <div className="flex items-center justify-between text-[10px]">
-                <span className="text-muted-foreground">{monitorCount} monitors</span>
+                <span className="text-muted-foreground">
+                  {monitorCount} monitors
+                </span>
                 <span className="text-status-up">
                   {upCount}/{monitorCount} up
                 </span>
@@ -99,5 +112,5 @@ export default async function DashboardsPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

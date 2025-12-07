@@ -1,24 +1,24 @@
-import { notFound } from "next/navigation"
-import { Activity, Clock } from "lucide-react"
-import { DashboardView } from "@/components/dashboard-view"
-import { IncidentsTimeline } from "@/components/incidents-timeline"
-import { getDashboardBySlug, getActiveIncidents } from "@/lib/data"
-import { format } from "date-fns"
+import { notFound } from "next/navigation";
+import { Activity, Clock } from "lucide-react";
+import { DashboardView } from "@/components/dashboard-view";
+import { IncidentsTimeline } from "@/components/incidents-timeline";
+import { getDashboardBySlug, getActiveIncidents } from "@/lib/data";
+import { format } from "date-fns";
 
 interface Props {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
 export default async function PublicDashboardPage({ params }: Props) {
-  const { slug } = await params
-  const dashboard = await getDashboardBySlug(slug)
+  const { slug } = await params;
+  const dashboard = await getDashboardBySlug(slug);
 
   if (!dashboard || !dashboard.isPublic) {
-    notFound()
+    notFound();
   }
 
-  const activeIncidents = await getActiveIncidents(dashboard.id)
-  const hasIssues = activeIncidents.length > 0
+  const activeIncidents = await getActiveIncidents(dashboard.id);
+  const hasIssues = activeIncidents.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -29,12 +29,16 @@ export default async function PublicDashboardPage({ params }: Props) {
             <div className="flex items-center gap-3">
               <Activity className="h-4 w-4 text-primary" />
               <div>
-                <h1 className="text-sm font-medium font-mono">{dashboard.name}</h1>
+                <h1 className="text-sm font-medium font-mono">
+                  {dashboard.name}
+                </h1>
                 <p className="text-[10px] text-muted-foreground">status page</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full ${hasIssues ? "bg-amber-500 animate-pulse" : "bg-blue-500"}`} />
+              <span
+                className={`h-2 w-2 rounded-full ${hasIssues ? "bg-amber-500 animate-pulse" : "bg-blue-500"}`}
+              />
               <span className="text-[10px] text-muted-foreground font-mono">
                 {hasIssues ? "issues detected" : "all systems operational"}
               </span>
@@ -49,7 +53,9 @@ export default async function PublicDashboardPage({ params }: Props) {
 
         {/* Past Incidents Section */}
         <div className="mt-8 space-y-3">
-          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">past incidents</h3>
+          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            past incidents
+          </h3>
           <IncidentsTimeline dashboardId={dashboard.id} limit={10} />
         </div>
       </main>
@@ -67,5 +73,5 @@ export default async function PublicDashboardPage({ params }: Props) {
         </div>
       </footer>
     </div>
-  )
+  );
 }

@@ -1,38 +1,43 @@
-import { formatDistanceToNow } from "date-fns"
-import { Info, AlertTriangle, CheckCircle, Wrench } from "lucide-react"
-import { getAnnouncements } from "@/lib/data"
+import { formatDistanceToNow } from "date-fns";
+import { Info, AlertTriangle, CheckCircle, Wrench } from "lucide-react";
+import { getAnnouncements } from "@/lib/data";
 
 const typeIcons = {
   info: Info,
   warning: AlertTriangle,
   success: CheckCircle,
   maintenance: Wrench,
-}
+};
 
 const typeStyles = {
   info: "border-blue-500/30 bg-blue-500/5 text-blue-400",
   warning: "border-amber-500/30 bg-amber-500/5 text-amber-400",
   success: "border-emerald-500/30 bg-emerald-500/5 text-emerald-400",
   maintenance: "border-purple-500/30 bg-purple-500/5 text-purple-400",
-}
+};
 
 interface AnnouncementsListProps {
-  dashboardId?: string
-  limit?: number
+  dashboardId?: string;
+  limit?: number;
 }
 
-export async function AnnouncementsList({ dashboardId, limit }: AnnouncementsListProps) {
-  const announcements = await getAnnouncements(dashboardId)
-  const displayAnnouncements = limit ? announcements.slice(0, limit) : announcements
+export async function AnnouncementsList({
+  dashboardId,
+  limit,
+}: AnnouncementsListProps) {
+  const announcements = await getAnnouncements(dashboardId);
+  const displayAnnouncements = limit
+    ? announcements.slice(0, limit)
+    : announcements;
 
   if (displayAnnouncements.length === 0) {
-    return null
+    return null;
   }
 
   return (
     <div className="space-y-3">
       {displayAnnouncements.map((announcement) => {
-        const Icon = typeIcons[announcement.type]
+        const Icon = typeIcons[announcement.type];
         return (
           <div
             key={announcement.id}
@@ -43,7 +48,9 @@ export async function AnnouncementsList({ dashboardId, limit }: AnnouncementsLis
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-medium">{announcement.title}</p>
                 <span className="text-[10px] opacity-60">
-                  {formatDistanceToNow(new Date(announcement.createdAt), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(announcement.createdAt), {
+                    addSuffix: true,
+                  })}
                 </span>
               </div>
               <div
@@ -52,8 +59,8 @@ export async function AnnouncementsList({ dashboardId, limit }: AnnouncementsLis
               />
             </div>
           </div>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

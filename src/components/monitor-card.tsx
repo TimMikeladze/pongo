@@ -1,13 +1,17 @@
-import Link from "next/link"
-import { ExternalLink } from "lucide-react"
-import { StatusBadge } from "@/components/status-badge"
-import { Sparkline } from "@/components/sparkline"
-import { getLatestCheckResult, getCheckResults, getMonitorStats } from "@/lib/data"
-import type { Monitor } from "@/lib/types"
-import { cn } from "@/lib/utils"
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
+import { StatusBadge } from "@/components/status-badge";
+import { Sparkline } from "@/components/sparkline";
+import {
+  getLatestCheckResult,
+  getCheckResults,
+  getMonitorStats,
+} from "@/lib/data";
+import type { Monitor } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 interface MonitorCardProps {
-  monitor: Monitor
+  monitor: Monitor;
 }
 
 export async function MonitorCard({ monitor }: MonitorCardProps) {
@@ -15,17 +19,24 @@ export async function MonitorCard({ monitor }: MonitorCardProps) {
     getLatestCheckResult(monitor.id),
     getCheckResults(monitor.id, 30),
     getMonitorStats(monitor.id, 24),
-  ])
+  ]);
 
-  const status = latestResult?.status ?? "pending"
+  const status = latestResult?.status ?? "pending";
 
   return (
     <div className="group border border-border rounded bg-card hover:border-primary/30 transition-colors p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2 flex-1 min-w-0">
-          <StatusBadge status={monitor.isActive ? status : "pending"} size="lg" pulse={status === "up"} />
+          <StatusBadge
+            status={monitor.isActive ? status : "pending"}
+            size="lg"
+            pulse={status === "up"}
+          />
           <div className="flex-1 min-w-0">
-            <Link href={`/monitors/${monitor.id}`} className="text-sm hover:text-primary transition-colors">
+            <Link
+              href={`/monitors/${monitor.id}`}
+              className="text-sm hover:text-primary transition-colors"
+            >
               {monitor.name}
             </Link>
             <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
@@ -53,7 +64,11 @@ export async function MonitorCard({ monitor }: MonitorCardProps) {
           <span
             className={cn(
               "font-mono",
-              stats.uptime >= 99.9 ? "text-status-up" : stats.uptime >= 99 ? "text-foreground" : "text-status-down",
+              stats.uptime >= 99.9
+                ? "text-status-up"
+                : stats.uptime >= 99
+                  ? "text-foreground"
+                  : "text-status-down",
             )}
           >
             {stats.uptime}%
@@ -68,9 +83,11 @@ export async function MonitorCard({ monitor }: MonitorCardProps) {
           <span className="font-mono">{monitor.intervalSeconds}s</span>
         </div>
         {!monitor.isActive && (
-          <span className="px-1 py-0.5 rounded bg-secondary text-muted-foreground text-[10px]">paused</span>
+          <span className="px-1 py-0.5 rounded bg-secondary text-muted-foreground text-[10px]">
+            paused
+          </span>
         )}
       </div>
     </div>
-  )
+  );
 }

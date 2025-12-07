@@ -1,13 +1,18 @@
-import { cn } from "@/lib/utils"
-import { getDailyStatus } from "@/lib/data"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import type { MonitorStatus } from "@/lib/types"
+import { cn } from "@/lib/utils";
+import { getDailyStatus } from "@/lib/data";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type { MonitorStatus } from "@/lib/types";
 
 interface UptimeBarsProps {
-  monitorId: string
-  monitorName: string
-  days?: number
-  showLabels?: boolean
+  monitorId: string;
+  monitorName: string;
+  days?: number;
+  showLabels?: boolean;
 }
 
 const statusColors: Record<MonitorStatus | "pending", string> = {
@@ -15,20 +20,26 @@ const statusColors: Record<MonitorStatus | "pending", string> = {
   down: "bg-red-500",
   degraded: "bg-amber-500",
   pending: "bg-muted/30",
-}
+};
 
 const statusLabels: Record<MonitorStatus | "pending", string> = {
   up: "Operational",
   down: "Outage",
   degraded: "Degraded",
   pending: "No data",
-}
+};
 
-export async function UptimeBars({ monitorId, monitorName, days = 90, showLabels = true }: UptimeBarsProps) {
-  const dailyStatus = await getDailyStatus(monitorId, days)
+export async function UptimeBars({
+  monitorId,
+  monitorName,
+  days = 90,
+  showLabels = true,
+}: UptimeBarsProps) {
+  const dailyStatus = await getDailyStatus(monitorId, days);
 
   // Get current status (last day)
-  const currentStatus = dailyStatus[dailyStatus.length - 1]?.status ?? "pending"
+  const currentStatus =
+    dailyStatus[dailyStatus.length - 1]?.status ?? "pending";
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -60,7 +71,10 @@ export async function UptimeBars({ monitorId, monitorName, days = 90, showLabels
                   )}
                 />
               </TooltipTrigger>
-              <TooltipContent side="top" className="bg-card border-border text-xs font-mono">
+              <TooltipContent
+                side="top"
+                className="bg-card border-border text-xs font-mono"
+              >
                 <div className="space-y-1">
                   <p className="text-foreground">{day.date}</p>
                   <p
@@ -82,11 +96,15 @@ export async function UptimeBars({ monitorId, monitorName, days = 90, showLabels
 
         {showLabels && (
           <div className="flex items-center justify-between mt-2">
-            <span className="text-[10px] text-muted-foreground font-mono">{days} days ago</span>
-            <span className="text-[10px] text-muted-foreground font-mono">Today</span>
+            <span className="text-[10px] text-muted-foreground font-mono">
+              {days} days ago
+            </span>
+            <span className="text-[10px] text-muted-foreground font-mono">
+              Today
+            </span>
           </div>
         )}
       </div>
     </TooltipProvider>
-  )
+  );
 }

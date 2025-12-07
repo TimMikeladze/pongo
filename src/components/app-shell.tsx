@@ -1,51 +1,60 @@
-"use client"
+"use client";
 
-import type React from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
-import { Activity, LayoutDashboard, Bell, Monitor, Terminal, Minimize2, Sun, Moon } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { DensityToggle } from "@/components/density-toggle"
-import { useTheme } from "@/components/theme-provider"
+import type React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import {
+  Activity,
+  LayoutDashboard,
+  Bell,
+  Monitor,
+  Terminal,
+  Minimize2,
+  Sun,
+  Moon,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { DensityToggle } from "@/components/density-toggle";
+import { useTheme } from "@/components/theme-provider";
 
 const navigation = [
   { name: "overview", href: "/", icon: Terminal },
   { name: "monitors", href: "/monitors", icon: Monitor },
   { name: "dashboards", href: "/dashboards", icon: LayoutDashboard },
   { name: "alerts", href: "/settings/notifications", icon: Bell },
-]
+];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  const { density, toggleDensity, theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-  const [showZenControls, setShowZenControls] = useState(false)
+  const pathname = usePathname();
+  const { density, toggleDensity, theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const [showZenControls, setShowZenControls] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "z" && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        const target = e.target as HTMLElement
-        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return
-        toggleDensity()
+        const target = e.target as HTMLElement;
+        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+        toggleDensity();
       }
-    }
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [toggleDensity])
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [toggleDensity]);
 
-  const isPublicPage = pathname.startsWith("/public/")
+  const isPublicPage = pathname.startsWith("/public/");
 
   if (isPublicPage) {
-    return <>{children}</>
+    return <>{children}</>;
   }
 
-  const isDense = mounted && density === "dense"
+  const isDense = mounted && density === "dense";
 
   return (
     <div className="min-h-screen bg-background">
@@ -63,7 +72,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <nav className="flex items-center gap-1">
             {navigation.map((item) => {
-              const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
+              const isActive =
+                item.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(item.href);
 
               return (
                 <Link
@@ -79,7 +91,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <item.icon className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">{item.name}</span>
                 </Link>
-              )
+              );
             })}
           </nav>
 
@@ -120,7 +132,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div
               className={cn(
                 "flex items-center gap-0.5 transition-all duration-300",
-                showZenControls ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none",
+                showZenControls
+                  ? "opacity-100 scale-100"
+                  : "opacity-0 scale-95 pointer-events-none",
               )}
             >
               <button
@@ -136,7 +150,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 title="Toggle theme"
               >
-                {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+                {theme === "dark" ? (
+                  <Sun className="h-3.5 w-3.5" />
+                ) : (
+                  <Moon className="h-3.5 w-3.5" />
+                )}
               </button>
             </div>
           </div>
@@ -152,7 +170,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <main className={cn("min-h-screen transition-all duration-300", isDense ? "pt-0" : "pt-12")}>{children}</main>
+      <main
+        className={cn(
+          "min-h-screen transition-all duration-300",
+          isDense ? "pt-0" : "pt-12",
+        )}
+      >
+        {children}
+      </main>
     </div>
-  )
+  );
 }
