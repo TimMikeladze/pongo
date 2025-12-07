@@ -1,7 +1,7 @@
-import marketingWebsite from "./example";
-import productionApi from "./github";
+import example from "./example";
+import github from "./github";
 
 export const monitors = {
-  "production-api": productionApi,
-  "marketing-website": marketingWebsite,
+  example,
+  github,
 };
