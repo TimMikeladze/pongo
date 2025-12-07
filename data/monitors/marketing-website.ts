@@ -10,7 +10,7 @@ export default {
     const start = Date.now();
 
     try {
-      const res = await fetch("https://www.example.com");
+      const res = await fetch("https://example.com");
       const responseTime = Date.now() - start;
 
       if (!res.ok) {

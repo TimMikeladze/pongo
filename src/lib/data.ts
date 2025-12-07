@@ -1,20 +1,22 @@
 // src/lib/data.ts
+
+import { desc, eq } from "drizzle-orm";
 import { cache } from "react";
+import { getDbAsync, getDbDriver, sqliteSchema, pgSchema } from "@/db";
 import {
-  loadMonitors,
-  loadDashboards,
   loadAnnouncements,
+  loadDashboards,
   loadIncidents,
-  generateMockCheckResults,
+  loadMonitors,
 } from "./loader";
 import type {
-  Monitor,
-  Dashboard,
   Announcement,
-  Incident,
   CheckResult,
-  MonitorStatus,
+  Dashboard,
+  Incident,
   MaintenanceWindow,
+  Monitor,
+  MonitorStatus,
 } from "./types";
 
 // Cache data loading per request
@@ -72,17 +74,41 @@ export const getActiveIncidents = cache(
   },
 );
 
-// Mock check results - cached per monitor
-const checkResultsCache = new Map<string, CheckResult[]>();
-
+// Get check results from database
 export const getCheckResults = cache(
   async (monitorId: string, limit?: number): Promise<CheckResult[]> => {
-    if (!checkResultsCache.has(monitorId)) {
-      checkResultsCache.set(monitorId, generateMockCheckResults(monitorId));
+    const db = await getDbAsync();
+    const driver = getDbDriver();
+    const checkResults =
+      driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
+
+    // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union issue
+    let query = (db as any)
+      .select()
+      .from(checkResults)
+      .where(eq(checkResults.monitorId, monitorId))
+      .orderBy(desc(checkResults.checkedAt));
+
+    if (limit) {
+      query = query.limit(limit);
     }
 
-    const results = checkResultsCache.get(monitorId)!;
-    return limit ? results.slice(0, limit) : results;
+    const dbResults = await query;
+
+    // Map database results to CheckResult type
+    // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union issue
+    return dbResults.map((r: any) => ({
+      id: r.id,
+      monitorId: r.monitorId,
+      status: r.status as MonitorStatus,
+      responseTimeMs: r.responseTimeMs,
+      statusCode: r.statusCode,
+      errorMessage: r.message,
+      checkedAt:
+        r.checkedAt instanceof Date
+          ? r.checkedAt.toISOString()
+          : new Date(r.checkedAt).toISOString(),
+    }));
   },
 );
 
@@ -280,13 +306,13 @@ export async function getSLAStatus(dashboardId: string, days = 30) {
 
 // Maintenance windows - empty for now (to be added with orchestration)
 export async function getMaintenanceWindows(
-  dashboardId?: string,
+  _dashboardId?: string,
 ): Promise<MaintenanceWindow[]> {
   return [];
 }
 
 export async function getUpcomingMaintenance(
-  dashboardId?: string,
+  _dashboardId?: string,
 ): Promise<MaintenanceWindow[]> {
   return [];
 }

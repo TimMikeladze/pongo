@@ -16,6 +16,7 @@ import {
   getMonitorStats,
 } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { TriggerButton } from "@/components/trigger-button";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -64,11 +65,14 @@ export default async function MonitorDetailPage({ params }: Props) {
             handler-based monitor
           </p>
         </div>
-        <p className="text-[10px] text-muted-foreground">
-          <code className="bg-secondary px-1 rounded">
-            data/monitors/{id}.js
-          </code>
-        </p>
+        <div className="flex items-center gap-3">
+          <TriggerButton monitorId={id} />
+          <p className="text-[10px] text-muted-foreground">
+            <code className="bg-secondary px-1 rounded">
+              data/monitors/{id}.ts
+            </code>
+          </p>
+        </div>
       </div>
 
       <div className="space-y-6">

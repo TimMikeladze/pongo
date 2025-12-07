@@ -1,7 +1,7 @@
 import type { MonitorConfig } from "../../src/lib/config-types";
 
 export default {
-  name: "Production API",
+  name: "GitHub Status",
   interval: "1m",
   timeout: "30s",
   active: true,
@@ -10,7 +10,7 @@ export default {
     const start = Date.now();
 
     try {
-      const res = await fetch("https://api.example.com/health");
+      const res = await fetch("https://github.com/status");
       const responseTime = Date.now() - start;
 
       if (!res.ok) {
