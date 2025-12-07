@@ -62,9 +62,6 @@ export default async function MonitorDetailPage({ params }: Props) {
               </span>
             )}
           </div>
-          <p className="text-[10px] text-muted-foreground mt-1 font-mono">
-            handler-based monitor
-          </p>
         </div>
         <TriggerButton monitorId={id} />
       </div>
