@@ -5,6 +5,21 @@ export default monitor({
   interval: "30m",
   timeout: "30s",
 
+  alerts: [
+    {
+      id: "github-down",
+      name: "GitHub is down",
+      condition: { consecutiveFailures: 3 },
+      channels: [],
+    },
+    {
+      id: "github-slow",
+      name: "GitHub is slow",
+      condition: { latencyAboveMs: 2000, forChecks: 2 },
+      channels: [],
+    },
+  ],
+
   async handler() {
     const start = Date.now();
 
