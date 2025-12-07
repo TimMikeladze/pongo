@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ResponseTimeChart } from "@/components/response-time-chart";
+import { ErrorRateChart } from "@/components/error-rate-chart";
 import { StatsCard } from "@/components/stats-card";
 import { StatusBadge } from "@/components/status-badge";
 import { StatusTimeline } from "@/components/status-timeline";
@@ -121,12 +122,20 @@ export default async function MonitorDetailPage({ params }: Props) {
           />
         </div>
 
-        {/* Response time chart */}
-        <div className="border border-border rounded bg-card p-4">
-          <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground mb-4">
-            response time
-          </h3>
-          <ResponseTimeChart results={results} height={160} />
+        {/* Response time and error rate charts */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="border border-border rounded bg-card p-4">
+            <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground mb-4">
+              response time
+            </h3>
+            <ResponseTimeChart results={results} height={140} />
+          </div>
+          <div className="border border-border rounded bg-card p-4">
+            <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground mb-4">
+              error rate
+            </h3>
+            <ErrorRateChart results={results} height={140} />
+          </div>
         </div>
 
         {/* Recent status timeline */}
