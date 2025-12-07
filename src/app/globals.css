@@ -133,6 +133,9 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    font-size: 15px;
+  }
   body {
     @apply bg-background text-foreground;
   }

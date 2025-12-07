@@ -47,6 +47,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { GridPattern } from "@/components/ui/grid-pattern";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -79,9 +80,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       const target = e.target as HTMLElement;
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
 
-      if (e.key === "z" && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        toggleDensity();
-      }
       if (e.key === "Escape" && density === "dense") {
         toggleDensity();
       }
@@ -99,10 +97,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isDense = mounted && density === "dense";
 
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden">
+    <div className="h-screen bg-background flex flex-col overflow-hidden relative">
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <GridPattern
+          width={30}
+          height={30}
+          x={-1}
+          y={-1}
+          strokeDasharray="4 2"
+          className="h-full w-full [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,white,transparent)]"
+        />
+      </div>
       <header
         className={cn(
-          "shrink-0 border-b border-border bg-background transition-all duration-300",
+          "shrink-0 border-b border-border bg-background transition-all duration-300 relative z-10",
           isDense ? "h-0 opacity-0 overflow-hidden" : "h-12",
         )}
       >
@@ -112,17 +120,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             !fullWidth && "max-w-6xl",
           )}
         >
-          <Link href="/" className="flex items-center gap-2 text-primary">
-            <PawPrint className="h-4 w-4" />
-            <span className="text-sm tracking-wider">pongo</span>
-          </Link>
+          <div className="flex items-center">
+            <Link href="/" className="flex items-center gap-2 text-primary">
+              <PawPrint className="h-4 w-4" />
+              <span className="text-sm tracking-wider">pongo</span>
+            </Link>
 
-          <nav
-            className={cn(
-              "flex items-center gap-1",
-              !fullWidth && "absolute left-1/2 -translate-x-1/2",
-            )}
-          >
+            <nav className="flex items-center gap-1 ml-8">
             {navigation.map((item) => {
               const isActive =
                 item.href === "/"
@@ -145,7 +149,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
-          </nav>
+            </nav>
+          </div>
 
           <div className="flex items-center gap-2">
             <button
@@ -332,7 +337,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button
                 onClick={toggleDensity}
                 className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                title="Exit zen mode (z)"
+                title="Exit zen mode (Esc)"
               >
                 <Minimize2 className="h-3.5 w-3.5" />
               </button>
@@ -477,12 +482,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               showZenControls ? "opacity-100" : "opacity-0",
             )}
           >
-            z to exit
+            esc to exit
           </div>
         </div>
       )}
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto relative z-10">
         <div className={cn("mx-auto px-6 py-6", !fullWidth && "max-w-6xl")}>
           {children}
         </div>
