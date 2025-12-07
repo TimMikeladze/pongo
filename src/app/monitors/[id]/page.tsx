@@ -8,6 +8,7 @@ import { ResponseTimeChart } from "@/components/response-time-chart";
 import { StatsCard } from "@/components/stats-card";
 import { StatusBadge } from "@/components/status-badge";
 import { StatusTimeline } from "@/components/status-timeline";
+import { UptimeBars } from "@/components/uptime-bars";
 import { Button } from "@/components/ui/button";
 import {
   getCheckResults,
@@ -120,6 +121,17 @@ export default async function MonitorDetailPage({ params }: Props) {
           />
         </div>
 
+        {/* 90-day uptime bars */}
+        <div className="border border-border rounded bg-card p-4">
+          <UptimeBars
+            monitorId={id}
+            monitorName={monitor.name}
+            days={90}
+            showLabels={true}
+          />
+        </div>
+
+        {/* Response time chart */}
         <div className="border border-border rounded bg-card p-4">
           <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground mb-4">
             response time
@@ -127,10 +139,10 @@ export default async function MonitorDetailPage({ params }: Props) {
           <ResponseTimeChart results={results} height={160} />
         </div>
 
-        {/* Timeline */}
+        {/* Recent status timeline */}
         <div className="border border-border rounded bg-card p-4">
           <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground mb-4">
-            status history
+            recent checks
           </h3>
           <StatusTimeline results={results} limit={50} />
         </div>

@@ -4,6 +4,7 @@ import { IncidentsTimeline } from "@/components/incidents-timeline";
 import { MaintenanceSchedule } from "@/components/maintenance-schedule";
 import { SLAStatus } from "@/components/sla-status";
 import { UptimeBars } from "@/components/uptime-bars";
+import { MonitorResponseChart } from "@/components/monitor-response-chart";
 import {
   getDashboard,
   getMonitors,
@@ -135,6 +136,26 @@ export async function DashboardView({
           </div>
         )}
       </div>
+
+      {/* Response time charts */}
+      {monitors.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            response times
+          </h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            {monitors.map((monitor) => (
+              <div
+                key={monitor.id}
+                className="rounded-lg border border-border bg-card p-4"
+              >
+                <p className="text-xs font-mono mb-3">{monitor.name}</p>
+                <MonitorResponseChart monitorId={monitor.id} height={100} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Incident History */}
       {!isPublic && (

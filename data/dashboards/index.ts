@@ -1,7 +1,5 @@
-// Auto-import all dashboards
-// Add new dashboards here
-import productionStatus from "./production-status";
+import demo from "./demo";
 
 export const dashboards = {
-  "production-status": productionStatus,
+  demo,
 };
