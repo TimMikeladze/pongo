@@ -1,24 +1,23 @@
-"use client"
-
-import { useParams } from "next/navigation"
 import { notFound } from "next/navigation"
 import { Activity, Clock } from "lucide-react"
 import { DashboardView } from "@/components/dashboard-view"
-import { SubscribeForm } from "@/components/subscribe-form"
 import { IncidentsTimeline } from "@/components/incidents-timeline"
-import { useDashboardBySlug, useActiveIncidents } from "@/lib/hooks"
+import { getDashboardBySlug, getActiveIncidents } from "@/lib/data"
 import { format } from "date-fns"
 
-export default function PublicDashboardPage() {
-  const params = useParams()
-  const slug = params.slug as string
-  const dashboard = useDashboardBySlug(slug)
-  const activeIncidents = useActiveIncidents(dashboard?.id)
+interface Props {
+  params: Promise<{ slug: string }>
+}
+
+export default async function PublicDashboardPage({ params }: Props) {
+  const { slug } = await params
+  const dashboard = await getDashboardBySlug(slug)
 
   if (!dashboard || !dashboard.isPublic) {
     notFound()
   }
 
+  const activeIncidents = await getActiveIncidents(dashboard.id)
   const hasIssues = activeIncidents.length > 0
 
   return (
@@ -46,18 +45,12 @@ export default function PublicDashboardPage() {
 
       {/* Content - Wider container for 90-day bars */}
       <main className="max-w-4xl mx-auto px-6 py-8">
-        <DashboardView dashboard={dashboard} isPublic />
+        <DashboardView dashboardId={dashboard.id} isPublic />
 
         {/* Past Incidents Section */}
         <div className="mt-8 space-y-3">
           <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">past incidents</h3>
           <IncidentsTimeline dashboardId={dashboard.id} limit={10} />
-        </div>
-
-        {/* Subscribe Section */}
-        <div className="mt-8 p-6 rounded-lg border border-border bg-card">
-          <h3 className="text-xs font-medium mb-3 font-mono">get notified of updates</h3>
-          <SubscribeForm dashboardId={dashboard.id} />
         </div>
       </main>
 
