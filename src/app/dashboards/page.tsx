@@ -39,10 +39,6 @@ export default async function DashboardsPage() {
             </p>
           </div>
         </div>
-        <p className="text-[10px] text-muted-foreground">
-          defined in{" "}
-          <code className="bg-secondary px-1 rounded">data/dashboards/</code>
-        </p>
       </div>
 
       {/* Dashboards List */}
@@ -51,10 +47,6 @@ export default async function DashboardsPage() {
           <LayoutDashboard className="h-6 w-6 text-muted-foreground mb-3" />
           <p className="text-xs text-muted-foreground mb-2">
             no dashboards configured
-          </p>
-          <p className="text-[10px] text-muted-foreground/70">
-            add .ts files to{" "}
-            <code className="bg-secondary px-1 rounded">data/dashboards/</code>
           </p>
         </div>
       ) : (

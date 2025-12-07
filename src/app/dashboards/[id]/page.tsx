@@ -49,11 +49,6 @@ export default async function DashboardDetailPage({ params }: Props) {
               </Link>
             </Button>
           )}
-          <span className="text-[10px] text-muted-foreground">
-            <code className="bg-secondary px-1 rounded">
-              data/dashboards/{id}.ts
-            </code>
-          </span>
         </div>
       </div>
 

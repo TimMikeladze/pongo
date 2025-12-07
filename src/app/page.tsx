@@ -175,10 +175,6 @@ export default async function OverviewPage() {
             </p>
           </div>
         </div>
-        <p className="text-[10px] text-muted-foreground">
-          defined in{" "}
-          <code className="bg-secondary px-1 rounded">data/monitors/</code>
-        </p>
       </div>
 
       {/* Primary KPIs */}
@@ -319,10 +315,6 @@ export default async function OverviewPage() {
             <Terminal className="h-6 w-6 text-muted-foreground mb-3" />
             <p className="text-xs text-muted-foreground mb-4">
               no monitors configured
-            </p>
-            <p className="text-[10px] text-muted-foreground/70 mb-4">
-              add .ts files to{" "}
-              <code className="bg-secondary px-1 rounded">data/monitors/</code>
             </p>
           </div>
         ) : (

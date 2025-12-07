@@ -31,9 +31,6 @@ export default async function AnnouncementsPage({ params }: Props) {
             {dashboard.name}
           </p>
         </div>
-        <span className="text-[10px] text-muted-foreground">
-          <code className="bg-secondary px-1 rounded">data/announcements/</code>
-        </span>
       </div>
 
       <AnnouncementsList dashboardId={dashboard.id} />

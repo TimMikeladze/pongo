@@ -66,14 +66,7 @@ export default async function MonitorDetailPage({ params }: Props) {
             handler-based monitor
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <TriggerButton monitorId={id} />
-          <p className="text-[10px] text-muted-foreground">
-            <code className="bg-secondary px-1 rounded">
-              data/monitors/{id}.ts
-            </code>
-          </p>
-        </div>
+        <TriggerButton monitorId={id} />
       </div>
 
       <div className="space-y-6">

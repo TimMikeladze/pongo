@@ -21,10 +21,6 @@ export default async function MonitorsPage() {
             </p>
           </div>
         </div>
-        <p className="text-[10px] text-muted-foreground">
-          defined in{" "}
-          <code className="bg-secondary px-1 rounded">data/monitors/</code>
-        </p>
       </div>
 
       {/* Monitors List */}
@@ -35,10 +31,6 @@ export default async function MonitorsPage() {
           </div>
           <p className="text-xs text-muted-foreground mb-1">
             no monitors configured
-          </p>
-          <p className="text-[10px] text-muted-foreground/70">
-            add .ts files to{" "}
-            <code className="bg-secondary px-1 rounded">data/monitors/</code>
           </p>
         </div>
       ) : (

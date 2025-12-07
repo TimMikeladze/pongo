@@ -32,9 +32,6 @@ export default async function IncidentsPage({ params }: Props) {
             {dashboard.name}
           </p>
         </div>
-        <span className="text-[10px] text-muted-foreground">
-          <code className="bg-secondary px-1 rounded">data/incidents/</code>
-        </span>
       </div>
 
       <div className="space-y-8">
