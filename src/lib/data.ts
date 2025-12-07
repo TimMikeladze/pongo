@@ -56,7 +56,8 @@ export const getAnnouncements = cache(
 
     return all
       .filter((a) => !dashboardId || a.dashboardId === dashboardId)
-      .filter((a) => !a.expiresAt || new Date(a.expiresAt).getTime() > now);
+      .filter((a) => !a.expiresAt || new Date(a.expiresAt).getTime() > now)
+      .filter((a) => !a.archived);
   },
 );
 

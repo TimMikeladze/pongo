@@ -50,6 +50,7 @@ export interface AnnouncementFrontmatter {
   title: string;
   type: "info" | "warning" | "success" | "maintenance";
   expiresAt?: string; // ISO date
+  archived?: boolean; // if true, not shown on dashboard
 }
 
 /**

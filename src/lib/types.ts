@@ -58,6 +58,7 @@ export interface Announcement {
   type: "info" | "warning" | "success" | "maintenance";
   createdAt: string;
   expiresAt?: string;
+  archived?: boolean;
 }
 
 export interface IncidentUpdate {

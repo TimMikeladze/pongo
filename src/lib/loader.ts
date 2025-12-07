@@ -88,6 +88,7 @@ export async function loadAnnouncements(): Promise<Announcement[]> {
         type: frontmatter.type,
         createdAt: stats.birthtime.toISOString(),
         expiresAt: frontmatter.expiresAt,
+        archived: frontmatter.archived,
       });
     } catch (error) {
       console.error(`Failed to load announcement ${file}:`, error);
