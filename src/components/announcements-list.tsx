@@ -1,10 +1,6 @@
-"use client"
-
 import { formatDistanceToNow } from "date-fns"
-import { Info, AlertTriangle, CheckCircle, Wrench, X } from "lucide-react"
-import { useAnnouncements } from "@/lib/hooks"
-import { store } from "@/lib/store"
-import { Button } from "@/components/ui/button"
+import { Info, AlertTriangle, CheckCircle, Wrench } from "lucide-react"
+import { getAnnouncements } from "@/lib/data"
 
 const typeIcons = {
   info: Info,
@@ -22,12 +18,11 @@ const typeStyles = {
 
 interface AnnouncementsListProps {
   dashboardId?: string
-  showDelete?: boolean
   limit?: number
 }
 
-export function AnnouncementsList({ dashboardId, showDelete = false, limit }: AnnouncementsListProps) {
-  const announcements = useAnnouncements(dashboardId)
+export async function AnnouncementsList({ dashboardId, limit }: AnnouncementsListProps) {
+  const announcements = await getAnnouncements(dashboardId)
   const displayAnnouncements = limit ? announcements.slice(0, limit) : announcements
 
   if (displayAnnouncements.length === 0) {
@@ -51,18 +46,11 @@ export function AnnouncementsList({ dashboardId, showDelete = false, limit }: An
                   {formatDistanceToNow(new Date(announcement.createdAt), { addSuffix: true })}
                 </span>
               </div>
-              <p className="text-[11px] opacity-80 mt-1">{announcement.message}</p>
+              <div
+                className="text-[11px] opacity-80 mt-1 prose prose-sm prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: announcement.message }}
+              />
             </div>
-            {showDelete && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 opacity-50 hover:opacity-100"
-                onClick={() => store.deleteAnnouncement(announcement.id)}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            )}
           </div>
         )
       })}
