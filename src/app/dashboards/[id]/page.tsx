@@ -20,9 +20,9 @@ export default async function DashboardDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="p-8">
+    <div>
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-4 mb-8 pt-4">
         <Button variant="ghost" size="icon" asChild className="h-8 w-8">
           <Link href="/dashboards">
             <ArrowLeft className="h-4 w-4" />

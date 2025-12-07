@@ -41,7 +41,7 @@ export async function MonitorCard({ monitor }: MonitorCardProps) {
               {monitor.name}
             </Link>
             <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
-              {monitor.id}.js
+              {monitor.id}.ts
             </p>
           </div>
         </div>
