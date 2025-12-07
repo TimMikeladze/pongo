@@ -108,6 +108,48 @@ export async function getMonitorStats(monitorId: string, hours = 24) {
   return { uptime, avgResponseTime }
 }
 
+export async function getErrorRate(monitorId: string, hours = 24): Promise<number> {
+  const since = Date.now() - hours * 60 * 60 * 1000
+  const results = await getCheckResults(monitorId)
+  const filtered = results.filter((c) => new Date(c.checkedAt).getTime() >= since)
+
+  if (filtered.length === 0) return 0
+  const errorCount = filtered.filter((r) => r.status === "down").length
+  return Math.round((errorCount / filtered.length) * 10000) / 100
+}
+
+export async function getP95ResponseTime(monitorId: string, hours = 24): Promise<number> {
+  const since = Date.now() - hours * 60 * 60 * 1000
+  const results = await getCheckResults(monitorId)
+  const responseTimes = results
+    .filter((c) => new Date(c.checkedAt).getTime() >= since && c.status !== "down")
+    .map((r) => r.responseTimeMs)
+    .sort((a, b) => a - b)
+
+  if (responseTimes.length === 0) return 0
+  const index = Math.floor(responseTimes.length * 0.95)
+  return responseTimes[index] || responseTimes[responseTimes.length - 1]
+}
+
+export async function getP99ResponseTime(monitorId: string, hours = 24): Promise<number> {
+  const since = Date.now() - hours * 60 * 60 * 1000
+  const results = await getCheckResults(monitorId)
+  const responseTimes = results
+    .filter((c) => new Date(c.checkedAt).getTime() >= since && c.status !== "down")
+    .map((r) => r.responseTimeMs)
+    .sort((a, b) => a - b)
+
+  if (responseTimes.length === 0) return 0
+  const index = Math.floor(responseTimes.length * 0.99)
+  return responseTimes[index] || responseTimes[responseTimes.length - 1]
+}
+
+export async function getTotalChecks(monitorId: string, hours = 24): Promise<number> {
+  const since = Date.now() - hours * 60 * 60 * 1000
+  const results = await getCheckResults(monitorId)
+  return results.filter((c) => new Date(c.checkedAt).getTime() >= since).length
+}
+
 export async function getDailyStatus(
   monitorId: string,
   days = 90
