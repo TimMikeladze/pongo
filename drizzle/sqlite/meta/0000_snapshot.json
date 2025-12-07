@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "5343c749-a212-4fcb-8d6b-0154e88140c9",
+  "id": "1cdf2b72-d4db-48f3-ad5c-87f5ede63287",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "pongo_check_results": {
@@ -61,6 +61,13 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "archived_at": {
+          "name": "archived_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         }
       },

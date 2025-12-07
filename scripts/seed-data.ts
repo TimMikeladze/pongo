@@ -144,7 +144,7 @@ function shouldBeDown(date: Date, monitorId: string): boolean {
 async function main() {
   console.log("Connecting to database...");
 
-  const client = createClient({ url: "file:./data/pongo.db" });
+  const client = createClient({ url: "file:./pongo/pongo.db" });
   const db = drizzle(client, { schema });
 
   const now = Date.now();

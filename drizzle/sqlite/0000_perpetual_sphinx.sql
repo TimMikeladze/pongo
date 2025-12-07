@@ -6,5 +6,6 @@ CREATE TABLE `pongo_check_results` (
 	`status_code` integer,
 	`message` text,
 	`checked_at` integer NOT NULL,
-	`created_at` integer NOT NULL
+	`created_at` integer NOT NULL,
+	`archived_at` integer
 );

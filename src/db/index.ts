@@ -48,7 +48,7 @@ async function initDatabase(): Promise<Database> {
     const { createClient } = await import("@libsql/client");
     const { drizzle } = await import("drizzle-orm/libsql");
 
-    const databasePath = process.env.DATABASE_URL ?? "file:./data/pongo.db";
+    const databasePath = process.env.DATABASE_URL ?? "file:./pongo/pongo.db";
     const client = createClient({ url: databasePath });
 
     _db = drizzle(client, { schema: sqliteSchema });

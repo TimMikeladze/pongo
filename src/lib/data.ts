@@ -240,25 +240,32 @@ export async function getStatusBuckets(
   const fromMs = timeRange.from.getTime();
   const toMs = timeRange.to.getTime();
 
-  // Create buckets
+  // Calculate number of buckets based on time range and interval
+  const bucketCount = Math.ceil((toMs - fromMs) / intervalMs);
+
+  // Create buckets spanning the full time range
   const buckets: Map<number, CheckResult[]> = new Map();
   const bucketTimestamps: number[] = [];
 
-  for (let t = fromMs; t <= toMs; t += intervalMs) {
-    const bucketStart = Math.floor(t / intervalMs) * intervalMs;
-    if (!buckets.has(bucketStart)) {
-      buckets.set(bucketStart, []);
-      bucketTimestamps.push(bucketStart);
-    }
+  for (let i = 0; i < bucketCount; i++) {
+    const bucketStart = fromMs + i * intervalMs;
+    buckets.set(bucketStart, []);
+    bucketTimestamps.push(bucketStart);
   }
 
-  // Assign results to buckets
+  // Assign results to buckets based on which bucket they fall into
   for (const r of results) {
     const checkTime = new Date(r.checkedAt).getTime();
-    const bucketStart = Math.floor(checkTime / intervalMs) * intervalMs;
-    const bucket = buckets.get(bucketStart);
-    if (bucket) {
-      bucket.push(r);
+    const bucketIndex = Math.min(
+      Math.floor((checkTime - fromMs) / intervalMs),
+      bucketCount - 1,
+    );
+    if (bucketIndex >= 0) {
+      const bucketStart = bucketTimestamps[bucketIndex];
+      const bucket = buckets.get(bucketStart);
+      if (bucket) {
+        bucket.push(r);
+      }
     }
   }
 

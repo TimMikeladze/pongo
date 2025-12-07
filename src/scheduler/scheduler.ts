@@ -1,7 +1,7 @@
 // src/scheduler/scheduler.ts
 import { Cron } from "croner";
 import pLimit from "p-limit";
-import monitorConfigs from "@data/monitors";
+import monitorConfigs from "@pongo/monitors";
 import { parseDuration, type MonitorConfig } from "@/lib/config-types";
 import type { ScheduledMonitor, SchedulerConfig, MonitorState } from "./types";
 import { runMonitor } from "./runner";

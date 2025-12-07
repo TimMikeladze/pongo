@@ -3,8 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { marked } from "marked";
-import monitorConfigs from "@data/monitors";
-import dashboardConfigs from "@data/dashboards";
+import monitorConfigs from "@pongo/monitors";
+import dashboardConfigs from "@pongo/dashboards";
 import type {
   AnnouncementFrontmatter,
   IncidentFrontmatter,
@@ -20,7 +20,7 @@ import type {
   MonitorStatus,
 } from "./types";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const DATA_DIR = path.join(process.cwd(), "pongo");
 
 /**
  * Load all monitor definitions from data/monitors/index.ts
