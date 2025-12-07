@@ -137,10 +137,10 @@ export default async function OverviewPage() {
           <div className="border border-border rounded bg-card p-4">
             <p className="text-xs text-muted-foreground leading-relaxed mb-3">
               pongo is an open source uptime monitoring solution designed for
-              developers who prefer configuration as code. define your monitors as
-              simple typescript files, commit them to your repository, and deploy
-              anywhere that runs node. no complex setup wizards, no vendor lock-in
-              — just code.
+              developers who prefer configuration as code. define your monitors
+              as simple typescript files, commit them to your repository, and
+              deploy anywhere that runs node. no complex setup wizards, no
+              vendor lock-in — just code.
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed mb-3">
               track response times, uptime percentages, error rates, and latency
@@ -150,15 +150,15 @@ export default async function OverviewPage() {
               webhooks when services degrade or go down.
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-              no database required — pongo reads monitor definitions directly from
-              your filesystem. results are stored locally in sqlite, making it
-              lightweight, portable, and easy to backup. deploy on vercel,
+              no database required — pongo reads monitor definitions directly
+              from your filesystem. results are stored locally in sqlite, making
+              it lightweight, portable, and easy to backup. deploy on vercel,
               railway, docker, or any platform that supports node.js.
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              built with next.js, typescript, and tailwind css. fully customizable
-              and extensible. check out the live demo below to see pongo in
-              action.
+              built with next.js, typescript, and tailwind css. fully
+              customizable and extensible. check out the live demo below to see
+              pongo in action.
             </p>
           </div>
         </div>

@@ -3,7 +3,7 @@
 import { getSession, verifyAccessCode } from "@/lib/auth";
 
 export async function login(
-  code: string
+  code: string,
 ): Promise<{ success: boolean; error?: string }> {
   if (!verifyAccessCode(code)) {
     return { success: false, error: "Invalid access code" };

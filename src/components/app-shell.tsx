@@ -128,28 +128,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
 
             <nav className="flex items-center gap-1 ml-8">
-            {navigation.map((item) => {
-              const isActive =
-                item.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(item.href);
+              {navigation.map((item) => {
+                const isActive =
+                  item.href === "/"
+                    ? pathname === "/"
+                    : pathname.startsWith(item.href);
 
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-1.5 text-xs transition-colors rounded",
-                    isActive
-                      ? "text-primary bg-accent"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary",
-                  )}
-                >
-                  <item.icon className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">{item.name}</span>
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-1.5 text-xs transition-colors rounded",
+                      isActive
+                        ? "text-primary bg-accent"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary",
+                    )}
+                  >
+                    <item.icon className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">{item.name}</span>
+                  </Link>
+                );
+              })}
             </nav>
           </div>
 

@@ -46,7 +46,7 @@ export async function proxy(request: NextRequest) {
   const session = await getIronSession<SessionData>(
     request,
     response,
-    getSessionOptions()
+    getSessionOptions(),
   );
 
   if (!session.isAuthenticated) {
