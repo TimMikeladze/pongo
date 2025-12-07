@@ -1,43 +1,60 @@
 import { Bell } from "lucide-react";
+import { Suspense } from "react";
+import { AlertBanner } from "@/components/alert-banner";
+import { AlertViewToggle } from "@/components/alert-view-toggle";
+import { AlertsContent } from "@/components/alerts-content";
+import { TimeRangePicker } from "@/components/time-range-picker";
+import { getAlertEvents, getFiringAlerts } from "@/lib/data";
+import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 
-export default function NotificationsPage() {
+interface PageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function NotificationsPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const { preset, from, to } = timeRangeCache.parse(params);
+  const timeRange = getTimeRange({ preset, from, to });
+
+  const [firingAlerts, events] = await Promise.all([
+    getFiringAlerts(),
+    getAlertEvents(timeRange),
+  ]);
+
   return (
     <div>
+      {/* Firing alerts banner */}
+      <AlertBanner firingAlerts={firingAlerts} />
+
       {/* Header */}
-      <div className="flex items-center justify-between mb-8 pt-4">
+      <div className="flex items-center justify-between mb-6 pt-4">
         <div className="flex items-center gap-3">
           <Bell className="h-4 w-4 text-primary" />
           <div>
             <h1 className="text-sm">alerts</h1>
             <p className="text-[10px] text-muted-foreground mt-0.5">
-              notification channels
+              alert history
             </p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          <Suspense>
+            <AlertViewToggle />
+          </Suspense>
+          <TimeRangePicker />
+        </div>
       </div>
 
-      {/* Info */}
-      <div className="border border-dashed border-border rounded bg-card p-4 mb-6">
-        <p className="text-[10px] text-muted-foreground leading-relaxed">
-          notification channels define how you receive alerts when monitors
-          detect issues. configure email, sms, webhooks, or slack integrations.
-        </p>
-        <p className="text-[10px] text-muted-foreground mt-2">
-          <span className="text-primary">note:</span> notification configuration
-          not yet implemented. this feature will be added in a future update.
-        </p>
-      </div>
-
-      {/* Empty State */}
-      <div className="flex flex-col items-center justify-center py-16 border border-dashed border-border rounded">
-        <Bell className="h-6 w-6 text-muted-foreground mb-3" />
-        <p className="text-xs text-muted-foreground mb-1">
-          no channels configured
-        </p>
-        <p className="text-[10px] text-muted-foreground">
-          notification management coming soon
-        </p>
-      </div>
+      {/* Content */}
+      <Suspense
+        fallback={
+          <div className="text-center py-8 text-sm text-muted-foreground">
+            Loading alerts...
+          </div>
+        }
+      >
+        <AlertsContent events={events} />
+      </Suspense>
     </div>
   );
 }
