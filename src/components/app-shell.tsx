@@ -89,8 +89,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [toggleDensity, density]);
 
   const isPublicPage = pathname.startsWith("/public/");
+  const isLoginPage = pathname === "/login";
 
-  if (isPublicPage) {
+  if (isPublicPage || isLoginPage) {
     return <>{children}</>;
   }
 

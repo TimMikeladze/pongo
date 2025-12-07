@@ -27,11 +27,12 @@ export async function MonitorCard({ monitor }: MonitorCardProps) {
     <div className="group border border-border rounded bg-card hover:border-primary/30 transition-colors p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2 flex-1 min-w-0">
-          <StatusBadge
-            status={monitor.isActive ? status : "pending"}
-            size="lg"
-            pulse={status === "up"}
-          />
+          <div className="mt-1">
+            <StatusBadge
+              status={monitor.isActive ? status : "pending"}
+              size="lg"
+            />
+          </div>
           <div className="flex-1 min-w-0">
             <Link
               href={`/monitors/${monitor.id}`}

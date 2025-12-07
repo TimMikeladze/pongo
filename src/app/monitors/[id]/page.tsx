@@ -52,7 +52,6 @@ export default async function MonitorDetailPage({ params }: Props) {
             <StatusBadge
               status={monitor.isActive ? status : "pending"}
               size="lg"
-              pulse={status === "up"}
             />
             <h1 className="text-sm">{monitor.name}</h1>
             {!monitor.isActive && (

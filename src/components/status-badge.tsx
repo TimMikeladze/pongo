@@ -5,18 +5,13 @@ interface StatusBadgeProps {
   status: MonitorStatus;
   size?: "sm" | "md" | "lg";
   showLabel?: boolean;
-  pulse?: boolean;
 }
 
 const statusConfig = {
-  up: { label: "operational", className: "bg-status-up", glow: "glow-up" },
-  down: { label: "down", className: "bg-status-down", glow: "glow-down" },
-  degraded: {
-    label: "degraded",
-    className: "bg-status-degraded",
-    glow: "glow-degraded",
-  },
-  pending: { label: "pending", className: "bg-status-pending", glow: "" },
+  up: { label: "operational", className: "bg-green-500" },
+  down: { label: "down", className: "bg-red-500" },
+  degraded: { label: "degraded", className: "bg-yellow-500" },
+  pending: { label: "pending", className: "bg-gray-500" },
 };
 
 const sizeConfig = {
@@ -29,20 +24,13 @@ export function StatusBadge({
   status,
   size = "md",
   showLabel = false,
-  pulse = false,
 }: StatusBadgeProps) {
   const config = statusConfig[status];
 
   return (
     <div className="flex items-center gap-2">
       <span
-        className={cn(
-          "rounded-full",
-          sizeConfig[size],
-          config.className,
-          config.glow,
-          pulse && status === "up" && "animate-pulse",
-        )}
+        className={cn("rounded-full", sizeConfig[size], config.className)}
       />
       {showLabel && (
         <span className="text-xs text-muted-foreground lowercase tracking-wide">
