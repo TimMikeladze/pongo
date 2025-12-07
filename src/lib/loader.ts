@@ -8,6 +8,7 @@ import dashboardConfigs from "@pongo/dashboards";
 import type {
   AnnouncementFrontmatter,
   IncidentFrontmatter,
+  ChannelsConfig,
 } from "./config-types";
 import { parseDuration as parseDur } from "./config-types";
 import type {
@@ -230,4 +231,16 @@ export function generateMockCheckResults(
   }
 
   return results;
+}
+
+/**
+ * Load channel configurations from pongo/channels.ts
+ */
+export async function loadChannels(): Promise<ChannelsConfig> {
+  try {
+    const channelsModule = await import("@pongo/channels");
+    return channelsModule.default ?? {};
+  } catch {
+    return {};
+  }
 }
