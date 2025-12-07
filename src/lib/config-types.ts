@@ -66,6 +66,28 @@ export interface IncidentFrontmatter {
 }
 
 /**
+ * Define a monitor with full type inference
+ *
+ * @example
+ * export default monitor({
+ *   name: "API Health",
+ *   interval: "1m",
+ *   async handler() {
+ *     const start = Date.now();
+ *     const res = await fetch("https://api.example.com/health");
+ *     return {
+ *       status: res.ok ? "up" : "down",
+ *       responseTime: Date.now() - start,
+ *       statusCode: res.status,
+ *     };
+ *   },
+ * });
+ */
+export function monitor(config: MonitorConfig): MonitorConfig {
+  return config;
+}
+
+/**
  * Parse human-readable duration to milliseconds
  * Supports: "30s", "5m", "1h", "1d"
  */

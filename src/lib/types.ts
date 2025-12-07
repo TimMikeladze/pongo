@@ -18,6 +18,7 @@ export interface Monitor {
   id: string;
   name: string;
   intervalSeconds: number;
+  cron?: string;
   timeoutMs: number;
   isActive: boolean;
   createdAt: string;

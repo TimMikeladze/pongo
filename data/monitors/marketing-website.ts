@@ -1,10 +1,9 @@
-import type { MonitorConfig } from "../../src/lib/config-types";
+import { monitor } from "../../src/lib/config-types";
 
-export default {
+export default monitor({
   name: "Marketing Website",
   interval: "5m",
   timeout: "30s",
-  active: true,
 
   async handler() {
     const start = Date.now();
@@ -35,4 +34,4 @@ export default {
       };
     }
   },
-} satisfies MonitorConfig;
+});

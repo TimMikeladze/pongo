@@ -30,7 +30,8 @@ export async function loadMonitors(): Promise<Monitor[]> {
   return Object.entries(monitorConfigs).map(([id, config]) => ({
     id,
     name: config.name,
-    intervalSeconds: parseDur(config.interval) / 1000,
+    intervalSeconds: config.interval ? parseDur(config.interval) / 1000 : 0,
+    cron: config.cron,
     timeoutMs: config.timeout ? parseDur(config.timeout) : 30000,
     isActive: config.active ?? true,
     createdAt: new Date().toISOString(),
