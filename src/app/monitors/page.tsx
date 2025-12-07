@@ -1,21 +1,10 @@
-"use client"
-
 import Link from "next/link"
-import { Plus, Search, Terminal, Zap } from "lucide-react"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Terminal, Zap } from "lucide-react"
 import { MonitorCard } from "@/components/monitor-card"
-import { useMonitors } from "@/lib/hooks"
+import { getMonitors, getLatestCheckResult } from "@/lib/data"
 
-export default function MonitorsPage() {
-  const monitors = useMonitors()
-  const [search, setSearch] = useState("")
-
-  const filteredMonitors = monitors.filter(
-    (m) => m.name.toLowerCase().includes(search.toLowerCase()) || m.url.toLowerCase().includes(search.toLowerCase()),
-  )
-
+export default async function MonitorsPage() {
+  const monitors = await getMonitors()
   const activeCount = monitors.filter((m) => m.isActive).length
   const pausedCount = monitors.length - activeCount
 
@@ -32,49 +21,25 @@ export default function MonitorsPage() {
             </p>
           </div>
         </div>
-        <Button asChild size="sm" className="h-7 text-xs">
-          <Link href="/monitors/new">
-            <Plus className="mr-1.5 h-3 w-3" />
-            new monitor
-          </Link>
-        </Button>
-      </div>
-
-      {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-        <Input
-          placeholder="search monitors..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 h-8 text-xs max-w-sm bg-card border-border font-mono"
-        />
+        <p className="text-[10px] text-muted-foreground">
+          defined in <code className="bg-secondary px-1 rounded">data/monitors/</code>
+        </p>
       </div>
 
       {/* Monitors List */}
-      {filteredMonitors.length === 0 ? (
+      {monitors.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 border border-dashed border-border rounded bg-card/50">
           <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
             <Zap className="h-5 w-5 text-primary" />
           </div>
-          <p className="text-xs text-muted-foreground mb-1">
-            {search ? "no monitors found" : "no monitors configured yet"}
+          <p className="text-xs text-muted-foreground mb-1">no monitors configured</p>
+          <p className="text-[10px] text-muted-foreground/70">
+            add .ts files to <code className="bg-secondary px-1 rounded">data/monitors/</code>
           </p>
-          <p className="text-[10px] text-muted-foreground/70 mb-4">
-            {search ? "try a different search term" : "create your first monitor to start tracking uptime"}
-          </p>
-          {!search && (
-            <Button asChild size="sm" className="h-7 text-xs">
-              <Link href="/monitors/new">
-                <Plus className="mr-1.5 h-3 w-3" />
-                create monitor
-              </Link>
-            </Button>
-          )}
         </div>
       ) : (
         <div className="grid gap-3">
-          {filteredMonitors.map((monitor) => (
+          {monitors.map((monitor) => (
             <MonitorCard key={monitor.id} monitor={monitor} />
           ))}
         </div>
