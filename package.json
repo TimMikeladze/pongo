@@ -15,7 +15,8 @@
     "db:sqlite:generate": "drizzle-kit generate --config=drizzle.config.sqlite.ts",
     "db:sqlite:migrate": "drizzle-kit migrate --config=drizzle.config.sqlite.ts",
     "db:sqlite:push": "drizzle-kit push --config=drizzle.config.sqlite.ts",
-    "db:sqlite:studio": "drizzle-kit studio --config=drizzle.config.sqlite.ts"
+    "db:sqlite:studio": "drizzle-kit studio --config=drizzle.config.sqlite.ts",
+    "scheduler": "bun run src/scheduler/index.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
