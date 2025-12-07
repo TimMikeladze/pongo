@@ -1,50 +1,32 @@
 "use server";
 
-import { monitors as monitorConfigs } from "@data/monitors";
-import { parseDuration, type MonitorConfig } from "@/lib/config-types";
-import { runMonitor } from "@/scheduler/runner";
-import { logResult } from "@/scheduler/logger";
-import type { SchedulerConfig } from "@/scheduler/types";
 import { revalidatePath } from "next/cache";
 
-const config: SchedulerConfig = {
-  maxConcurrency: 1,
-  maxRetries: parseInt(process.env.SCHEDULER_MAX_RETRIES ?? "3", 10),
-  retryBaseDelayMs: parseInt(process.env.SCHEDULER_RETRY_DELAY_MS ?? "5000", 10),
-  port: 0,
-};
+const SCHEDULER_URL = process.env.SCHEDULER_URL ?? "http://localhost:3001";
 
 export async function triggerMonitor(monitorId: string) {
-  const rawConfig = monitorConfigs[monitorId as keyof typeof monitorConfigs];
-  if (!rawConfig) {
-    return { success: false, error: "Monitor not found" };
-  }
-
-  const monitorConfig = rawConfig as MonitorConfig;
-  const timeoutMs = monitorConfig.timeout
-    ? parseDuration(monitorConfig.timeout)
-    : 30000;
-
   try {
-    const result = await runMonitor(
-      { id: monitorId, config: monitorConfig, timeoutMs },
-      config,
-    );
+    const res = await fetch(`${SCHEDULER_URL}/monitors/${monitorId}/trigger`, {
+      method: "POST",
+    });
 
-    await logResult(result);
+    if (!res.ok) {
+      const data = await res.json();
+      return { success: false, error: data.error ?? "Failed to trigger monitor" };
+    }
+
+    const data = await res.json();
     revalidatePath(`/monitors/${monitorId}`);
 
     return {
       success: true,
-      status: result.result.status,
-      responseTime: result.result.responseTime,
-      message: result.result.message,
-      attempts: result.attempts,
+      status: data.status,
+      responseTime: data.responseTime,
     };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: error instanceof Error ? error.message : "Scheduler unavailable",
     };
   }
 }
