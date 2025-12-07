@@ -32,7 +32,7 @@ export async function AnnouncementsList({
 
   if (displayAnnouncements.length === 0) {
     return (
-      <div className="text-center py-8 text-[11px] text-muted-foreground">
+      <div className="text-center py-8 text-[11px] text-muted-foreground border border-border rounded-lg">
         No announcements
       </div>
     );

@@ -26,7 +26,7 @@ export async function IncidentsTimeline({
 
   if (displayIncidents.length === 0) {
     return (
-      <div className="text-center py-8 text-[11px] text-muted-foreground">
+      <div className="text-center py-8 text-[11px] text-muted-foreground border border-border rounded-lg">
         No incidents reported
       </div>
     );
