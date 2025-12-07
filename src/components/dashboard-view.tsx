@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { StatsCard } from "@/components/stats-card";
 import { AnnouncementsList } from "@/components/announcements-list";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
@@ -80,7 +81,22 @@ export async function DashboardView({
       )}
 
       {/* Announcements */}
-      <AnnouncementsList dashboardId={dashboardId} limit={3} />
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            announcements
+          </h3>
+          {!isPublic && (
+            <Link
+              href={`/dashboards/${dashboardId}/announcements`}
+              className="text-[10px] text-muted-foreground hover:text-foreground"
+            >
+              view all
+            </Link>
+          )}
+        </div>
+        <AnnouncementsList dashboardId={dashboardId} limit={3} />
+      </div>
 
       {/* Maintenance Schedule */}
       <MaintenanceSchedule dashboardId={dashboardId} />
@@ -160,9 +176,17 @@ export async function DashboardView({
       {/* Incident History */}
       {!isPublic && (
         <div className="space-y-2">
-          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
-            incident history
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              incident history
+            </h3>
+            <Link
+              href={`/dashboards/${dashboardId}/incidents`}
+              className="text-[10px] text-muted-foreground hover:text-foreground"
+            >
+              view all
+            </Link>
+          </div>
           <IncidentsTimeline dashboardId={dashboardId} limit={5} />
         </div>
       )}
