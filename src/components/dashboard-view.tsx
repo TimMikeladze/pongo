@@ -1,38 +1,61 @@
-"use client"
 import { StatsCard } from "@/components/stats-card"
 import { AnnouncementsList } from "@/components/announcements-list"
 import { IncidentsTimeline } from "@/components/incidents-timeline"
 import { MaintenanceSchedule } from "@/components/maintenance-schedule"
 import { SLAStatus } from "@/components/sla-status"
 import { UptimeBars } from "@/components/uptime-bars"
-import { useMonitors, useActiveIncidents } from "@/lib/hooks"
-import type { Dashboard } from "@/lib/types"
-import { store } from "@/lib/store"
+import {
+  getDashboard,
+  getMonitors,
+  getActiveIncidents,
+  getLatestCheckResult,
+  getUptimePercentage,
+  getAverageResponseTime,
+} from "@/lib/data"
 
 interface DashboardViewProps {
-  dashboard: Dashboard
+  dashboardId: string
   isPublic?: boolean
 }
 
-export function DashboardView({ dashboard, isPublic = false }: DashboardViewProps) {
-  const allMonitors = useMonitors()
+export async function DashboardView({ dashboardId, isPublic = false }: DashboardViewProps) {
+  const dashboard = await getDashboard(dashboardId)
+
+  if (!dashboard) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-muted-foreground text-xs">Dashboard not found</p>
+      </div>
+    )
+  }
+
+  const [allMonitors, activeIncidents] = await Promise.all([
+    getMonitors(),
+    getActiveIncidents(dashboardId),
+  ])
+
   const monitors = allMonitors.filter((m) => dashboard.monitorIds.includes(m.id))
-  const activeIncidents = useActiveIncidents(dashboard.id)
 
   // Calculate overall stats
-  const allUp = monitors.every((m) => {
-    const result = store.getLatestCheckResult(m.id)
-    return result?.status === "up"
-  })
+  const latestResults = await Promise.all(
+    monitors.map((m) => getLatestCheckResult(m.id))
+  )
+
+  const allUp = latestResults.every((result) => result?.status === "up")
+
+  const [uptimes, responseTimes] = await Promise.all([
+    Promise.all(monitors.map((m) => getUptimePercentage(m.id, 24))),
+    Promise.all(monitors.map((m) => getAverageResponseTime(m.id, 24))),
+  ])
 
   const overallUptime =
     monitors.length > 0
-      ? monitors.reduce((acc, m) => acc + store.getUptimePercentage(m.id, 24), 0) / monitors.length
+      ? uptimes.reduce((acc, uptime) => acc + uptime, 0) / monitors.length
       : 100
 
   const avgResponseTime =
     monitors.length > 0
-      ? Math.round(monitors.reduce((acc, m) => acc + store.getAverageResponseTime(m.id, 24), 0) / monitors.length)
+      ? Math.round(responseTimes.reduce((acc, time) => acc + time, 0) / monitors.length)
       : 0
 
   return (
@@ -43,15 +66,15 @@ export function DashboardView({ dashboard, isPublic = false }: DashboardViewProp
           <p className="text-xs font-medium text-red-400 mb-2">
             {activeIncidents.length} active incident{activeIncidents.length > 1 ? "s" : ""}
           </p>
-          <IncidentsTimeline dashboardId={dashboard.id} showResolved={false} />
+          <IncidentsTimeline dashboardId={dashboardId} showResolved={false} />
         </div>
       )}
 
       {/* Announcements */}
-      <AnnouncementsList dashboardId={dashboard.id} limit={3} />
+      <AnnouncementsList dashboardId={dashboardId} limit={3} />
 
       {/* Maintenance Schedule */}
-      <MaintenanceSchedule dashboardId={dashboard.id} />
+      <MaintenanceSchedule dashboardId={dashboardId} />
 
       {/* Overall Status */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -62,7 +85,7 @@ export function DashboardView({ dashboard, isPublic = false }: DashboardViewProp
       </div>
 
       {/* SLA Status */}
-      {dashboard.slaTarget && <SLAStatus dashboardId={dashboard.id} />}
+      {dashboard.slaTarget && <SLAStatus dashboardId={dashboardId} />}
 
       <div className="space-y-2">
         <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">system status</h3>
@@ -89,7 +112,7 @@ export function DashboardView({ dashboard, isPublic = false }: DashboardViewProp
       {!isPublic && (
         <div className="space-y-2">
           <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">incident history</h3>
-          <IncidentsTimeline dashboardId={dashboard.id} limit={5} />
+          <IncidentsTimeline dashboardId={dashboardId} limit={5} />
         </div>
       )}
     </div>
