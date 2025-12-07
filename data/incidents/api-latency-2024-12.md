@@ -1,10 +1,11 @@
 ---
-dashboard: production-status
+dashboard: demo
 title: API Latency Issues
 severity: minor
 status: resolved
 affectedMonitors:
-  - production-api
+  - github
+  - example
 resolvedAt: 2024-12-05T14:30:00Z
 ---
 

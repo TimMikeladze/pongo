@@ -1,9 +1,8 @@
 ---
-dashboard: production-status
-title: Scheduled Maintenance Complete
-type: success
+dashboard: demo
+title: Scheduled Maintenance
+type: maintenance
+expiresAt: 2025-12-08T00:00:00Z
 ---
 
-Database migration completed successfully. All systems are now operational.
-
-We've also deployed performance optimizations - response times should be approximately **20% faster**.
+We'll be performing maintenance on the Demo Dashboard on December 8th from 10:00 to 12:00 UTC.
