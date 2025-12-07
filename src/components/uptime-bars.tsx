@@ -19,7 +19,7 @@ const statusColors: Record<MonitorStatus | "pending", string> = {
   up: "bg-blue-500",
   down: "bg-red-500",
   degraded: "bg-amber-500",
-  pending: "bg-muted/30",
+  pending: "bg-muted-foreground/20",
 };
 
 const statusLabels: Record<MonitorStatus | "pending", string> = {
