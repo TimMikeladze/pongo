@@ -10,7 +10,7 @@ interface StatusTimelineProps {
   limit?: number
 }
 
-const statusColors = {
+const statusColors: Record<import("@/lib/types").MonitorStatus, string> = {
   up: "bg-status-up",
   down: "bg-status-down",
   degraded: "bg-status-degraded",
@@ -21,7 +21,7 @@ export function StatusTimeline({ results, limit = 30 }: StatusTimelineProps) {
   const displayResults = results.slice(0, limit).reverse()
 
   // Pad with empty slots if less than limit
-  const paddedResults = [...Array(Math.max(0, limit - displayResults.length)).fill(null), ...displayResults]
+  const paddedResults: (CheckResult | null)[] = [...Array(Math.max(0, limit - displayResults.length)).fill(null), ...displayResults]
 
   return (
     <TooltipProvider>

@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${jetbrainsMono.className} antialiased`}>
-        <ThemeProvider defaultTheme="dark" enableSystem={false} storageKey="uptime-theme" attribute="class">
+        <ThemeProvider defaultTheme="dark" storageKey="uptime-theme">
           <AppShell>{children}</AppShell>
         </ThemeProvider>
       </body>

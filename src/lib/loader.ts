@@ -1,6 +1,7 @@
 // src/lib/loader.ts
 import fs from "node:fs"
 import path from "node:path"
+import { createRequire } from "node:module"
 import matter from "gray-matter"
 import { marked } from "marked"
 import type {
@@ -23,6 +24,9 @@ import type {
 
 const DATA_DIR = path.join(process.cwd(), "data")
 
+// Create a require function to bypass Turbopack's static analysis
+const requireModule = createRequire(import.meta.url || __filename)
+
 /**
  * Load all monitor definitions from data/monitors/*.ts
  */
@@ -33,17 +37,20 @@ export async function loadMonitors(): Promise<Monitor[]> {
     return []
   }
 
-  const files = fs.readdirSync(monitorsDir).filter((f) => f.endsWith(".ts") && !f.startsWith("."))
+  const files = fs.readdirSync(monitorsDir).filter((f) => (f.endsWith(".ts") || f.endsWith(".js")) && !f.startsWith("."))
   const monitors: Monitor[] = []
 
   for (const file of files) {
-    const id = file.replace(/\.ts$/, "")
+    const id = file.replace(/\.(ts|js)$/, "")
     const filePath = path.join(monitorsDir, file)
 
     try {
-      // Dynamic import of TypeScript config
-      const module = await import(filePath)
-      const config: MonitorConfig = module.default
+      // Use createRequire to bypass Turbopack's static analysis
+      // Clear the require cache to ensure fresh loads
+      delete requireModule.cache[requireModule.resolve(filePath)]
+      const module = requireModule(filePath)
+      // Support both CommonJS (module.exports) and ES modules (export default)
+      const config: MonitorConfig = module.default || module
 
       monitors.push({
         id,
@@ -77,16 +84,20 @@ export async function loadDashboards(): Promise<Dashboard[]> {
     return []
   }
 
-  const files = fs.readdirSync(dashboardsDir).filter((f) => f.endsWith(".ts") && !f.startsWith("."))
+  const files = fs.readdirSync(dashboardsDir).filter((f) => (f.endsWith(".ts") || f.endsWith(".js")) && !f.startsWith("."))
   const dashboards: Dashboard[] = []
 
   for (const file of files) {
-    const id = file.replace(/\.ts$/, "")
+    const id = file.replace(/\.(ts|js)$/, "")
     const filePath = path.join(dashboardsDir, file)
 
     try {
-      const module = await import(filePath)
-      const config: DashboardConfig = module.default
+      // Use createRequire to bypass Turbopack's static analysis
+      // Clear the require cache to ensure fresh loads
+      delete requireModule.cache[requireModule.resolve(filePath)]
+      const module = requireModule(filePath)
+      // Support both CommonJS (module.exports) and ES modules (export default)
+      const config: DashboardConfig = module.default || module
 
       dashboards.push({
         id,

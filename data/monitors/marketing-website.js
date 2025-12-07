@@ -1,6 +1,4 @@
-import type { MonitorConfig } from "@/lib/config-types"
-
-export default {
+module.exports = {
   name: "Marketing Website",
   url: "https://www.example.com",
   method: "GET",
@@ -8,4 +6,4 @@ export default {
   timeout: "30s",
   expectedStatus: 200,
   active: true,
-} satisfies MonitorConfig
+}

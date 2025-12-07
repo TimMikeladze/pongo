@@ -1,6 +1,4 @@
-import type { MonitorConfig } from "@/lib/config-types"
-
-export default {
+module.exports = {
   name: "Auth Service",
   url: "https://auth.example.com/status",
   method: "GET",
@@ -8,4 +6,4 @@ export default {
   timeout: "10s",
   expectedStatus: 200,
   active: true,
-} satisfies MonitorConfig
+}
