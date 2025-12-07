@@ -1,21 +1,22 @@
-export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD"
-
 export type MonitorStatus = "up" | "down" | "degraded" | "pending"
 
 export type IncidentStatus = "investigating" | "identified" | "monitoring" | "resolved"
 export type IncidentSeverity = "critical" | "major" | "minor" | "maintenance"
 
+export interface MonitorResult {
+  status: MonitorStatus
+  responseTime: number
+  message?: string
+  statusCode?: number
+}
+
 export interface Monitor {
   id: string
   name: string
-  url: string
-  method: HttpMethod
-  headers?: Record<string, string>
-  body?: string
   intervalSeconds: number
   timeoutMs: number
-  expectedStatus: number
   isActive: boolean
+  handler: () => Promise<MonitorResult>
   createdAt: string
   updatedAt: string
 }

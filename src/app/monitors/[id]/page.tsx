@@ -54,12 +54,12 @@ export default async function MonitorDetailPage({ params }: Props) {
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">paused</span>
             )}
           </div>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            {monitor.method} {monitor.url}
+          <p className="text-[10px] text-muted-foreground mt-1 font-mono">
+            handler-based monitor
           </p>
         </div>
         <p className="text-[10px] text-muted-foreground">
-          <code className="bg-secondary px-1 rounded">data/monitors/{id}.ts</code>
+          <code className="bg-secondary px-1 rounded">data/monitors/{id}.js</code>
         </p>
       </div>
 
@@ -132,7 +132,7 @@ export default async function MonitorDetailPage({ params }: Props) {
         {/* Config display */}
         <div className="border border-border rounded bg-card p-4">
           <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground mb-4">configuration</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-xs">
             <div>
               <span className="text-muted-foreground">interval</span>
               <p className="font-mono">{monitor.intervalSeconds}s</p>
@@ -142,12 +142,8 @@ export default async function MonitorDetailPage({ params }: Props) {
               <p className="font-mono">{monitor.timeoutMs}ms</p>
             </div>
             <div>
-              <span className="text-muted-foreground">expected status</span>
-              <p className="font-mono">{monitor.expectedStatus}</p>
-            </div>
-            <div>
-              <span className="text-muted-foreground">method</span>
-              <p className="font-mono">{monitor.method}</p>
+              <span className="text-muted-foreground">type</span>
+              <p className="font-mono">handler</p>
             </div>
           </div>
         </div>

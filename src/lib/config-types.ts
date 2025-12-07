@@ -1,5 +1,15 @@
 // src/lib/config-types.ts
-import type { HttpMethod, IncidentSeverity, IncidentStatus } from "./types"
+import type { IncidentSeverity, IncidentStatus, MonitorStatus } from "./types"
+
+/**
+ * Result returned by a monitor handler
+ */
+export interface MonitorResult {
+  status: MonitorStatus
+  responseTime: number // milliseconds
+  message?: string
+  statusCode?: number
+}
 
 /**
  * Monitor configuration file schema
@@ -7,14 +17,15 @@ import type { HttpMethod, IncidentSeverity, IncidentStatus } from "./types"
  */
 export interface MonitorConfig {
   name: string
-  url: string
-  method?: HttpMethod // defaults to GET
-  headers?: Record<string, string>
-  body?: string
   interval: string // human-readable: "30s", "5m", "1h"
   timeout?: string // human-readable, defaults to "30s"
-  expectedStatus?: number // defaults to 200
   active?: boolean // defaults to true
+
+  /**
+   * Handler function that runs the monitor check
+   * Returns status, response time, and optional message
+   */
+  handler: () => Promise<MonitorResult>
 }
 
 /**

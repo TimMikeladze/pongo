@@ -28,19 +28,9 @@ export async function MonitorCard({ monitor }: MonitorCardProps) {
             <Link href={`/monitors/${monitor.id}`} className="text-sm hover:text-primary transition-colors">
               {monitor.name}
             </Link>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span
-                className={cn(
-                  "px-1 py-0.5 rounded bg-secondary font-mono text-[10px]",
-                  monitor.method === "GET" && "text-status-up",
-                  monitor.method === "POST" && "text-status-degraded",
-                  monitor.method === "DELETE" && "text-status-down",
-                )}
-              >
-                {monitor.method}
-              </span>
-              <span className="text-[10px] text-muted-foreground truncate font-mono">{monitor.url}</span>
-            </div>
+            <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
+              {monitor.id}.js
+            </p>
           </div>
         </div>
 

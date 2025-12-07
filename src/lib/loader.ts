@@ -1,16 +1,11 @@
 // src/lib/loader.ts
 import fs from "node:fs"
 import path from "node:path"
-import { createRequire } from "node:module"
 import matter from "gray-matter"
 import { marked } from "marked"
-import type {
-  MonitorConfig,
-  DashboardConfig,
-  AnnouncementFrontmatter,
-  IncidentFrontmatter,
-  parseDuration,
-} from "./config-types"
+import { monitors as monitorConfigs } from "@data/monitors"
+import { dashboards as dashboardConfigs } from "@data/dashboards"
+import type { AnnouncementFrontmatter, IncidentFrontmatter } from "./config-types"
 import { parseDuration as parseDur } from "./config-types"
 import type {
   Monitor,
@@ -24,97 +19,36 @@ import type {
 
 const DATA_DIR = path.join(process.cwd(), "data")
 
-// Create a require function to bypass Turbopack's static analysis
-const requireModule = createRequire(import.meta.url || __filename)
-
 /**
- * Load all monitor definitions from data/monitors/*.ts
+ * Load all monitor definitions from data/monitors/index.ts
  */
 export async function loadMonitors(): Promise<Monitor[]> {
-  const monitorsDir = path.join(DATA_DIR, "monitors")
-
-  if (!fs.existsSync(monitorsDir)) {
-    return []
-  }
-
-  const files = fs.readdirSync(monitorsDir).filter((f) => (f.endsWith(".ts") || f.endsWith(".js")) && !f.startsWith("."))
-  const monitors: Monitor[] = []
-
-  for (const file of files) {
-    const id = file.replace(/\.(ts|js)$/, "")
-    const filePath = path.join(monitorsDir, file)
-
-    try {
-      // Use createRequire to bypass Turbopack's static analysis
-      // Clear the require cache to ensure fresh loads
-      delete requireModule.cache[requireModule.resolve(filePath)]
-      const module = requireModule(filePath)
-      // Support both CommonJS (module.exports) and ES modules (export default)
-      const config: MonitorConfig = module.default || module
-
-      monitors.push({
-        id,
-        name: config.name,
-        url: config.url,
-        method: config.method ?? "GET",
-        headers: config.headers,
-        body: config.body,
-        intervalSeconds: parseDur(config.interval) / 1000,
-        timeoutMs: config.timeout ? parseDur(config.timeout) : 30000,
-        expectedStatus: config.expectedStatus ?? 200,
-        isActive: config.active ?? true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      })
-    } catch (error) {
-      console.error(`Failed to load monitor ${file}:`, error)
-    }
-  }
-
-  return monitors
+  return Object.entries(monitorConfigs).map(([id, config]) => ({
+    id,
+    name: config.name,
+    intervalSeconds: parseDur(config.interval) / 1000,
+    timeoutMs: config.timeout ? parseDur(config.timeout) : 30000,
+    isActive: config.active ?? true,
+    handler: config.handler,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }))
 }
 
 /**
- * Load all dashboard definitions from data/dashboards/*.ts
+ * Load all dashboard definitions from data/dashboards/index.ts
  */
 export async function loadDashboards(): Promise<Dashboard[]> {
-  const dashboardsDir = path.join(DATA_DIR, "dashboards")
-
-  if (!fs.existsSync(dashboardsDir)) {
-    return []
-  }
-
-  const files = fs.readdirSync(dashboardsDir).filter((f) => (f.endsWith(".ts") || f.endsWith(".js")) && !f.startsWith("."))
-  const dashboards: Dashboard[] = []
-
-  for (const file of files) {
-    const id = file.replace(/\.(ts|js)$/, "")
-    const filePath = path.join(dashboardsDir, file)
-
-    try {
-      // Use createRequire to bypass Turbopack's static analysis
-      // Clear the require cache to ensure fresh loads
-      delete requireModule.cache[requireModule.resolve(filePath)]
-      const module = requireModule(filePath)
-      // Support both CommonJS (module.exports) and ES modules (export default)
-      const config: DashboardConfig = module.default || module
-
-      dashboards.push({
-        id,
-        name: config.name,
-        slug: config.slug,
-        isPublic: config.public ?? false,
-        monitorIds: config.monitors,
-        slaTarget: config.slaTarget,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      })
-    } catch (error) {
-      console.error(`Failed to load dashboard ${file}:`, error)
-    }
-  }
-
-  return dashboards
+  return Object.entries(dashboardConfigs).map(([id, config]) => ({
+    id,
+    name: config.name,
+    slug: config.slug,
+    isPublic: config.public ?? false,
+    monitorIds: config.monitors,
+    slaTarget: config.slaTarget,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }))
 }
 
 /**
