@@ -1,9 +1,10 @@
 // src/archiver/index.ts
 
+import { Hono } from "hono";
 import { Archiver } from "./archiver";
 import type { ArchiverConfig } from "./types";
 
-function loadConfig(): ArchiverConfig {
+function loadConfig(): ArchiverConfig & { port: number } {
   const enabled = process.env.ARCHIVAL_ENABLED === "true";
 
   if (!enabled) {
@@ -19,6 +20,7 @@ function loadConfig(): ArchiverConfig {
       s3Region: "",
       s3AccessKeyId: "",
       s3SecretAccessKey: "",
+      port: parseInt(process.env.ARCHIVER_PORT ?? "3002", 10),
     };
   }
 
@@ -31,7 +33,7 @@ function loadConfig(): ArchiverConfig {
   if (!s3Bucket || !s3Region || !s3AccessKeyId || !s3SecretAccessKey) {
     throw new Error(
       "S3 configuration required when ARCHIVAL_ENABLED=true. " +
-      "Set S3_BUCKET, S3_REGION, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY",
+        "Set S3_BUCKET, S3_REGION, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY",
     );
   }
 
@@ -46,7 +48,18 @@ function loadConfig(): ArchiverConfig {
     s3Region,
     s3AccessKeyId,
     s3SecretAccessKey,
+    port: parseInt(process.env.ARCHIVER_PORT ?? "3002", 10),
   };
+}
+
+function createHealthServer(port: number) {
+  const app = new Hono();
+
+  app.get("/health", (c) => {
+    return c.json({ status: "ok" });
+  });
+
+  return { fetch: app.fetch, port };
 }
 
 async function main() {
@@ -56,9 +69,19 @@ async function main() {
 
   const config = loadConfig();
 
+  // Start health server (even when archival is disabled, for Fly.io health checks)
+  const server = createHealthServer(config.port);
+  Bun.serve(server);
+  console.log(
+    `[archiver] Health server listening on http://localhost:${config.port}`,
+  );
+
   if (!config.enabled) {
-    console.log("[archiver] ARCHIVAL_ENABLED is not set to 'true'. Exiting.");
-    process.exit(0);
+    console.log(
+      "[archiver] ARCHIVAL_ENABLED is not set to 'true'. Running in idle mode.",
+    );
+    // Keep process alive for health checks
+    return;
   }
 
   const archiver = new Archiver(config);

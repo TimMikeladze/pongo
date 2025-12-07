@@ -2,7 +2,7 @@ import { monitor } from "../../src/lib/config-types";
 
 export default monitor({
   name: "Example",
-  interval: "5m",
+  interval: "30m",
   timeout: "30s",
 
   async handler() {
