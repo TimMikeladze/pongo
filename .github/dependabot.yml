@@ -1,0 +1,53 @@
+version: 2
+updates:
+  # Monitor npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Los_Angeles"
+    open-pull-requests-limit: 10
+    groups:
+      # Group all production dependencies together
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      # Group all development dependencies together
+      development-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      # Group specific framework updates
+      react:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      next:
+        patterns:
+          - "next*"
+      radix-ui:
+        patterns:
+          - "@radix-ui/*"
+      drizzle:
+        patterns:
+          - "drizzle*"
+    labels:
+      - "dependencies"
+      - "automated"
+
+  # Monitor Docker base image
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Los_Angeles"
+    labels:
+      - "dependencies"
+      - "docker"

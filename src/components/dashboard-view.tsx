@@ -1,0 +1,231 @@
+import Link from "next/link";
+import { AnnouncementsList } from "@/components/announcements-list";
+import { IncidentsTimeline } from "@/components/incidents-timeline";
+import { MaintenanceSchedule } from "@/components/maintenance-schedule";
+import { MonitorErrorRateChart } from "@/components/monitor-error-rate-chart";
+import { MonitorResponseChart } from "@/components/monitor-response-chart";
+import { SLAStatus } from "@/components/sla-status";
+import { StatsCard } from "@/components/stats-card";
+import { UptimeBars } from "@/components/uptime-bars";
+import {
+  getActiveIncidents,
+  getAverageResponseTime,
+  getDashboard,
+  getLatestCheckResult,
+  getMonitors,
+  getUptimePercentage,
+  type TimeRange,
+} from "@/lib/data";
+import type { IntervalOption } from "@/lib/time-range";
+
+interface DashboardViewProps {
+  dashboardId: string;
+  isPublic?: boolean;
+  timeRange: TimeRange;
+  interval?: IntervalOption;
+}
+
+export async function DashboardView({
+  dashboardId,
+  isPublic = false,
+  timeRange,
+  interval = "1h",
+}: DashboardViewProps) {
+  const dashboard = await getDashboard(dashboardId);
+
+  if (!dashboard) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-muted-foreground text-xs">Dashboard not found</p>
+      </div>
+    );
+  }
+
+  const [allMonitors, activeIncidents] = await Promise.all([
+    getMonitors(),
+    getActiveIncidents(dashboardId),
+  ]);
+
+  const monitors = allMonitors.filter((m) =>
+    dashboard.monitorIds.includes(m.id),
+  );
+
+  // Calculate overall stats
+  const latestResults = await Promise.all(
+    monitors.map((m) => getLatestCheckResult(m.id)),
+  );
+
+  const allUp = latestResults.every((result) => result?.status === "up");
+
+  const [uptimes, responseTimes] = await Promise.all([
+    Promise.all(monitors.map((m) => getUptimePercentage(m.id, timeRange))),
+    Promise.all(monitors.map((m) => getAverageResponseTime(m.id, timeRange))),
+  ]);
+
+  const overallUptime =
+    monitors.length > 0
+      ? uptimes.reduce((acc, uptime) => acc + uptime, 0) / monitors.length
+      : 100;
+
+  const avgResponseTime =
+    monitors.length > 0
+      ? Math.round(
+          responseTimes.reduce((acc, time) => acc + time, 0) / monitors.length,
+        )
+      : 0;
+
+  return (
+    <div className="space-y-6">
+      {/* Active Incidents Banner */}
+      {activeIncidents.length > 0 && (
+        <div className="p-4 rounded-lg border border-red-500/30 bg-red-500/5">
+          <p className="text-xs font-medium text-red-700 dark:text-red-400 mb-2">
+            {activeIncidents.length} active incident
+            {activeIncidents.length > 1 ? "s" : ""}
+          </p>
+          <IncidentsTimeline dashboardId={dashboardId} showResolved={false} />
+        </div>
+      )}
+
+      {/* Overall Status */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatsCard
+          title="status"
+          value={allUp ? "operational" : "degraded"}
+          trend={allUp ? "up" : "down"}
+        />
+        <StatsCard title="uptime" value={`${overallUptime.toFixed(1)}%`} />
+        <StatsCard
+          title="latency"
+          value={`${avgResponseTime}ms`}
+          description="avg"
+        />
+        <StatsCard
+          title="monitors"
+          value={monitors.length.toString()}
+          description="active"
+        />
+      </div>
+
+      {/* Announcements */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            announcements
+          </h3>
+          {!isPublic && (
+            <Link
+              href={`/dashboards/${dashboardId}/announcements`}
+              className="text-[10px] text-muted-foreground hover:text-foreground"
+            >
+              view all
+            </Link>
+          )}
+        </div>
+        <AnnouncementsList dashboardId={dashboardId} limit={3} />
+      </div>
+
+      {/* Maintenance Schedule */}
+      <MaintenanceSchedule dashboardId={dashboardId} />
+
+      {/* SLA Status */}
+      {dashboard.slaTarget && (
+        <SLAStatus dashboardId={dashboardId} timeRange={timeRange} />
+      )}
+
+      <div className="space-y-2">
+        <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
+          system status
+        </h3>
+        {monitors.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 border border-dashed rounded-lg">
+            <p className="text-muted-foreground text-xs">
+              No monitors in this dashboard
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-border bg-card p-4">
+            {monitors.map((monitor) => (
+              <UptimeBars
+                key={monitor.id}
+                monitorId={monitor.id}
+                monitorName={monitor.name}
+                timeRange={timeRange}
+                interval={interval}
+                showLabels={true}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Response time charts */}
+      {monitors.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            response times
+          </h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            {monitors.map((monitor) => (
+              <div
+                key={monitor.id}
+                className="rounded-lg border border-border bg-card p-4"
+              >
+                <p className="text-xs font-mono mb-3">{monitor.name}</p>
+                <MonitorResponseChart
+                  monitorId={monitor.id}
+                  height={100}
+                  timeRange={timeRange}
+                  interval={interval}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Error rate charts */}
+      {monitors.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            error rates
+          </h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            {monitors.map((monitor) => (
+              <div
+                key={monitor.id}
+                className="rounded-lg border border-border bg-card p-4"
+              >
+                <p className="text-xs font-mono mb-3">{monitor.name}</p>
+                <MonitorErrorRateChart
+                  monitorId={monitor.id}
+                  height={100}
+                  timeRange={timeRange}
+                  interval={interval}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Incident History */}
+      {!isPublic && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              incident history
+            </h3>
+            <Link
+              href={`/dashboards/${dashboardId}/incidents`}
+              className="text-[10px] text-muted-foreground hover:text-foreground"
+            >
+              view all
+            </Link>
+          </div>
+          <IncidentsTimeline dashboardId={dashboardId} limit={5} />
+        </div>
+      )}
+    </div>
+  );
+}

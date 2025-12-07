@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "before:init": "bun run check"
+  },
+  "git": {
+    "commitArgs": ["--no-verify"]
+  },
+  "github": {
+    "release": true
+  },
+  "npm": {
+    "publish": false
+  }
+}
