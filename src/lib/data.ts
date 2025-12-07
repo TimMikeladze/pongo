@@ -15,6 +15,7 @@ import type {
   Announcement,
   CheckResult,
   Dashboard,
+  FeedItem,
   Incident,
   MaintenanceWindow,
   Monitor,
@@ -1032,4 +1033,69 @@ export async function getAggregatedStatusDistributionData(
     degraded: row.degraded_count || 0,
     down: row.down_count || 0,
   };
+}
+
+export async function getFeedItems(
+  dashboardId: string,
+  monitorIds: string[],
+  baseUrl: string,
+  slug: string,
+  limit = 50
+): Promise<FeedItem[]> {
+  const items: FeedItem[] = [];
+
+  // Get alert events for dashboard monitors (last 30 days)
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const alertEvents = await getAlertEvents({
+    from: thirtyDaysAgo,
+    to: new Date(),
+  });
+
+  for (const event of alertEvents) {
+    if (!monitorIds.includes(event.monitorId)) continue;
+
+    const eventType = event.eventType === "fired" ? "fired" : "resolved";
+    items.push({
+      id: `alert-${event.id}`,
+      type: "alert",
+      title: `${event.monitorName}: ${event.alertName} ${eventType}`,
+      description: event.snapshot
+        ? `Status: ${(event.snapshot as Record<string, unknown>).status || "unknown"}`
+        : `Alert ${eventType}`,
+      link: `${baseUrl}/dashboards/shared/${slug}#monitor-${event.monitorId}`,
+      timestamp: event.eventType === "fired" ? event.triggeredAt : (event.resolvedAt || event.triggeredAt),
+    });
+  }
+
+  // Get incidents for dashboard
+  const incidents = await getIncidents(dashboardId);
+  for (const incident of incidents) {
+    const latestUpdate = incident.updates[0];
+    items.push({
+      id: `incident-${incident.id}`,
+      type: "incident",
+      title: `[${incident.severity.toUpperCase()}] ${incident.title}`,
+      description: latestUpdate?.message || incident.title,
+      link: `${baseUrl}/dashboards/shared/${slug}#incident-${incident.id}`,
+      timestamp: new Date(incident.resolvedAt || incident.createdAt),
+    });
+  }
+
+  // Get announcements for dashboard
+  const announcements = await getAnnouncements(dashboardId);
+  for (const announcement of announcements) {
+    items.push({
+      id: `announcement-${announcement.id}`,
+      type: "announcement",
+      title: announcement.title,
+      description: announcement.message,
+      link: `${baseUrl}/dashboards/shared/${slug}#announcement-${announcement.id}`,
+      timestamp: new Date(announcement.createdAt),
+    });
+  }
+
+  // Sort by timestamp descending and limit
+  return items
+    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    .slice(0, limit);
 }
