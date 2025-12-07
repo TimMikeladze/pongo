@@ -25,7 +25,7 @@ export default async function PublicDashboardPage({ params }: Props) {
     <div className="h-screen flex flex-col bg-background">
       {/* Header - Fixed */}
       <header className="flex-shrink-0 border-b border-border">
-        <div className="max-w-4xl mx-auto px-6 py-4">
+        <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-sm font-medium font-mono">
@@ -47,7 +47,7 @@ export default async function PublicDashboardPage({ params }: Props) {
 
       {/* Content - Scrollable */}
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="max-w-6xl mx-auto px-6 py-6">
           <DashboardView dashboardId={dashboard.id} isPublic />
 
           {/* Past Incidents Section */}
@@ -62,7 +62,7 @@ export default async function PublicDashboardPage({ params }: Props) {
 
       {/* Footer - Fixed */}
       <footer className="flex-shrink-0 border-t border-border">
-        <div className="max-w-4xl mx-auto px-6 py-4">
+        <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
