@@ -1,5 +1,6 @@
 // src/lib/config-types.ts
 import type { IncidentSeverity, IncidentStatus, MonitorStatus } from "./types";
+import type { AlertConfig } from "@/scheduler/alerts/types";
 
 /**
  * Result returned by a monitor handler
@@ -21,6 +22,7 @@ export interface MonitorConfig {
   cron?: string; // cron expression: "*/5 * * * *" - optional if interval is set
   timeout?: string; // human-readable, defaults to "30s"
   active?: boolean; // defaults to true
+  alerts?: AlertConfig[];
 
   /**
    * Handler function that runs the monitor check
@@ -112,4 +114,22 @@ export function parseDuration(duration: string): number {
     default:
       throw new Error(`Unknown duration unit: ${unit}`);
   }
+}
+
+/**
+ * Channel configuration for webhooks
+ */
+export interface ChannelConfig {
+  type: "webhook";
+  url: string;
+  headers?: Record<string, string>;
+}
+
+export type ChannelsConfig = Record<string, ChannelConfig>;
+
+/**
+ * Define webhook channels with type inference
+ */
+export function channels(config: ChannelsConfig): ChannelsConfig {
+  return config;
 }
