@@ -195,7 +195,8 @@ export function UptimeDisplay({
                     fontSize: "10px",
                     fontFamily: "monospace",
                   }}
-                  formatter={(value: number | null) => [
+                  // biome-ignore lint/suspicious/noExplicitAny: recharts type issue
+                  formatter={(value: any) => [
                     value !== null ? `${value}%` : "No data",
                     "uptime",
                   ]}
