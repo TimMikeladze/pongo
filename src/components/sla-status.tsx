@@ -1,6 +1,4 @@
-"use client"
-
-import { useSLAStatus } from "@/lib/hooks"
+import { getSLAStatus } from "@/lib/data"
 import { Target, TrendingUp, TrendingDown } from "lucide-react"
 
 interface SLAStatusProps {
@@ -8,8 +6,8 @@ interface SLAStatusProps {
   days?: number
 }
 
-export function SLAStatus({ dashboardId, days = 30 }: SLAStatusProps) {
-  const sla = useSLAStatus(dashboardId, days)
+export async function SLAStatus({ dashboardId, days = 30 }: SLAStatusProps) {
+  const sla = await getSLAStatus(dashboardId, days)
 
   if (!sla) return null
 

@@ -1,8 +1,5 @@
-"use client"
-
-import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
-import { store } from "@/lib/store"
+import { getDailyStatus } from "@/lib/data"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { MonitorStatus } from "@/lib/types"
 
@@ -27,31 +24,8 @@ const statusLabels: Record<MonitorStatus | "pending", string> = {
   pending: "No data",
 }
 
-export function UptimeBars({ monitorId, monitorName, days = 90, showLabels = true }: UptimeBarsProps) {
-  const [mounted, setMounted] = useState(false)
-  const [dailyStatus, setDailyStatus] = useState<
-    Array<{ date: string; status: MonitorStatus; uptime: number; checks: number }>
-  >([])
-
-  useEffect(() => {
-    setMounted(true)
-    setDailyStatus(store.getDailyStatus(monitorId, days))
-  }, [monitorId, days])
-
-  if (!mounted) {
-    return (
-      <div className="py-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium">{monitorName}</span>
-        </div>
-        <div className="flex gap-[2px]">
-          {Array.from({ length: days }).map((_, i) => (
-            <div key={i} className="flex-1 h-8 bg-muted/20 rounded-[2px]" />
-          ))}
-        </div>
-      </div>
-    )
-  }
+export async function UptimeBars({ monitorId, monitorName, days = 90, showLabels = true }: UptimeBarsProps) {
+  const dailyStatus = await getDailyStatus(monitorId, days)
 
   // Get current status (last day)
   const currentStatus = dailyStatus[dailyStatus.length - 1]?.status ?? "pending"
@@ -75,7 +49,7 @@ export function UptimeBars({ monitorId, monitorName, days = 90, showLabels = tru
         </div>
 
         <div className="flex gap-[2px]">
-          {dailyStatus.map((day, i) => (
+          {dailyStatus.map((day) => (
             <Tooltip key={day.date}>
               <TooltipTrigger asChild>
                 <div
