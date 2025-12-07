@@ -6,6 +6,7 @@ import { MaintenanceSchedule } from "@/components/maintenance-schedule";
 import { SLAStatus } from "@/components/sla-status";
 import { UptimeBars } from "@/components/uptime-bars";
 import { MonitorResponseChart } from "@/components/monitor-response-chart";
+import { MonitorStatusTimeline } from "@/components/monitor-status-timeline";
 import {
   getDashboard,
   getMonitors,
@@ -167,6 +168,23 @@ export async function DashboardView({
               >
                 <p className="text-xs font-mono mb-3">{monitor.name}</p>
                 <MonitorResponseChart monitorId={monitor.id} height={100} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recent checks timeline */}
+      {monitors.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            recent checks
+          </h3>
+          <div className="rounded-lg border border-border bg-card p-4 space-y-4">
+            {monitors.map((monitor) => (
+              <div key={monitor.id}>
+                <p className="text-xs font-mono mb-2">{monitor.name}</p>
+                <MonitorStatusTimeline monitorId={monitor.id} limit={50} />
               </div>
             ))}
           </div>
