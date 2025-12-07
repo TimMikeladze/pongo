@@ -107,3 +107,12 @@ export interface NotificationChannel {
   isActive: boolean;
   createdAt: string;
 }
+
+export interface FeedItem {
+  id: string;
+  type: "alert" | "incident" | "announcement";
+  title: string;
+  description: string;
+  link: string;
+  timestamp: Date;
+}
