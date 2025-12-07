@@ -1,4 +1,4 @@
-CREATE TABLE `check_results` (
+CREATE TABLE `pongo_check_results` (
 	`id` text PRIMARY KEY NOT NULL,
 	`monitor_id` text NOT NULL,
 	`status` text NOT NULL,

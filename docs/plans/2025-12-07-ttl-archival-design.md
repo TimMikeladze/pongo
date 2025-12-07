@@ -24,7 +24,7 @@ S3_SECRET_ACCESS_KEY=...
 
 Hive-partitioned by day:
 ```
-s3://my-bucket/pongo/archives/year=2024/month=01/day=15/check_results_<batch_id>.parquet
+s3://my-bucket/pongo/archives/year=2024/month=01/day=15/pongo_check_results_<batch_id>.parquet
 ```
 
 Late-arriving data creates new parquet files for that day (append, not overwrite).
@@ -44,7 +44,7 @@ Run via: `bun run archiver`
 
 ## Database Schema Changes
 
-Add `archived_at` column to `check_results`:
+Add `archived_at` column to `pongo_check_results`:
 
 ```typescript
 // schema.sqlite.ts / schema.pg.ts
@@ -53,8 +53,8 @@ archivedAt: integer("archived_at", { mode: "timestamp_ms" }), // null = not arch
 
 New index for archival queries:
 ```sql
-CREATE INDEX idx_check_results_archival
-ON check_results(checked_at)
+CREATE INDEX idx_pongo_check_results_archival
+ON pongo_check_results(checked_at)
 WHERE archived_at IS NULL;
 ```
 
@@ -62,7 +62,7 @@ WHERE archived_at IS NULL;
 
 1. **Select eligible rows**
    ```sql
-   SELECT * FROM check_results
+   SELECT * FROM pongo_check_results
    WHERE checked_at < (now - retention_days)
    AND archived_at IS NULL
    LIMIT batch_size
@@ -70,7 +70,7 @@ WHERE archived_at IS NULL;
 
 2. **Mark rows as archiving**
    ```sql
-   UPDATE check_results SET archived_at = now() WHERE id IN (...)
+   UPDATE pongo_check_results SET archived_at = now() WHERE id IN (...)
    ```
 
 3. **Group by day** - organize rows into Hive partitions
@@ -83,7 +83,7 @@ WHERE archived_at IS NULL;
 
 7. **On failure**: Clear `archived_at` so rows retry next run
    ```sql
-   UPDATE check_results SET archived_at = NULL WHERE id IN (...)
+   UPDATE pongo_check_results SET archived_at = NULL WHERE id IN (...)
    ```
 
 ## Dependencies

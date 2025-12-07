@@ -1,14 +1,14 @@
 // src/archiver/archiver.ts
 
-import { Cron } from "croner";
-import { and, isNull, lt, inArray, eq } from "drizzle-orm";
 import { join } from "node:path";
-import { getDbAsync, getDbDriver, sqliteSchema, pgSchema } from "@/db";
+import { Cron } from "croner";
+import { and, inArray, isNull, lt } from "drizzle-orm";
+import { getDbAsync, getDbDriver, pgSchema, sqliteSchema } from "@/db";
 import { writeParquetFile } from "./parquet";
-import { uploadToS3, deleteLocalFile } from "./s3";
+import { deleteLocalFile, uploadToS3 } from "./s3";
 import {
-  type ArchiverConfig,
   type ArchivalRow,
+  type ArchiverConfig,
   formatPartitionKey,
   partitionKeyToS3Path,
 } from "./types";
@@ -31,7 +31,9 @@ export class Archiver {
     console.log(`[archiver] Starting archiver with cron: ${this.config.cron}`);
     console.log(`[archiver] Retention: ${this.config.retentionDays} days`);
     console.log(`[archiver] Batch size: ${this.config.batchSize}`);
-    console.log(`[archiver] S3 bucket: ${this.config.s3Bucket}/${this.config.s3Prefix}`);
+    console.log(
+      `[archiver] S3 bucket: ${this.config.s3Bucket}/${this.config.s3Prefix}`,
+    );
 
     this.job = new Cron(this.config.cron, { protect: true }, () => {
       this.runArchival();
@@ -70,7 +72,9 @@ export class Archiver {
         hasMore = archivedCount === this.config.batchSize;
       }
 
-      console.log(`[archiver] Archival complete. Total rows archived: ${totalArchived}`);
+      console.log(
+        `[archiver] Archival complete. Total rows archived: ${totalArchived}`,
+      );
     } catch (error) {
       console.error("[archiver] Archival failed:", error);
     } finally {
@@ -81,7 +85,8 @@ export class Archiver {
   private async archiveBatch(cutoffDate: Date): Promise<number> {
     const db = await getDbAsync();
     const driver = getDbDriver();
-    const checkResults = driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
+    const checkResults =
+      driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
 
     // Select rows eligible for archival
     // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
@@ -104,7 +109,9 @@ export class Archiver {
     const batchId = crypto.randomUUID();
     const now = new Date();
 
-    console.log(`[archiver] Processing batch ${batchId} with ${rows.length} rows`);
+    console.log(
+      `[archiver] Processing batch ${batchId} with ${rows.length} rows`,
+    );
 
     // Mark rows as archiving
     // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
@@ -116,7 +123,8 @@ export class Archiver {
     // Group rows by day partition
     const partitions = new Map<string, ArchivalRow[]>();
     for (const row of rows) {
-      const checkedAt = row.checkedAt instanceof Date ? row.checkedAt : new Date(row.checkedAt);
+      const checkedAt =
+        row.checkedAt instanceof Date ? row.checkedAt : new Date(row.checkedAt);
       const partitionKey = formatPartitionKey(checkedAt);
 
       const archivalRow: ArchivalRow = {
@@ -127,7 +135,10 @@ export class Archiver {
         statusCode: row.statusCode,
         message: row.message,
         checkedAt,
-        createdAt: row.createdAt instanceof Date ? row.createdAt : new Date(row.createdAt),
+        createdAt:
+          row.createdAt instanceof Date
+            ? row.createdAt
+            : new Date(row.createdAt),
       };
 
       const existing = partitions.get(partitionKey);
@@ -143,7 +154,7 @@ export class Archiver {
     const successfulRowIds: string[] = [];
 
     for (const [partitionKey, partitionRows] of partitions) {
-      const fileName = `check_results_${batchId}.parquet`;
+      const fileName = `pongo_check_results_${batchId}.parquet`;
       const localPath = join(
         this.config.localPath,
         `year=${partitionKey.split("-")[0]}`,
@@ -167,7 +178,10 @@ export class Archiver {
         // Delete local file
         await deleteLocalFile(localPath);
       } catch (error) {
-        console.error(`[archiver] Failed to archive partition ${partitionKey}:`, error);
+        console.error(
+          `[archiver] Failed to archive partition ${partitionKey}:`,
+          error,
+        );
         // Continue with other partitions
       }
     }
@@ -179,11 +193,15 @@ export class Archiver {
         .delete(checkResults)
         .where(inArray(checkResults.id, successfulRowIds));
 
-      console.log(`[archiver] Deleted ${successfulRowIds.length} archived rows from database`);
+      console.log(
+        `[archiver] Deleted ${successfulRowIds.length} archived rows from database`,
+      );
     }
 
     // Clear archivedAt for failed rows so they retry next run
-    const failedRowIds = rowIds.filter((id: string) => !successfulRowIds.includes(id));
+    const failedRowIds = rowIds.filter(
+      (id: string) => !successfulRowIds.includes(id),
+    );
     if (failedRowIds.length > 0) {
       // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
       await (db as any)
@@ -191,7 +209,9 @@ export class Archiver {
         .set({ archivedAt: null })
         .where(inArray(checkResults.id, failedRowIds));
 
-      console.log(`[archiver] Reset ${failedRowIds.length} failed rows for retry`);
+      console.log(
+        `[archiver] Reset ${failedRowIds.length} failed rows for retry`,
+      );
     }
 
     return rows.length;

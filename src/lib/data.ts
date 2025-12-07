@@ -9,6 +9,8 @@ import {
   loadIncidents,
   loadMonitors,
 } from "./loader";
+import type { IntervalOption } from "./time-range";
+import { formatBucketLabel, getIntervalMs } from "./time-range";
 import type {
   Announcement,
   CheckResult,
@@ -18,8 +20,6 @@ import type {
   Monitor,
   MonitorStatus,
 } from "./types";
-import type { IntervalOption } from "./time-range";
-import { getIntervalMs, formatBucketLabel } from "./time-range";
 
 export interface TimeRange {
   from: Date;
@@ -420,7 +420,7 @@ export async function getResponseTimeChartData(
       (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
       ROUND(AVG(response_time_ms)) as avg_response_time,
       COUNT(*) as cnt
-    FROM check_results
+    FROM pongo_check_results
     WHERE monitor_id = '${monitorId}'
       AND checked_at >= ${fromMs}
       AND checked_at <= ${toMs}
@@ -455,7 +455,7 @@ export async function getErrorRateChartData(
       (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
       SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as errors,
       COUNT(*) as total
-    FROM check_results
+    FROM pongo_check_results
     WHERE monitor_id = '${monitorId}'
       AND checked_at >= ${fromMs}
       AND checked_at <= ${toMs}
@@ -490,7 +490,7 @@ export async function getUptimeChartData(
       (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
       SUM(CASE WHEN status IN ('up', 'degraded') THEN 1 ELSE 0 END) as up_count,
       COUNT(*) as total
-    FROM check_results
+    FROM pongo_check_results
     WHERE monitor_id = '${monitorId}'
       AND checked_at >= ${fromMs}
       AND checked_at <= ${toMs}
@@ -525,7 +525,7 @@ export async function getLatencyPercentilesChartData(
     SELECT
       (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
       response_time_ms
-    FROM check_results
+    FROM pongo_check_results
     WHERE monitor_id = '${monitorId}'
       AND checked_at >= ${fromMs}
       AND checked_at <= ${toMs}
@@ -581,7 +581,7 @@ export async function getThroughputChartData(
     SELECT
       (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
       COUNT(*) as checks
-    FROM check_results
+    FROM pongo_check_results
     WHERE monitor_id = '${monitorId}'
       AND checked_at >= ${fromMs}
       AND checked_at <= ${toMs}
@@ -618,7 +618,7 @@ export async function getStatusTimelineData(
       SUM(CASE WHEN status = 'degraded' THEN 1 ELSE 0 END) as degraded_count,
       COUNT(*) as total,
       ROUND(AVG(response_time_ms)) as avg_response_time
-    FROM check_results
+    FROM pongo_check_results
     WHERE monitor_id = '${monitorId}'
       AND checked_at >= ${fromMs}
       AND checked_at <= ${toMs}
@@ -668,7 +668,7 @@ export async function getStatusDistributionData(
       SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) as up_count,
       SUM(CASE WHEN status = 'degraded' THEN 1 ELSE 0 END) as degraded_count,
       SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as down_count
-    FROM check_results
+    FROM pongo_check_results
     WHERE monitor_id = '${monitorId}'
       AND checked_at >= ${fromMs}
       AND checked_at <= ${toMs}
@@ -705,7 +705,7 @@ export async function getAggregatedResponseTimeChartData(
     SELECT
       (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
       ROUND(AVG(response_time_ms)) as avg_response_time
-    FROM check_results
+    FROM pongo_check_results
     WHERE monitor_id IN (${idList})
       AND checked_at >= ${fromMs}
       AND checked_at <= ${toMs}
@@ -742,7 +742,7 @@ export async function getAggregatedErrorRateChartData(
       (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
       SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as errors,
       COUNT(*) as total
-    FROM check_results
+    FROM pongo_check_results
     WHERE monitor_id IN (${idList})
       AND checked_at >= ${fromMs}
       AND checked_at <= ${toMs}
@@ -780,7 +780,7 @@ export async function getAggregatedUptimeChartData(
       (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
       SUM(CASE WHEN status IN ('up', 'degraded') THEN 1 ELSE 0 END) as up_count,
       COUNT(*) as total
-    FROM check_results
+    FROM pongo_check_results
     WHERE monitor_id IN (${idList})
       AND checked_at >= ${fromMs}
       AND checked_at <= ${toMs}
@@ -816,7 +816,7 @@ export async function getAggregatedLatencyPercentilesChartData(
     SELECT
       (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
       response_time_ms
-    FROM check_results
+    FROM pongo_check_results
     WHERE monitor_id IN (${idList})
       AND checked_at >= ${fromMs}
       AND checked_at <= ${toMs}
@@ -874,7 +874,7 @@ export async function getAggregatedThroughputChartData(
     SELECT
       (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
       COUNT(*) as checks
-    FROM check_results
+    FROM pongo_check_results
     WHERE monitor_id IN (${idList})
       AND checked_at >= ${fromMs}
       AND checked_at <= ${toMs}
@@ -908,7 +908,7 @@ export async function getAggregatedStatusDistributionData(
       SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) as up_count,
       SUM(CASE WHEN status = 'degraded' THEN 1 ELSE 0 END) as degraded_count,
       SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as down_count
-    FROM check_results
+    FROM pongo_check_results
     WHERE monitor_id IN (${idList})
       AND checked_at >= ${fromMs}
       AND checked_at <= ${toMs}

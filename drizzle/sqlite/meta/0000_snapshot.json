@@ -4,8 +4,8 @@
   "id": "5343c749-a212-4fcb-8d6b-0154e88140c9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "check_results": {
-      "name": "check_results",
+    "pongo_check_results": {
+      "name": "pongo_check_results",
       "columns": {
         "id": {
           "name": "id",

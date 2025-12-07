@@ -1,11 +1,11 @@
 import { sql } from "drizzle-orm";
 import {
-  pgTable,
-  text,
-  integer,
-  timestamp,
   doublePrecision,
   index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -22,7 +22,7 @@ export type MonitorStatusEnum = (typeof monitorStatusEnum)[number];
  * storing the status, response time, and any error information.
  */
 export const checkResults = pgTable(
-  "check_results",
+  "pongo_check_results",
   {
     id: text("id")
       .primaryKey()
@@ -57,14 +57,16 @@ export const checkResults = pgTable(
     archivedAt: timestamp("archived_at", { mode: "date", withTimezone: true }),
   },
   (table) => [
-    index("idx_check_results_monitor_id").on(table.monitorId),
-    index("idx_check_results_checked_at").on(table.checkedAt),
-    index("idx_check_results_monitor_checked_at").on(
+    index("idx_pongo_check_results_monitor_id").on(table.monitorId),
+    index("idx_pongo_check_results_checked_at").on(table.checkedAt),
+    index("idx_pongo_check_results_monitor_checked_at").on(
       table.monitorId,
       table.checkedAt,
     ),
-    index("idx_check_results_status").on(table.status),
-    index("idx_check_results_archival").on(table.checkedAt).where(sql`archived_at IS NULL`),
+    index("idx_pongo_check_results_status").on(table.status),
+    index("idx_pongo_check_results_archival")
+      .on(table.checkedAt)
+      .where(sql`archived_at IS NULL`),
   ],
 );
 

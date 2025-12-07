@@ -14,7 +14,7 @@ export type MonitorStatusEnum = (typeof monitorStatusEnum)[number];
  * This table tracks every execution of a monitor's handler function,
  * storing the status, response time, and any error information.
  */
-export const checkResults = sqliteTable("check_results", {
+export const checkResults = sqliteTable("pongo_check_results", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
@@ -63,17 +63,17 @@ export type CheckResult = typeof checkResults.$inferSelect;
  */
 export const checkResultsIndexes = {
   /** Index for querying by monitor ID */
-  monitorIdIdx: sql`CREATE INDEX IF NOT EXISTS idx_check_results_monitor_id ON check_results(monitor_id)`,
+  monitorIdIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_monitor_id ON pongo_check_results(monitor_id)`,
 
   /** Index for querying by check time (for time-based queries) */
-  checkedAtIdx: sql`CREATE INDEX IF NOT EXISTS idx_check_results_checked_at ON check_results(checked_at DESC)`,
+  checkedAtIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_checked_at ON pongo_check_results(checked_at DESC)`,
 
   /** Composite index for monitor + time queries (most common) */
-  monitorCheckedAtIdx: sql`CREATE INDEX IF NOT EXISTS idx_check_results_monitor_checked_at ON check_results(monitor_id, checked_at DESC)`,
+  monitorCheckedAtIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_monitor_checked_at ON pongo_check_results(monitor_id, checked_at DESC)`,
 
   /** Index for status filtering */
-  statusIdx: sql`CREATE INDEX IF NOT EXISTS idx_check_results_status ON check_results(status)`,
+  statusIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_status ON pongo_check_results(status)`,
 
   /** Index for archival queries - finds rows eligible for archival */
-  archivalIdx: sql`CREATE INDEX IF NOT EXISTS idx_check_results_archival ON check_results(checked_at) WHERE archived_at IS NULL`,
+  archivalIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_archival ON pongo_check_results(checked_at) WHERE archived_at IS NULL`,
 };
