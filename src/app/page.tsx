@@ -1,29 +1,16 @@
 import Link from "next/link";
-import {
-  Terminal,
-  Activity,
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  Zap,
-  TrendingUp,
-  PawPrint,
-  Github,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Terminal, Activity, PawPrint, Github } from "lucide-react";
 import { MonitorCard } from "@/components/monitor-card";
 import { StatsCard } from "@/components/stats-card";
+import { ChartCard } from "@/components/chart-card";
 import { ResponseTimeChart } from "@/components/response-time-chart";
 import { UptimeChart } from "@/components/uptime-chart";
 import { ErrorRateChart } from "@/components/error-rate-chart";
 import { LatencyPercentilesChart } from "@/components/latency-percentiles-chart";
 import { StatusDistributionChart } from "@/components/status-distribution-chart";
-import { LatencyHeatmap } from "@/components/latency-heatmap";
 import { ThroughputChart } from "@/components/throughput-chart";
-import { cn } from "@/lib/utils";
 import {
   getMonitors,
-  getCheckResults,
   getLatestCheckResult,
   getUptimePercentage,
   getAverageResponseTime,
@@ -31,12 +18,28 @@ import {
   getP95ResponseTime,
   getP99ResponseTime,
   getTotalChecks,
+  getAggregatedResponseTimeChartData,
+  getAggregatedUptimeChartData,
+  getAggregatedErrorRateChartData,
+  getAggregatedLatencyPercentilesChartData,
+  getAggregatedThroughputChartData,
+  getAggregatedStatusDistributionData,
 } from "@/lib/data";
+import { timeRangeCache, getTimeRange } from "@/lib/time-range";
 
-export default async function OverviewPage() {
+interface Props {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function OverviewPage({ searchParams }: Props) {
   const showAbout = process.env.SHOW_ABOUT === "true";
   const monitors = await getMonitors();
   const activeMonitors = monitors.filter((m) => m.isActive);
+  const monitorIds = monitors.map((m) => m.id);
+
+  const { preset, from, to, interval } =
+    await timeRangeCache.parse(searchParams);
+  const timeRange = getTimeRange({ preset, from, to });
 
   // Calculate overall stats
   const [
@@ -51,13 +54,13 @@ export default async function OverviewPage() {
       ? await Promise.all([
           (async () => {
             const uptimes = await Promise.all(
-              monitors.map((m) => getUptimePercentage(m.id, 24)),
+              monitors.map((m) => getUptimePercentage(m.id, timeRange)),
             );
             return uptimes.reduce((acc, v) => acc + v, 0) / uptimes.length;
           })(),
           (async () => {
             const responseTimes = await Promise.all(
-              monitors.map((m) => getAverageResponseTime(m.id, 24)),
+              monitors.map((m) => getAverageResponseTime(m.id, timeRange)),
             );
             return Math.round(
               responseTimes.reduce((acc, v) => acc + v, 0) /
@@ -66,7 +69,7 @@ export default async function OverviewPage() {
           })(),
           (async () => {
             const errorRates = await Promise.all(
-              monitors.map((m) => getErrorRate(m.id, 24)),
+              monitors.map((m) => getErrorRate(m.id, timeRange)),
             );
             return (
               errorRates.reduce((acc, v) => acc + v, 0) / errorRates.length
@@ -74,7 +77,7 @@ export default async function OverviewPage() {
           })(),
           (async () => {
             const p95s = await Promise.all(
-              monitors.map((m) => getP95ResponseTime(m.id, 24)),
+              monitors.map((m) => getP95ResponseTime(m.id, timeRange)),
             );
             return Math.round(
               p95s.reduce((acc, v) => acc + v, 0) / p95s.length,
@@ -82,7 +85,7 @@ export default async function OverviewPage() {
           })(),
           (async () => {
             const p99s = await Promise.all(
-              monitors.map((m) => getP99ResponseTime(m.id, 24)),
+              monitors.map((m) => getP99ResponseTime(m.id, timeRange)),
             );
             return Math.round(
               p99s.reduce((acc, v) => acc + v, 0) / p99s.length,
@@ -90,7 +93,7 @@ export default async function OverviewPage() {
           })(),
           (async () => {
             const checks = await Promise.all(
-              monitors.map((m) => getTotalChecks(m.id, 24)),
+              monitors.map((m) => getTotalChecks(m.id, timeRange)),
             );
             return checks.reduce((acc, v) => acc + v, 0);
           })(),
@@ -103,11 +106,29 @@ export default async function OverviewPage() {
   );
   const downCount = latestResults.filter((r) => r?.status === "down").length;
 
-  // Get all check results for charts
-  const allResultsArrays = await Promise.all(
-    monitors.map((m) => getCheckResults(m.id, 100)),
-  );
-  const allResults = allResultsArrays.flat();
+  // Get aggregated chart data server-side
+  const [
+    responseTimeData,
+    uptimeData,
+    errorRateData,
+    latencyPercentilesData,
+    throughputData,
+    statusDistributionData,
+  ] =
+    monitors.length > 0
+      ? await Promise.all([
+          getAggregatedResponseTimeChartData(monitorIds, timeRange, interval),
+          getAggregatedUptimeChartData(monitorIds, timeRange, interval),
+          getAggregatedErrorRateChartData(monitorIds, timeRange, interval),
+          getAggregatedLatencyPercentilesChartData(
+            monitorIds,
+            timeRange,
+            interval,
+          ),
+          getAggregatedThroughputChartData(monitorIds, timeRange, interval),
+          getAggregatedStatusDistributionData(monitorIds, timeRange),
+        ])
+      : [[], [], [], [], [], { up: 0, degraded: 0, down: 0 }];
 
   return (
     <div>
@@ -182,7 +203,6 @@ export default async function OverviewPage() {
         <StatsCard
           title="uptime"
           value={`${overallUptime.toFixed(1)}%`}
-          description="24h average"
           trend={
             overallUptime >= 99.9
               ? "up"
@@ -196,23 +216,14 @@ export default async function OverviewPage() {
           value={activeMonitors.length}
           description={`${monitors.length} total`}
         />
-        <StatsCard
-          title="avg latency"
-          value={`${avgResponseTime}ms`}
-          description="response time"
-        />
-        <StatsCard
-          title="p95"
-          value={`${p95Latency}ms`}
-          description="95th percentile"
-        />
+        <StatsCard title="avg latency" value={`${avgResponseTime}ms`} />
+        <StatsCard title="p95" value={`${p95Latency}ms`} />
         <StatsCard
           title="errors"
           value={`${errorRate.toFixed(1)}%`}
-          description="failures"
           trend={errorRate === 0 ? "up" : errorRate < 1 ? "neutral" : "down"}
         />
-        <StatsCard title="checks" value={totalChecks} description="24h" />
+        <StatsCard title="checks" value={totalChecks} />
         <StatsCard
           title="incidents"
           value={downCount}
@@ -223,68 +234,54 @@ export default async function OverviewPage() {
 
       {/* Primary Charts Row */}
       <div className="grid md:grid-cols-2 gap-4 mb-6">
-        <div className="border border-border rounded bg-card p-4">
-          <div className="flex items-center gap-1.5 mb-3">
-            <Activity className="h-3 w-3 text-primary" />
-            <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              response time
-            </h3>
-          </div>
-          <ResponseTimeChart results={allResults} height={140} />
-        </div>
-        <div className="border border-border rounded bg-card p-4">
-          <div className="flex items-center gap-1.5 mb-3">
-            <CheckCircle className="h-3 w-3 text-status-up" />
-            <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              hourly uptime
-            </h3>
-          </div>
-          <UptimeChart results={allResults} height={140} />
-        </div>
+        <ChartCard
+          title="response time"
+          icon="activity"
+          iconClassName="text-primary"
+          defaultChartType="line"
+        >
+          <ResponseTimeChart data={responseTimeData} height={140} />
+        </ChartCard>
+        <ChartCard
+          title="hourly uptime"
+          icon="check-circle"
+          iconClassName="text-status-up"
+          defaultChartType="bar"
+        >
+          <UptimeChart data={uptimeData} height={140} />
+        </ChartCard>
       </div>
 
       {/* Secondary Charts Row */}
       <div className="grid md:grid-cols-3 gap-4 mb-6">
-        <div className="border border-border rounded bg-card p-4">
-          <div className="flex items-center gap-1.5 mb-3">
-            <AlertTriangle className="h-3 w-3 text-status-down" />
-            <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              error rate
-            </h3>
-          </div>
-          <ErrorRateChart results={allResults} height={120} />
-        </div>
-        <div className="border border-border rounded bg-card p-4">
-          <div className="flex items-center gap-1.5 mb-3">
-            <TrendingUp className="h-3 w-3 text-status-degraded" />
-            <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              latency percentiles
-            </h3>
-          </div>
-          <LatencyPercentilesChart results={allResults} height={120} />
-        </div>
-        <div className="border border-border rounded bg-card p-4">
-          <div className="flex items-center gap-1.5 mb-3">
-            <Zap className="h-3 w-3 text-purple-500" />
-            <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              throughput
-            </h3>
-          </div>
-          <ThroughputChart results={allResults} height={120} />
-        </div>
+        <ChartCard
+          title="error rate"
+          icon="alert-triangle"
+          iconClassName="text-status-down"
+          defaultChartType="bar"
+        >
+          <ErrorRateChart data={errorRateData} height={120} />
+        </ChartCard>
+        <ChartCard
+          title="latency percentiles"
+          icon="trending-up"
+          iconClassName="text-status-degraded"
+          defaultChartType="line"
+        >
+          <LatencyPercentilesChart data={latencyPercentilesData} height={120} />
+        </ChartCard>
+        <ChartCard
+          title="throughput"
+          icon="zap"
+          iconClassName="text-purple-500"
+          defaultChartType="line"
+        >
+          <ThroughputChart data={throughputData} height={120} />
+        </ChartCard>
       </div>
 
-      {/* Tertiary Charts Row */}
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
-        <div className="border border-border rounded bg-card p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Clock className="h-3 w-3 text-muted-foreground" />
-            <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              latency heatmap
-            </h3>
-          </div>
-          <LatencyHeatmap results={allResults} height={100} />
-        </div>
+      {/* Status Distribution */}
+      <div className="mb-8">
         <div className="border border-border rounded bg-card p-4">
           <div className="flex items-center gap-2 mb-3">
             <Activity className="h-3 w-3 text-muted-foreground" />
@@ -292,7 +289,7 @@ export default async function OverviewPage() {
               status distribution
             </h3>
           </div>
-          <StatusDistributionChart results={allResults} height={100} />
+          <StatusDistributionChart data={statusDistributionData} height={100} />
         </div>
       </div>
 
@@ -320,7 +317,11 @@ export default async function OverviewPage() {
         ) : (
           <div className="grid gap-3">
             {monitors.slice(0, 5).map((monitor) => (
-              <MonitorCard key={monitor.id} monitor={monitor} />
+              <MonitorCard
+                key={monitor.id}
+                monitor={monitor}
+                timeRange={timeRange}
+              />
             ))}
           </div>
         )}

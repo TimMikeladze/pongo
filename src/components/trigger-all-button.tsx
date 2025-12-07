@@ -10,11 +10,15 @@ interface TriggerAllButtonProps {
   dashboardId: string;
 }
 
-export function TriggerAllButton({ monitorIds, dashboardId }: TriggerAllButtonProps) {
+export function TriggerAllButton({
+  monitorIds,
+  dashboardId,
+}: TriggerAllButtonProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [result, setResult] = useState<{
     success?: number;
     failed?: number;
+    totalTime?: number;
     error?: string;
   } | null>(null);
 
@@ -25,9 +29,20 @@ export function TriggerAllButton({ monitorIds, dashboardId }: TriggerAllButtonPr
     try {
       const res = await triggerAllMonitors(monitorIds, dashboardId);
       if (res.success && res.results) {
-        const success = res.results.filter((r: { status?: string; error?: string }) => r.status === "up" || r.status === "degraded").length;
-        const failed = res.results.filter((r: { status?: string; error?: string }) => r.status === "down" || r.error).length;
-        setResult({ success, failed });
+        const success = res.results.filter(
+          (r: { status?: string; error?: string; responseTime?: number }) =>
+            r.status === "up" || r.status === "degraded",
+        ).length;
+        const failed = res.results.filter(
+          (r: { status?: string; error?: string; responseTime?: number }) =>
+            r.status === "down" || r.error,
+        ).length;
+        const totalTime = res.results.reduce(
+          (sum: number, r: { responseTime?: number }) =>
+            sum + (r.responseTime ?? 0),
+          0,
+        );
+        setResult({ success, failed, totalTime });
       } else {
         setResult({ error: res.error });
       }
@@ -39,7 +54,7 @@ export function TriggerAllButton({ monitorIds, dashboardId }: TriggerAllButtonPr
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-col items-end gap-1">
       <Button
         variant="outline"
         size="sm"
@@ -50,21 +65,21 @@ export function TriggerAllButton({ monitorIds, dashboardId }: TriggerAllButtonPr
         {isRunning ? (
           <>
             <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
-            Running {monitorIds.length}...
+            Running...
           </>
         ) : (
           <>
             <Play className="h-3 w-3 mr-1.5" />
-            Run All ({monitorIds.length})
+            Run All
           </>
         )}
       </Button>
-      {result && (
-        <span className="text-[10px] text-muted-foreground flex items-center gap-1.5">
-          {result.error ? (
+      <span className="text-[10px] text-muted-foreground h-4">
+        {result ? (
+          result.error ? (
             <span className="text-destructive">{result.error}</span>
           ) : (
-            <>
+            <span className="flex items-center gap-1.5">
               {result.success !== undefined && result.success > 0 && (
                 <span className="flex items-center gap-0.5 text-green-500">
                   <CheckCircle className="h-3 w-3" />
@@ -77,10 +92,15 @@ export function TriggerAllButton({ monitorIds, dashboardId }: TriggerAllButtonPr
                   {result.failed}
                 </span>
               )}
-            </>
-          )}
-        </span>
-      )}
+              {result.totalTime !== undefined && (
+                <span>- {result.totalTime}ms</span>
+              )}
+            </span>
+          )
+        ) : (
+          <span className="invisible">placeholder</span>
+        )}
+      </span>
     </div>
   );
 }

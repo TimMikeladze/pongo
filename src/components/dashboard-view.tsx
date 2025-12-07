@@ -14,16 +14,22 @@ import {
   getLatestCheckResult,
   getUptimePercentage,
   getAverageResponseTime,
+  type TimeRange,
 } from "@/lib/data";
+import type { IntervalOption } from "@/lib/time-range";
 
 interface DashboardViewProps {
   dashboardId: string;
   isPublic?: boolean;
+  timeRange: TimeRange;
+  interval?: IntervalOption;
 }
 
 export async function DashboardView({
   dashboardId,
   isPublic = false,
+  timeRange,
+  interval = "1h",
 }: DashboardViewProps) {
   const dashboard = await getDashboard(dashboardId);
 
@@ -52,8 +58,8 @@ export async function DashboardView({
   const allUp = latestResults.every((result) => result?.status === "up");
 
   const [uptimes, responseTimes] = await Promise.all([
-    Promise.all(monitors.map((m) => getUptimePercentage(m.id, 24))),
-    Promise.all(monitors.map((m) => getAverageResponseTime(m.id, 24))),
+    Promise.all(monitors.map((m) => getUptimePercentage(m.id, timeRange))),
+    Promise.all(monitors.map((m) => getAverageResponseTime(m.id, timeRange))),
   ]);
 
   const overallUptime =
@@ -81,6 +87,26 @@ export async function DashboardView({
         </div>
       )}
 
+      {/* Overall Status */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatsCard
+          title="status"
+          value={allUp ? "operational" : "degraded"}
+          trend={allUp ? "up" : "down"}
+        />
+        <StatsCard title="uptime" value={`${overallUptime.toFixed(1)}%`} />
+        <StatsCard
+          title="latency"
+          value={`${avgResponseTime}ms`}
+          description="avg"
+        />
+        <StatsCard
+          title="monitors"
+          value={monitors.length.toString()}
+          description="active"
+        />
+      </div>
+
       {/* Announcements */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
@@ -102,32 +128,10 @@ export async function DashboardView({
       {/* Maintenance Schedule */}
       <MaintenanceSchedule dashboardId={dashboardId} />
 
-      {/* Overall Status */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatsCard
-          title="status"
-          value={allUp ? "operational" : "degraded"}
-          trend={allUp ? "up" : "down"}
-        />
-        <StatsCard
-          title="uptime"
-          value={`${overallUptime.toFixed(1)}%`}
-          description="24h"
-        />
-        <StatsCard
-          title="latency"
-          value={`${avgResponseTime}ms`}
-          description="avg"
-        />
-        <StatsCard
-          title="monitors"
-          value={monitors.length.toString()}
-          description="active"
-        />
-      </div>
-
       {/* SLA Status */}
-      {dashboard.slaTarget && <SLAStatus dashboardId={dashboardId} />}
+      {dashboard.slaTarget && (
+        <SLAStatus dashboardId={dashboardId} timeRange={timeRange} />
+      )}
 
       <div className="space-y-2">
         <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
@@ -146,7 +150,8 @@ export async function DashboardView({
                 key={monitor.id}
                 monitorId={monitor.id}
                 monitorName={monitor.name}
-                days={90}
+                timeRange={timeRange}
+                interval={interval}
                 showLabels={true}
               />
             ))}
@@ -167,7 +172,12 @@ export async function DashboardView({
                 className="rounded-lg border border-border bg-card p-4"
               >
                 <p className="text-xs font-mono mb-3">{monitor.name}</p>
-                <MonitorResponseChart monitorId={monitor.id} height={100} />
+                <MonitorResponseChart
+                  monitorId={monitor.id}
+                  height={100}
+                  timeRange={timeRange}
+                  interval={interval}
+                />
               </div>
             ))}
           </div>
@@ -187,7 +197,12 @@ export async function DashboardView({
                 className="rounded-lg border border-border bg-card p-4"
               >
                 <p className="text-xs font-mono mb-3">{monitor.name}</p>
-                <MonitorErrorRateChart monitorId={monitor.id} height={100} />
+                <MonitorErrorRateChart
+                  monitorId={monitor.id}
+                  height={100}
+                  timeRange={timeRange}
+                  interval={interval}
+                />
               </div>
             ))}
           </div>

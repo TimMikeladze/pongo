@@ -1,6 +1,10 @@
 // src/scheduler/runner.ts
 import type { MonitorResult } from "@/lib/config-types";
-import type { ScheduledMonitor, SchedulerConfig, ExecutionResult } from "./types";
+import type {
+  ScheduledMonitor,
+  SchedulerConfig,
+  ExecutionResult,
+} from "./types";
 
 /**
  * Sleep for given milliseconds
@@ -59,7 +63,12 @@ export async function runMonitor(
 
       // If successful (up or degraded), return immediately
       if (lastResult.status === "up" || lastResult.status === "degraded") {
-        return { monitorId: monitor.id, result: lastResult, attempts, executedAt };
+        return {
+          monitorId: monitor.id,
+          result: lastResult,
+          attempts,
+          executedAt,
+        };
       }
 
       // If down and we have retries left, wait and retry

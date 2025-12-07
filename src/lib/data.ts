@@ -1,6 +1,6 @@
 // src/lib/data.ts
 
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, and, gte, lte } from "drizzle-orm";
 import { cache } from "react";
 import { getDbAsync, getDbDriver, sqliteSchema, pgSchema } from "@/db";
 import {
@@ -18,6 +18,13 @@ import type {
   Monitor,
   MonitorStatus,
 } from "./types";
+import type { IntervalOption } from "./time-range";
+import { getIntervalMs, formatBucketLabel } from "./time-range";
+
+export interface TimeRange {
+  from: Date;
+  to: Date;
+}
 
 // Cache data loading per request
 export const getMonitors = cache(async (): Promise<Monitor[]> => {
@@ -79,21 +86,31 @@ export const getActiveIncidents = cache(
 
 // Get check results from database
 export const getCheckResults = cache(
-  async (monitorId: string, limit?: number): Promise<CheckResult[]> => {
+  async (
+    monitorId: string,
+    options?: { limit?: number; timeRange?: TimeRange },
+  ): Promise<CheckResult[]> => {
     const db = await getDbAsync();
     const driver = getDbDriver();
     const checkResults =
       driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
 
+    const conditions = [eq(checkResults.monitorId, monitorId)];
+
+    if (options?.timeRange) {
+      conditions.push(gte(checkResults.checkedAt, options.timeRange.from));
+      conditions.push(lte(checkResults.checkedAt, options.timeRange.to));
+    }
+
     // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union issue
     let query = (db as any)
       .select()
       .from(checkResults)
-      .where(eq(checkResults.monitorId, monitorId))
+      .where(and(...conditions))
       .orderBy(desc(checkResults.checkedAt));
 
-    if (limit) {
-      query = query.limit(limit);
+    if (options?.limit) {
+      query = query.limit(options.limit);
     }
 
     const dbResults = await query;
@@ -117,7 +134,7 @@ export const getCheckResults = cache(
 
 export const getLatestCheckResult = cache(
   async (monitorId: string): Promise<CheckResult | null> => {
-    const results = await getCheckResults(monitorId, 1);
+    const results = await getCheckResults(monitorId, { limit: 1 });
     return results[0] || null;
   },
 );
@@ -125,69 +142,55 @@ export const getLatestCheckResult = cache(
 // Stats helpers
 export async function getUptimePercentage(
   monitorId: string,
-  hours = 24,
+  timeRange: TimeRange,
 ): Promise<number> {
-  const since = Date.now() - hours * 60 * 60 * 1000;
-  const results = await getCheckResults(monitorId);
-  const filtered = results.filter(
-    (c) => new Date(c.checkedAt).getTime() >= since,
-  );
+  const results = await getCheckResults(monitorId, { timeRange });
 
-  if (filtered.length === 0) return 100;
-  const upCount = filtered.filter(
+  if (results.length === 0) return 100;
+  const upCount = results.filter(
     (r) => r.status === "up" || r.status === "degraded",
   ).length;
-  return Math.round((upCount / filtered.length) * 10000) / 100;
+  return Math.round((upCount / results.length) * 10000) / 100;
 }
 
 export async function getAverageResponseTime(
   monitorId: string,
-  hours = 24,
+  timeRange: TimeRange,
 ): Promise<number> {
-  const since = Date.now() - hours * 60 * 60 * 1000;
-  const results = await getCheckResults(monitorId);
-  const filtered = results.filter(
-    (c) => new Date(c.checkedAt).getTime() >= since && c.status !== "down",
-  );
+  const results = await getCheckResults(monitorId, { timeRange });
+  const filtered = results.filter((c) => c.status !== "down");
 
   if (filtered.length === 0) return 0;
   const sum = filtered.reduce((acc, r) => acc + r.responseTimeMs, 0);
   return Math.round(sum / filtered.length);
 }
 
-export async function getMonitorStats(monitorId: string, hours = 24) {
+export async function getMonitorStats(monitorId: string, timeRange: TimeRange) {
   const [uptime, avgResponseTime] = await Promise.all([
-    getUptimePercentage(monitorId, hours),
-    getAverageResponseTime(monitorId, hours),
+    getUptimePercentage(monitorId, timeRange),
+    getAverageResponseTime(monitorId, timeRange),
   ]);
   return { uptime, avgResponseTime };
 }
 
 export async function getErrorRate(
   monitorId: string,
-  hours = 24,
+  timeRange: TimeRange,
 ): Promise<number> {
-  const since = Date.now() - hours * 60 * 60 * 1000;
-  const results = await getCheckResults(monitorId);
-  const filtered = results.filter(
-    (c) => new Date(c.checkedAt).getTime() >= since,
-  );
+  const results = await getCheckResults(monitorId, { timeRange });
 
-  if (filtered.length === 0) return 0;
-  const errorCount = filtered.filter((r) => r.status === "down").length;
-  return Math.round((errorCount / filtered.length) * 10000) / 100;
+  if (results.length === 0) return 0;
+  const errorCount = results.filter((r) => r.status === "down").length;
+  return Math.round((errorCount / results.length) * 10000) / 100;
 }
 
 export async function getP95ResponseTime(
   monitorId: string,
-  hours = 24,
+  timeRange: TimeRange,
 ): Promise<number> {
-  const since = Date.now() - hours * 60 * 60 * 1000;
-  const results = await getCheckResults(monitorId);
+  const results = await getCheckResults(monitorId, { timeRange });
   const responseTimes = results
-    .filter(
-      (c) => new Date(c.checkedAt).getTime() >= since && c.status !== "down",
-    )
+    .filter((c) => c.status !== "down")
     .map((r) => r.responseTimeMs)
     .sort((a, b) => a - b);
 
@@ -198,14 +201,11 @@ export async function getP95ResponseTime(
 
 export async function getP99ResponseTime(
   monitorId: string,
-  hours = 24,
+  timeRange: TimeRange,
 ): Promise<number> {
-  const since = Date.now() - hours * 60 * 60 * 1000;
-  const results = await getCheckResults(monitorId);
+  const results = await getCheckResults(monitorId, { timeRange });
   const responseTimes = results
-    .filter(
-      (c) => new Date(c.checkedAt).getTime() >= since && c.status !== "down",
-    )
+    .filter((c) => c.status !== "down")
     .map((r) => r.responseTimeMs)
     .sort((a, b) => a - b);
 
@@ -216,74 +216,90 @@ export async function getP99ResponseTime(
 
 export async function getTotalChecks(
   monitorId: string,
-  hours = 24,
+  timeRange: TimeRange,
 ): Promise<number> {
-  const since = Date.now() - hours * 60 * 60 * 1000;
-  const results = await getCheckResults(monitorId);
-  return results.filter((c) => new Date(c.checkedAt).getTime() >= since).length;
+  const results = await getCheckResults(monitorId, { timeRange });
+  return results.length;
 }
 
-export async function getDailyStatus(
+export interface StatusBucket {
+  label: string;
+  status: MonitorStatus | "pending";
+  uptime: number;
+  checks: number;
+  timestamp: number;
+}
+
+export async function getStatusBuckets(
   monitorId: string,
-  days = 90,
-): Promise<
-  Array<{ date: string; status: MonitorStatus; uptime: number; checks: number }>
-> {
-  const results = await getCheckResults(monitorId);
-  const result: Array<{
-    date: string;
-    status: MonitorStatus;
-    uptime: number;
-    checks: number;
-  }> = [];
-  const now = new Date();
+  timeRange: TimeRange,
+  interval: IntervalOption,
+): Promise<StatusBucket[]> {
+  const results = await getCheckResults(monitorId, { timeRange });
+  const intervalMs = getIntervalMs(interval);
+  const fromMs = timeRange.from.getTime();
+  const toMs = timeRange.to.getTime();
 
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(now);
-    date.setDate(date.getDate() - i);
-    date.setHours(0, 0, 0, 0);
-    const dayStart = date.getTime();
-    const dayEnd = dayStart + 24 * 60 * 60 * 1000;
+  // Create buckets
+  const buckets: Map<number, CheckResult[]> = new Map();
+  const bucketTimestamps: number[] = [];
 
-    const dayChecks = results.filter((c) => {
-      const checkTime = new Date(c.checkedAt).getTime();
-      return checkTime >= dayStart && checkTime < dayEnd;
-    });
+  for (let t = fromMs; t <= toMs; t += intervalMs) {
+    const bucketStart = Math.floor(t / intervalMs) * intervalMs;
+    if (!buckets.has(bucketStart)) {
+      buckets.set(bucketStart, []);
+      bucketTimestamps.push(bucketStart);
+    }
+  }
 
-    if (dayChecks.length === 0) {
-      result.push({
-        date: date.toISOString().split("T")[0],
-        status: "pending",
+  // Assign results to buckets
+  for (const r of results) {
+    const checkTime = new Date(r.checkedAt).getTime();
+    const bucketStart = Math.floor(checkTime / intervalMs) * intervalMs;
+    const bucket = buckets.get(bucketStart);
+    if (bucket) {
+      bucket.push(r);
+    }
+  }
+
+  // Calculate status for each bucket
+  return bucketTimestamps.map((timestamp) => {
+    const bucketChecks = buckets.get(timestamp) || [];
+
+    if (bucketChecks.length === 0) {
+      return {
+        label: formatBucketLabel(timestamp, interval),
+        status: "pending" as const,
         uptime: 100,
         checks: 0,
-      });
-      continue;
+        timestamp,
+      };
     }
 
-    const upCount = dayChecks.filter((c) => c.status === "up").length;
-    const degradedCount = dayChecks.filter(
+    const upCount = bucketChecks.filter((c) => c.status === "up").length;
+    const degradedCount = bucketChecks.filter(
       (c) => c.status === "degraded",
     ).length;
-    const downCount = dayChecks.filter((c) => c.status === "down").length;
+    const downCount = bucketChecks.filter((c) => c.status === "down").length;
     const uptime =
-      Math.round(((upCount + degradedCount) / dayChecks.length) * 10000) / 100;
+      Math.round(((upCount + degradedCount) / bucketChecks.length) * 10000) /
+      100;
 
     let status: MonitorStatus = "up";
     if (downCount > 0) status = "down";
     else if (degradedCount > 0) status = "degraded";
 
-    result.push({
-      date: date.toISOString().split("T")[0],
+    return {
+      label: formatBucketLabel(timestamp, interval),
       status,
       uptime,
-      checks: dayChecks.length,
-    });
-  }
-
-  return result;
+      checks: bucketChecks.length,
+      timestamp,
+    };
+  });
 }
 
-export async function getSLAStatus(dashboardId: string, days = 30) {
+export async function getSLAStatus(dashboardId: string, timeRange: TimeRange) {
   const dashboard = await getDashboard(dashboardId);
   if (!dashboard) return null;
 
@@ -294,7 +310,7 @@ export async function getSLAStatus(dashboardId: string, days = 30) {
   if (dashboardMonitors.length === 0) return null;
 
   const uptimes = await Promise.all(
-    dashboardMonitors.map((m) => getUptimePercentage(m.id, days * 24)),
+    dashboardMonitors.map((m) => getUptimePercentage(m.id, timeRange)),
   );
   const totalUptime = uptimes.reduce((a, b) => a + b, 0) / uptimes.length;
   const target = dashboard.slaTarget || 99.9;
@@ -318,4 +334,596 @@ export async function getUpcomingMaintenance(
   _dashboardId?: string,
 ): Promise<MaintenanceWindow[]> {
   return [];
+}
+
+// ============================================
+// Server-side aggregation for charts (SQL-based)
+// ============================================
+
+import { sql } from "drizzle-orm";
+
+export interface ResponseTimeDataPoint {
+  time: string;
+  responseTime: number;
+}
+
+export interface ErrorRateDataPoint {
+  time: string;
+  errorRate: number;
+  errors: number;
+}
+
+export interface UptimeDataPoint {
+  time: string;
+  uptime: number;
+}
+
+export interface LatencyPercentilesDataPoint {
+  time: string;
+  p50: number;
+  p95: number;
+  p99: number;
+}
+
+export interface ThroughputDataPoint {
+  time: string;
+  checks: number;
+}
+
+export interface StatusTimelineDataPoint {
+  time: string;
+  timestamp: number;
+  status: MonitorStatus;
+  up: number;
+  down: number;
+  degraded: number;
+  total: number;
+  avgResponseTime: number;
+}
+
+export interface StatusDistributionData {
+  up: number;
+  degraded: number;
+  down: number;
+}
+
+// Helper to run raw SQL aggregation queries
+async function runAggregationQuery<T>(
+  queryStr: string,
+  // biome-ignore lint/suspicious/noExplicitAny: raw SQL result types
+): Promise<T[]> {
+  const db = await getDbAsync();
+  const driver = getDbDriver();
+
+  if (driver === "pg") {
+    // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
+    const result = await (db as any).execute(sql.raw(queryStr));
+    return result.rows as T[];
+  }
+  // SQLite via libsql
+  // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
+  const result = await (db as any).run(sql.raw(queryStr));
+  return result.rows as T[];
+}
+
+export async function getResponseTimeChartData(
+  monitorId: string,
+  timeRange: TimeRange,
+  interval: IntervalOption,
+): Promise<ResponseTimeDataPoint[]> {
+  const intervalMs = getIntervalMs(interval);
+  const fromMs = timeRange.from.getTime();
+  const toMs = timeRange.to.getTime();
+
+  const query = `
+    SELECT
+      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      ROUND(AVG(response_time_ms)) as avg_response_time,
+      COUNT(*) as cnt
+    FROM check_results
+    WHERE monitor_id = '${monitorId}'
+      AND checked_at >= ${fromMs}
+      AND checked_at <= ${toMs}
+      AND status != 'down'
+    GROUP BY bucket
+    ORDER BY bucket ASC
+  `;
+
+  const rows = await runAggregationQuery<{
+    bucket: number;
+    avg_response_time: number;
+    cnt: number;
+  }>(query);
+
+  return rows.map((row) => ({
+    time: formatBucketLabel(row.bucket, interval),
+    responseTime: Math.round(row.avg_response_time),
+  }));
+}
+
+export async function getErrorRateChartData(
+  monitorId: string,
+  timeRange: TimeRange,
+  interval: IntervalOption,
+): Promise<ErrorRateDataPoint[]> {
+  const intervalMs = getIntervalMs(interval);
+  const fromMs = timeRange.from.getTime();
+  const toMs = timeRange.to.getTime();
+
+  const query = `
+    SELECT
+      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as errors,
+      COUNT(*) as total
+    FROM check_results
+    WHERE monitor_id = '${monitorId}'
+      AND checked_at >= ${fromMs}
+      AND checked_at <= ${toMs}
+    GROUP BY bucket
+    ORDER BY bucket ASC
+  `;
+
+  const rows = await runAggregationQuery<{
+    bucket: number;
+    errors: number;
+    total: number;
+  }>(query);
+
+  return rows.map((row) => ({
+    time: formatBucketLabel(row.bucket, interval),
+    errorRate: row.total > 0 ? Math.round((row.errors / row.total) * 100) : 0,
+    errors: row.errors,
+  }));
+}
+
+export async function getUptimeChartData(
+  monitorId: string,
+  timeRange: TimeRange,
+  interval: IntervalOption,
+): Promise<UptimeDataPoint[]> {
+  const intervalMs = getIntervalMs(interval);
+  const fromMs = timeRange.from.getTime();
+  const toMs = timeRange.to.getTime();
+
+  const query = `
+    SELECT
+      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      SUM(CASE WHEN status IN ('up', 'degraded') THEN 1 ELSE 0 END) as up_count,
+      COUNT(*) as total
+    FROM check_results
+    WHERE monitor_id = '${monitorId}'
+      AND checked_at >= ${fromMs}
+      AND checked_at <= ${toMs}
+    GROUP BY bucket
+    ORDER BY bucket ASC
+  `;
+
+  const rows = await runAggregationQuery<{
+    bucket: number;
+    up_count: number;
+    total: number;
+  }>(query);
+
+  return rows.map((row) => ({
+    time: formatBucketLabel(row.bucket, interval),
+    uptime: Math.round((row.up_count / row.total) * 100),
+  }));
+}
+
+export async function getLatencyPercentilesChartData(
+  monitorId: string,
+  timeRange: TimeRange,
+  interval: IntervalOption,
+): Promise<LatencyPercentilesDataPoint[]> {
+  // SQLite doesn't have built-in percentile functions, so we need to fetch
+  // bucketed data and compute percentiles in JS
+  const intervalMs = getIntervalMs(interval);
+  const fromMs = timeRange.from.getTime();
+  const toMs = timeRange.to.getTime();
+
+  const query = `
+    SELECT
+      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      response_time_ms
+    FROM check_results
+    WHERE monitor_id = '${monitorId}'
+      AND checked_at >= ${fromMs}
+      AND checked_at <= ${toMs}
+      AND status != 'down'
+    ORDER BY bucket ASC, response_time_ms ASC
+  `;
+
+  const rows = await runAggregationQuery<{
+    bucket: number;
+    response_time_ms: number;
+  }>(query);
+
+  // Group by bucket and compute percentiles
+  const buckets: Map<number, number[]> = new Map();
+  for (const row of rows) {
+    const existing = buckets.get(row.bucket);
+    if (existing) {
+      existing.push(row.response_time_ms);
+    } else {
+      buckets.set(row.bucket, [row.response_time_ms]);
+    }
+  }
+
+  return Array.from(buckets.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([bucket, times]) => {
+      const sorted = times.sort((a, b) => a - b);
+      const p50 = sorted[Math.floor(sorted.length * 0.5)] || 0;
+      const p95 = sorted[Math.floor(sorted.length * 0.95)] || 0;
+      const p99 =
+        sorted[Math.floor(sorted.length * 0.99)] ||
+        sorted[sorted.length - 1] ||
+        0;
+      return {
+        time: formatBucketLabel(bucket, interval),
+        p50,
+        p95,
+        p99,
+      };
+    });
+}
+
+export async function getThroughputChartData(
+  monitorId: string,
+  timeRange: TimeRange,
+  interval: IntervalOption,
+): Promise<ThroughputDataPoint[]> {
+  const intervalMs = getIntervalMs(interval);
+  const fromMs = timeRange.from.getTime();
+  const toMs = timeRange.to.getTime();
+
+  const query = `
+    SELECT
+      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      COUNT(*) as checks
+    FROM check_results
+    WHERE monitor_id = '${monitorId}'
+      AND checked_at >= ${fromMs}
+      AND checked_at <= ${toMs}
+    GROUP BY bucket
+    ORDER BY bucket ASC
+  `;
+
+  const rows = await runAggregationQuery<{
+    bucket: number;
+    checks: number;
+  }>(query);
+
+  return rows.map((row) => ({
+    time: formatBucketLabel(row.bucket, interval),
+    checks: row.checks,
+  }));
+}
+
+export async function getStatusTimelineData(
+  monitorId: string,
+  timeRange: TimeRange,
+  interval: IntervalOption,
+  limit = 30,
+): Promise<StatusTimelineDataPoint[]> {
+  const intervalMs = getIntervalMs(interval);
+  const fromMs = timeRange.from.getTime();
+  const toMs = timeRange.to.getTime();
+
+  const query = `
+    SELECT
+      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) as up_count,
+      SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as down_count,
+      SUM(CASE WHEN status = 'degraded' THEN 1 ELSE 0 END) as degraded_count,
+      COUNT(*) as total,
+      ROUND(AVG(response_time_ms)) as avg_response_time
+    FROM check_results
+    WHERE monitor_id = '${monitorId}'
+      AND checked_at >= ${fromMs}
+      AND checked_at <= ${toMs}
+    GROUP BY bucket
+    ORDER BY bucket DESC
+    LIMIT ${limit}
+  `;
+
+  const rows = await runAggregationQuery<{
+    bucket: number;
+    up_count: number;
+    down_count: number;
+    degraded_count: number;
+    total: number;
+    avg_response_time: number;
+  }>(query);
+
+  // Reverse to get chronological order (we fetched DESC for LIMIT)
+  return rows.reverse().map((row) => {
+    let status: MonitorStatus = "up";
+    if (row.down_count > 0) status = "down";
+    else if (row.degraded_count > 0) status = "degraded";
+    else if (row.up_count === 0) status = "pending";
+
+    return {
+      time: formatBucketLabel(row.bucket, interval),
+      timestamp: row.bucket,
+      status,
+      up: row.up_count,
+      down: row.down_count,
+      degraded: row.degraded_count,
+      total: row.total,
+      avgResponseTime: Math.round(row.avg_response_time),
+    };
+  });
+}
+
+export async function getStatusDistributionData(
+  monitorId: string,
+  timeRange: TimeRange,
+): Promise<StatusDistributionData> {
+  const fromMs = timeRange.from.getTime();
+  const toMs = timeRange.to.getTime();
+
+  const query = `
+    SELECT
+      SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) as up_count,
+      SUM(CASE WHEN status = 'degraded' THEN 1 ELSE 0 END) as degraded_count,
+      SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as down_count
+    FROM check_results
+    WHERE monitor_id = '${monitorId}'
+      AND checked_at >= ${fromMs}
+      AND checked_at <= ${toMs}
+  `;
+
+  const rows = await runAggregationQuery<{
+    up_count: number;
+    degraded_count: number;
+    down_count: number;
+  }>(query);
+
+  const row = rows[0] || { up_count: 0, degraded_count: 0, down_count: 0 };
+  return {
+    up: row.up_count || 0,
+    degraded: row.degraded_count || 0,
+    down: row.down_count || 0,
+  };
+}
+
+// Aggregated data for multiple monitors (for overview page)
+export async function getAggregatedResponseTimeChartData(
+  monitorIds: string[],
+  timeRange: TimeRange,
+  interval: IntervalOption,
+): Promise<ResponseTimeDataPoint[]> {
+  if (monitorIds.length === 0) return [];
+
+  const intervalMs = getIntervalMs(interval);
+  const fromMs = timeRange.from.getTime();
+  const toMs = timeRange.to.getTime();
+  const idList = monitorIds.map((id) => `'${id}'`).join(",");
+
+  const query = `
+    SELECT
+      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      ROUND(AVG(response_time_ms)) as avg_response_time
+    FROM check_results
+    WHERE monitor_id IN (${idList})
+      AND checked_at >= ${fromMs}
+      AND checked_at <= ${toMs}
+      AND status != 'down'
+    GROUP BY bucket
+    ORDER BY bucket ASC
+  `;
+
+  const rows = await runAggregationQuery<{
+    bucket: number;
+    avg_response_time: number;
+  }>(query);
+
+  return rows.map((row) => ({
+    time: formatBucketLabel(row.bucket, interval),
+    responseTime: Math.round(row.avg_response_time),
+  }));
+}
+
+export async function getAggregatedErrorRateChartData(
+  monitorIds: string[],
+  timeRange: TimeRange,
+  interval: IntervalOption,
+): Promise<ErrorRateDataPoint[]> {
+  if (monitorIds.length === 0) return [];
+
+  const intervalMs = getIntervalMs(interval);
+  const fromMs = timeRange.from.getTime();
+  const toMs = timeRange.to.getTime();
+  const idList = monitorIds.map((id) => `'${id}'`).join(",");
+
+  const query = `
+    SELECT
+      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as errors,
+      COUNT(*) as total
+    FROM check_results
+    WHERE monitor_id IN (${idList})
+      AND checked_at >= ${fromMs}
+      AND checked_at <= ${toMs}
+    GROUP BY bucket
+    ORDER BY bucket ASC
+  `;
+
+  const rows = await runAggregationQuery<{
+    bucket: number;
+    errors: number;
+    total: number;
+  }>(query);
+
+  return rows.map((row) => ({
+    time: formatBucketLabel(row.bucket, interval),
+    errorRate: row.total > 0 ? Math.round((row.errors / row.total) * 100) : 0,
+    errors: row.errors,
+  }));
+}
+
+export async function getAggregatedUptimeChartData(
+  monitorIds: string[],
+  timeRange: TimeRange,
+  interval: IntervalOption,
+): Promise<UptimeDataPoint[]> {
+  if (monitorIds.length === 0) return [];
+
+  const intervalMs = getIntervalMs(interval);
+  const fromMs = timeRange.from.getTime();
+  const toMs = timeRange.to.getTime();
+  const idList = monitorIds.map((id) => `'${id}'`).join(",");
+
+  const query = `
+    SELECT
+      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      SUM(CASE WHEN status IN ('up', 'degraded') THEN 1 ELSE 0 END) as up_count,
+      COUNT(*) as total
+    FROM check_results
+    WHERE monitor_id IN (${idList})
+      AND checked_at >= ${fromMs}
+      AND checked_at <= ${toMs}
+    GROUP BY bucket
+    ORDER BY bucket ASC
+  `;
+
+  const rows = await runAggregationQuery<{
+    bucket: number;
+    up_count: number;
+    total: number;
+  }>(query);
+
+  return rows.map((row) => ({
+    time: formatBucketLabel(row.bucket, interval),
+    uptime: Math.round((row.up_count / row.total) * 100),
+  }));
+}
+
+export async function getAggregatedLatencyPercentilesChartData(
+  monitorIds: string[],
+  timeRange: TimeRange,
+  interval: IntervalOption,
+): Promise<LatencyPercentilesDataPoint[]> {
+  if (monitorIds.length === 0) return [];
+
+  const intervalMs = getIntervalMs(interval);
+  const fromMs = timeRange.from.getTime();
+  const toMs = timeRange.to.getTime();
+  const idList = monitorIds.map((id) => `'${id}'`).join(",");
+
+  const query = `
+    SELECT
+      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      response_time_ms
+    FROM check_results
+    WHERE monitor_id IN (${idList})
+      AND checked_at >= ${fromMs}
+      AND checked_at <= ${toMs}
+      AND status != 'down'
+    ORDER BY bucket ASC, response_time_ms ASC
+  `;
+
+  const rows = await runAggregationQuery<{
+    bucket: number;
+    response_time_ms: number;
+  }>(query);
+
+  const buckets: Map<number, number[]> = new Map();
+  for (const row of rows) {
+    const existing = buckets.get(row.bucket);
+    if (existing) {
+      existing.push(row.response_time_ms);
+    } else {
+      buckets.set(row.bucket, [row.response_time_ms]);
+    }
+  }
+
+  return Array.from(buckets.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([bucket, times]) => {
+      const sorted = times.sort((a, b) => a - b);
+      const p50 = sorted[Math.floor(sorted.length * 0.5)] || 0;
+      const p95 = sorted[Math.floor(sorted.length * 0.95)] || 0;
+      const p99 =
+        sorted[Math.floor(sorted.length * 0.99)] ||
+        sorted[sorted.length - 1] ||
+        0;
+      return {
+        time: formatBucketLabel(bucket, interval),
+        p50,
+        p95,
+        p99,
+      };
+    });
+}
+
+export async function getAggregatedThroughputChartData(
+  monitorIds: string[],
+  timeRange: TimeRange,
+  interval: IntervalOption,
+): Promise<ThroughputDataPoint[]> {
+  if (monitorIds.length === 0) return [];
+
+  const intervalMs = getIntervalMs(interval);
+  const fromMs = timeRange.from.getTime();
+  const toMs = timeRange.to.getTime();
+  const idList = monitorIds.map((id) => `'${id}'`).join(",");
+
+  const query = `
+    SELECT
+      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      COUNT(*) as checks
+    FROM check_results
+    WHERE monitor_id IN (${idList})
+      AND checked_at >= ${fromMs}
+      AND checked_at <= ${toMs}
+    GROUP BY bucket
+    ORDER BY bucket ASC
+  `;
+
+  const rows = await runAggregationQuery<{
+    bucket: number;
+    checks: number;
+  }>(query);
+
+  return rows.map((row) => ({
+    time: formatBucketLabel(row.bucket, interval),
+    checks: row.checks,
+  }));
+}
+
+export async function getAggregatedStatusDistributionData(
+  monitorIds: string[],
+  timeRange: TimeRange,
+): Promise<StatusDistributionData> {
+  if (monitorIds.length === 0) return { up: 0, degraded: 0, down: 0 };
+
+  const fromMs = timeRange.from.getTime();
+  const toMs = timeRange.to.getTime();
+  const idList = monitorIds.map((id) => `'${id}'`).join(",");
+
+  const query = `
+    SELECT
+      SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) as up_count,
+      SUM(CASE WHEN status = 'degraded' THEN 1 ELSE 0 END) as degraded_count,
+      SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as down_count
+    FROM check_results
+    WHERE monitor_id IN (${idList})
+      AND checked_at >= ${fromMs}
+      AND checked_at <= ${toMs}
+  `;
+
+  const rows = await runAggregationQuery<{
+    up_count: number;
+    degraded_count: number;
+    down_count: number;
+  }>(query);
+
+  const row = rows[0] || { up_count: 0, degraded_count: 0, down_count: 0 };
+  return {
+    up: row.up_count || 0,
+    degraded: row.degraded_count || 0,
+    down: row.down_count || 0,
+  };
 }

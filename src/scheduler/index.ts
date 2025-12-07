@@ -10,7 +10,10 @@ function loadConfig(): SchedulerConfig {
   return {
     maxConcurrency: parseInt(process.env.SCHEDULER_MAX_CONCURRENCY ?? "10", 10),
     maxRetries: parseInt(process.env.SCHEDULER_MAX_RETRIES ?? "3", 10),
-    retryBaseDelayMs: parseInt(process.env.SCHEDULER_RETRY_DELAY_MS ?? "5000", 10),
+    retryBaseDelayMs: parseInt(
+      process.env.SCHEDULER_RETRY_DELAY_MS ?? "5000",
+      10,
+    ),
     port: parseInt(process.env.SCHEDULER_PORT ?? "3001", 10),
   };
 }

@@ -5,18 +5,27 @@ import { DashboardView } from "@/components/dashboard-view";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
 import { SupportDialog } from "@/components/support-dialog";
 import { getActiveIncidents, getDashboardBySlug } from "@/lib/data";
+import { timeRangeCache, getTimeRange } from "@/lib/time-range";
 
 interface Props {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function PublicDashboardPage({ params }: Props) {
+export default async function PublicDashboardPage({
+  params,
+  searchParams,
+}: Props) {
   const { slug } = await params;
   const dashboard = await getDashboardBySlug(slug);
 
   if (!dashboard || !dashboard.isPublic) {
     notFound();
   }
+
+  const { preset, from, to, interval } =
+    await timeRangeCache.parse(searchParams);
+  const timeRange = getTimeRange({ preset, from, to });
 
   const activeIncidents = await getActiveIncidents(dashboard.id);
   const hasIssues = activeIncidents.length > 0;
@@ -48,7 +57,12 @@ export default async function PublicDashboardPage({ params }: Props) {
       {/* Content - Scrollable */}
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-6xl mx-auto px-6 py-6">
-          <DashboardView dashboardId={dashboard.id} isPublic />
+          <DashboardView
+            dashboardId={dashboard.id}
+            isPublic
+            timeRange={timeRange}
+            interval={interval}
+          />
 
           {/* Past Incidents Section */}
           <div className="mt-8 space-y-3">

@@ -1,6 +1,14 @@
 "use client";
 
-import { Heart, Github, Coffee, Star, Share2, Twitter, Linkedin } from "lucide-react";
+import {
+  Heart,
+  Github,
+  Coffee,
+  Star,
+  Share2,
+  Twitter,
+  Linkedin,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -22,12 +30,18 @@ interface SupportDialogProps {
   showLabel?: boolean;
 }
 
-export function SupportDialog({ triggerClassName, showLabel = true }: SupportDialogProps) {
+export function SupportDialog({
+  triggerClassName,
+  showLabel = true,
+}: SupportDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
         <button
-          className={triggerClassName ?? "hover:text-foreground transition-colors flex items-center gap-1"}
+          className={
+            triggerClassName ??
+            "hover:text-foreground transition-colors flex items-center gap-1"
+          }
           title="Support pongo"
         >
           <Heart className="h-3 w-3" />
@@ -36,14 +50,12 @@ export function SupportDialog({ triggerClassName, showLabel = true }: SupportDia
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-sm font-mono">
-            support pongo
-          </DialogTitle>
+          <DialogTitle className="text-sm font-mono">support pongo</DialogTitle>
         </DialogHeader>
         <div className="space-y-3 pt-2">
           <p className="text-xs text-muted-foreground">
-            pongo is free and open source. here are some ways to support
-            the project:
+            pongo is free and open source. here are some ways to support the
+            project:
           </p>
           <div className="space-y-2">
             <a
@@ -54,9 +66,7 @@ export function SupportDialog({ triggerClassName, showLabel = true }: SupportDia
             >
               <Star className="h-4 w-4 text-muted-foreground group-hover:text-yellow-500 transition-colors" />
               <div>
-                <div className="text-xs font-medium">
-                  star on github
-                </div>
+                <div className="text-xs font-medium">star on github</div>
                 <div className="text-[10px] text-muted-foreground">
                   help others discover pongo
                 </div>

@@ -1,16 +1,21 @@
-import { getCheckResults } from "@/lib/data";
+import { getErrorRateChartData, type TimeRange } from "@/lib/data";
 import { ErrorRateChart } from "./error-rate-chart";
+import type { IntervalOption } from "@/lib/time-range";
 
 interface MonitorErrorRateChartProps {
   monitorId: string;
   height?: number;
+  timeRange: TimeRange;
+  interval?: IntervalOption;
 }
 
 export async function MonitorErrorRateChart({
   monitorId,
   height = 100,
+  timeRange,
+  interval = "1h",
 }: MonitorErrorRateChartProps) {
-  const results = await getCheckResults(monitorId, 100);
+  const data = await getErrorRateChartData(monitorId, timeRange, interval);
 
-  return <ErrorRateChart results={results} height={height} />;
+  return <ErrorRateChart data={data} height={height} />;
 }

@@ -1,70 +1,67 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { CheckResult } from "@/lib/types";
+import type { MonitorStatus } from "@/lib/types";
+import type { StatusTimelineDataPoint } from "@/lib/data";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { formatDistanceToNow } from "date-fns";
 
 interface StatusTimelineProps {
-  results: CheckResult[];
+  data: StatusTimelineDataPoint[];
   limit?: number;
 }
 
-const statusColors: Record<import("@/lib/types").MonitorStatus, string> = {
+const statusColors: Record<MonitorStatus, string> = {
   up: "bg-status-up",
   down: "bg-status-down",
   degraded: "bg-status-degraded",
   pending: "bg-status-pending",
 };
 
-export function StatusTimeline({ results, limit = 30 }: StatusTimelineProps) {
-  const displayResults = results.slice(0, limit).reverse();
-
+export function StatusTimeline({ data, limit = 30 }: StatusTimelineProps) {
   // Pad with empty slots if less than limit
-  const paddedResults: (CheckResult | null)[] = [
-    ...Array(Math.max(0, limit - displayResults.length)).fill(null),
-    ...displayResults,
+  const paddedData: (StatusTimelineDataPoint | null)[] = [
+    ...Array(Math.max(0, limit - data.length)).fill(null),
+    ...data,
   ];
 
   return (
     <TooltipProvider>
       <div className="flex items-center gap-[2px]">
-        {paddedResults.map((result, index) =>
-          result ? (
-            <Tooltip key={result.id}>
+        {paddedData.map((bucket, index) =>
+          bucket ? (
+            <Tooltip key={bucket.timestamp}>
               <TooltipTrigger asChild>
                 <div
                   className={cn(
                     "h-6 w-1 rounded-[1px] transition-all hover:scale-y-110 cursor-default",
-                    statusColors[result.status],
-                    result.status === "up" && "opacity-80 hover:opacity-100",
+                    statusColors[bucket.status],
+                    bucket.status === "up" && "opacity-80 hover:opacity-100",
                   )}
                 />
               </TooltipTrigger>
               <TooltipContent className="bg-card border-border">
                 <div className="text-xs font-mono">
+                  <p className="text-muted-foreground mb-1">{bucket.time}</p>
                   <p
                     className={cn(
                       "lowercase",
-                      result.status === "up" && "text-status-up",
-                      result.status === "down" && "text-status-down",
-                      result.status === "degraded" && "text-status-degraded",
+                      bucket.status === "up" && "text-status-up",
+                      bucket.status === "down" && "text-status-down",
+                      bucket.status === "degraded" && "text-status-degraded",
                     )}
                   >
-                    {result.status}
+                    {bucket.status}
                   </p>
                   <p className="text-muted-foreground">
-                    {result.responseTimeMs}ms / {result.statusCode || "err"}
+                    avg: {bucket.avgResponseTime}ms
                   </p>
                   <p className="text-muted-foreground">
-                    {formatDistanceToNow(new Date(result.checkedAt), {
-                      addSuffix: true,
-                    })}
+                    {bucket.total} check{bucket.total !== 1 ? "s" : ""}
                   </p>
                 </div>
               </TooltipContent>

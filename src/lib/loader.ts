@@ -3,8 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { marked } from "marked";
-import { monitors as monitorConfigs } from "@data/monitors";
-import { dashboards as dashboardConfigs } from "@data/dashboards";
+import monitorConfigs from "@data/monitors";
+import dashboardConfigs from "@data/dashboards";
 import type {
   AnnouncementFrontmatter,
   IncidentFrontmatter,

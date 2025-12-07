@@ -2,16 +2,16 @@
 
 import { useMemo, useEffect, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import type { CheckResult } from "@/lib/types";
 import { useTheme } from "@/components/theme-provider";
+import type { StatusDistributionData } from "@/lib/data";
 
 interface StatusDistributionChartProps {
-  results: CheckResult[];
+  data: StatusDistributionData;
   height?: number;
 }
 
 export function StatusDistributionChart({
-  results,
+  data,
   height = 120,
 }: StatusDistributionChartProps) {
   const { resolvedTheme } = useTheme();
@@ -22,18 +22,12 @@ export function StatusDistributionChart({
   }, []);
 
   const chartData = useMemo(() => {
-    const distribution = { up: 0, degraded: 0, down: 0 };
-    results.forEach((r) => {
-      if (r.status === "up") distribution.up++;
-      else if (r.status === "degraded") distribution.degraded++;
-      else if (r.status === "down") distribution.down++;
-    });
     return [
-      { name: "up", value: distribution.up },
-      { name: "degraded", value: distribution.degraded },
-      { name: "down", value: distribution.down },
+      { name: "up", value: data.up },
+      { name: "degraded", value: data.degraded },
+      { name: "down", value: data.down },
     ].filter((d) => d.value > 0);
-  }, [results]);
+  }, [data]);
 
   const isDark = mounted ? resolvedTheme === "dark" : true;
   const colors = useMemo(() => {

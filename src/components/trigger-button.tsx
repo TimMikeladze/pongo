@@ -39,7 +39,7 @@ export function TriggerButton({ monitorId }: TriggerButtonProps) {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-col items-end gap-1">
       <Button
         variant="outline"
         size="sm"
@@ -59,17 +59,19 @@ export function TriggerButton({ monitorId }: TriggerButtonProps) {
           </>
         )}
       </Button>
-      {result && (
-        <span className="text-[10px] text-muted-foreground">
-          {result.error ? (
+      <span className="text-[10px] text-muted-foreground h-4">
+        {result ? (
+          result.error ? (
             <span className="text-destructive">{result.error}</span>
           ) : (
             <span>
               {result.status} - {result.responseTime}ms
             </span>
-          )}
-        </span>
-      )}
+          )
+        ) : (
+          <span className="invisible">placeholder</span>
+        )}
+      </span>
     </div>
   );
 }

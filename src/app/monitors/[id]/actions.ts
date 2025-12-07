@@ -12,7 +12,10 @@ export async function triggerMonitor(monitorId: string) {
 
     if (!res.ok) {
       const data = await res.json();
-      return { success: false, error: data.error ?? "Failed to trigger monitor" };
+      return {
+        success: false,
+        error: data.error ?? "Failed to trigger monitor",
+      };
     }
 
     const data = await res.json();

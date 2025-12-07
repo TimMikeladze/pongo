@@ -1,7 +1,7 @@
 // src/scheduler/scheduler.ts
 import { Cron } from "croner";
 import pLimit from "p-limit";
-import { monitors as monitorConfigs } from "@data/monitors";
+import monitorConfigs from "@data/monitors";
 import { parseDuration, type MonitorConfig } from "@/lib/config-types";
 import type { ScheduledMonitor, SchedulerConfig, MonitorState } from "./types";
 import { runMonitor } from "./runner";
@@ -97,7 +97,9 @@ export class Scheduler {
    * Start all scheduled jobs
    */
   start(): void {
-    console.log(`[scheduler] Starting scheduler with ${this.monitors.size} monitors...`);
+    console.log(
+      `[scheduler] Starting scheduler with ${this.monitors.size} monitors...`,
+    );
     console.log(`[scheduler] Max concurrency: ${this.config.maxConcurrency}`);
     console.log(`[scheduler] Max retries: ${this.config.maxRetries}`);
 
@@ -114,13 +116,21 @@ export class Scheduler {
       } else if (config.interval) {
         // Interval-based scheduling using croner's interval option
         const seconds = intervalToSeconds(config.interval);
-        const job = new Cron("* * * * * *", { interval: seconds, protect: true }, () => {
-          this.executeMonitor(id);
-        });
+        const job = new Cron(
+          "* * * * * *",
+          { interval: seconds, protect: true },
+          () => {
+            this.executeMonitor(id);
+          },
+        );
         this.jobs.set(id, job);
-        console.log(`[scheduler] Scheduled ${id} with interval: ${config.interval} (${seconds}s)`);
+        console.log(
+          `[scheduler] Scheduled ${id} with interval: ${config.interval} (${seconds}s)`,
+        );
       } else {
-        console.warn(`[scheduler] Monitor ${id} has no cron or interval, skipping`);
+        console.warn(
+          `[scheduler] Monitor ${id} has no cron or interval, skipping`,
+        );
       }
     }
 

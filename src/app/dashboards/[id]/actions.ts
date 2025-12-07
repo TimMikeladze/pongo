@@ -4,7 +4,10 @@ import { revalidatePath } from "next/cache";
 
 const SCHEDULER_URL = process.env.SCHEDULER_URL ?? "http://localhost:3001";
 
-export async function triggerAllMonitors(monitorIds: string[], dashboardId: string) {
+export async function triggerAllMonitors(
+  monitorIds: string[],
+  dashboardId: string,
+) {
   try {
     const res = await fetch(`${SCHEDULER_URL}/monitors/trigger`, {
       method: "POST",
@@ -14,7 +17,10 @@ export async function triggerAllMonitors(monitorIds: string[], dashboardId: stri
 
     if (!res.ok) {
       const data = await res.json();
-      return { success: false, error: data.error ?? "Failed to trigger monitors" };
+      return {
+        success: false,
+        error: data.error ?? "Failed to trigger monitors",
+      };
     }
 
     const data = await res.json();

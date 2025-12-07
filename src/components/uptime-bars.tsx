@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { getDailyStatus } from "@/lib/data";
+import { getStatusBuckets, type TimeRange } from "@/lib/data";
 import {
   Tooltip,
   TooltipContent,
@@ -7,11 +7,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { MonitorStatus } from "@/lib/types";
+import type { IntervalOption } from "@/lib/time-range";
+import { formatPresetLabel } from "@/lib/time-range";
 
 interface UptimeBarsProps {
   monitorId: string;
   monitorName: string;
-  days?: number;
+  timeRange: TimeRange;
+  interval: IntervalOption;
   showLabels?: boolean;
 }
 
@@ -32,14 +35,19 @@ const statusLabels: Record<MonitorStatus | "pending", string> = {
 export async function UptimeBars({
   monitorId,
   monitorName,
-  days = 90,
+  timeRange,
+  interval,
   showLabels = true,
 }: UptimeBarsProps) {
-  const dailyStatus = await getDailyStatus(monitorId, days);
+  const statusBuckets = await getStatusBuckets(monitorId, timeRange, interval);
 
-  // Get current status (last day)
+  // Get current status (last bucket)
   const currentStatus =
-    dailyStatus[dailyStatus.length - 1]?.status ?? "pending";
+    statusBuckets[statusBuckets.length - 1]?.status ?? "pending";
+
+  // Calculate time range label
+  const startLabel = statusBuckets[0]?.label ?? "";
+  const endLabel = statusBuckets[statusBuckets.length - 1]?.label ?? "Now";
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -60,14 +68,14 @@ export async function UptimeBars({
         </div>
 
         <div className="flex gap-[2px]">
-          {dailyStatus.map((day) => (
-            <Tooltip key={day.date}>
+          {statusBuckets.map((bucket) => (
+            <Tooltip key={bucket.timestamp}>
               <TooltipTrigger asChild>
                 <div
                   className={cn(
                     "flex-1 h-8 rounded-[2px] transition-all hover:opacity-80 cursor-default",
-                    statusColors[day.status],
-                    day.status === "up" && "opacity-90",
+                    statusColors[bucket.status],
+                    bucket.status === "up" && "opacity-90",
                   )}
                 />
               </TooltipTrigger>
@@ -76,18 +84,20 @@ export async function UptimeBars({
                 className="bg-card border-border text-xs font-mono"
               >
                 <div className="space-y-1">
-                  <p className="text-foreground">{day.date}</p>
+                  <p className="text-foreground">{bucket.label}</p>
                   <p
                     className={cn(
-                      day.status === "up" && "text-blue-500",
-                      day.status === "down" && "text-red-500",
-                      day.status === "degraded" && "text-amber-500",
-                      day.status === "pending" && "text-muted-foreground",
+                      bucket.status === "up" && "text-blue-500",
+                      bucket.status === "down" && "text-red-500",
+                      bucket.status === "degraded" && "text-amber-500",
+                      bucket.status === "pending" && "text-muted-foreground",
                     )}
                   >
-                    {day.uptime}% uptime
+                    {bucket.uptime}% uptime
                   </p>
-                  <p className="text-muted-foreground">{day.checks} checks</p>
+                  <p className="text-muted-foreground">
+                    {bucket.checks} checks
+                  </p>
                 </div>
               </TooltipContent>
             </Tooltip>
@@ -97,10 +107,10 @@ export async function UptimeBars({
         {showLabels && (
           <div className="flex items-center justify-between mt-2">
             <span className="text-[10px] text-muted-foreground font-mono">
-              {days} days ago
+              {startLabel}
             </span>
             <span className="text-[10px] text-muted-foreground font-mono">
-              Today
+              {endLabel}
             </span>
           </div>
         )}

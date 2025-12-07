@@ -1,13 +1,13 @@
-import { getSLAStatus } from "@/lib/data";
+import { getSLAStatus, type TimeRange } from "@/lib/data";
 import { Target, TrendingUp, TrendingDown } from "lucide-react";
 
 interface SLAStatusProps {
   dashboardId: string;
-  days?: number;
+  timeRange: TimeRange;
 }
 
-export async function SLAStatus({ dashboardId, days = 30 }: SLAStatusProps) {
-  const sla = await getSLAStatus(dashboardId, days);
+export async function SLAStatus({ dashboardId, timeRange }: SLAStatusProps) {
+  const sla = await getSLAStatus(dashboardId, timeRange);
 
   if (!sla) return null;
 
@@ -22,7 +22,7 @@ export async function SLAStatus({ dashboardId, days = 30 }: SLAStatusProps) {
             SLA Status
           </span>
         </div>
-        <span className="text-[10px] text-muted-foreground">{days}d</span>
+        <span className="text-[10px] text-muted-foreground">SLA</span>
       </div>
 
       <div className="space-y-2">

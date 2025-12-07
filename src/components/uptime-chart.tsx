@@ -2,6 +2,8 @@
 
 import { useMemo, useEffect, useState } from "react";
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   XAxis,
@@ -9,44 +11,31 @@ import {
   Tooltip,
   Cell,
 } from "recharts";
-import type { CheckResult } from "@/lib/types";
-import { format } from "date-fns";
 import { useTheme } from "@/components/theme-provider";
+import { useChartType, useChartFullscreen } from "@/components/chart-card";
+import type { ChartType } from "@/components/chart-type-toggle";
+import type { UptimeDataPoint } from "@/lib/data";
 
 interface UptimeChartProps {
-  results: CheckResult[];
+  data: UptimeDataPoint[];
   height?: number;
+  chartType?: ChartType;
 }
 
-export function UptimeChart({ results, height = 60 }: UptimeChartProps) {
+export function UptimeChart({
+  data,
+  height = 60,
+  chartType: chartTypeProp,
+}: UptimeChartProps) {
+  const contextChartType = useChartType();
+  const chartType = chartTypeProp ?? contextChartType;
+  const isFullscreen = useChartFullscreen();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const chartData = useMemo(() => {
-    const hourlyData: { [key: string]: { up: number; total: number } } = {};
-
-    results.forEach((r) => {
-      const hour = format(new Date(r.checkedAt), "HH:00");
-      if (!hourlyData[hour]) {
-        hourlyData[hour] = { up: 0, total: 0 };
-      }
-      hourlyData[hour].total++;
-      if (r.status === "up" || r.status === "degraded") {
-        hourlyData[hour].up++;
-      }
-    });
-
-    return Object.entries(hourlyData)
-      .map(([hour, data]) => ({
-        hour,
-        uptime: Math.round((data.up / data.total) * 100),
-      }))
-      .slice(-24);
-  }, [results]);
 
   const isDark = mounted ? resolvedTheme === "dark" : true;
   const colors = useMemo(() => {
@@ -65,7 +54,7 @@ export function UptimeChart({ results, height = 60 }: UptimeChartProps) {
     return colors.down;
   };
 
-  if (chartData.length === 0) {
+  if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-[60px] text-xs text-muted-foreground">
         no data available
@@ -73,14 +62,11 @@ export function UptimeChart({ results, height = 60 }: UptimeChartProps) {
     );
   }
 
-  return (
-    <ResponsiveContainer width="100%" height={height}>
-      <BarChart
-        data={chartData}
-        margin={{ top: 5, right: 5, left: 5, bottom: 0 }}
-      >
+  const chartContent =
+    chartType === "bar" ? (
+      <BarChart data={data} margin={{ top: 5, right: 5, left: 5, bottom: 0 }}>
         <XAxis
-          dataKey="hour"
+          dataKey="time"
           tick={{ fill: colors.text, fontSize: 8 }}
           axisLine={false}
           tickLine={false}
@@ -97,11 +83,51 @@ export function UptimeChart({ results, height = 60 }: UptimeChartProps) {
           formatter={(value: number) => [`${value}%`, "uptime"]}
         />
         <Bar dataKey="uptime" radius={[2, 2, 0, 0]}>
-          {chartData.map((entry, index) => (
+          {data.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={getBarColor(entry.uptime)} />
           ))}
         </Bar>
       </BarChart>
+    ) : (
+      <AreaChart data={data} margin={{ top: 5, right: 5, left: 5, bottom: 0 }}>
+        <defs>
+          <linearGradient id="uptimeGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={colors.up} stopOpacity={0.3} />
+            <stop offset="100%" stopColor={colors.up} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <XAxis
+          dataKey="time"
+          tick={{ fill: colors.text, fontSize: 8 }}
+          axisLine={false}
+          tickLine={false}
+          interval="preserveStartEnd"
+        />
+        <Tooltip
+          contentStyle={{
+            backgroundColor: isDark ? "#0a0a0a" : "#fafafa",
+            border: `1px solid ${colors.grid}`,
+            borderRadius: "4px",
+            fontSize: "10px",
+            fontFamily: "monospace",
+          }}
+          formatter={(value: number) => [`${value}%`, "uptime"]}
+        />
+        <Area
+          type="monotone"
+          dataKey="uptime"
+          stroke={colors.up}
+          strokeWidth={1.5}
+          fill="url(#uptimeGradient)"
+          dot={false}
+          activeDot={{ r: 3, fill: colors.up }}
+        />
+      </AreaChart>
+    );
+
+  return (
+    <ResponsiveContainer width="100%" height={isFullscreen ? "100%" : height}>
+      {chartContent}
     </ResponsiveContainer>
   );
 }

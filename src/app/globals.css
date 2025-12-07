@@ -23,9 +23,11 @@
   --accent-foreground: oklch(0.35 0.15 145);
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.88 0 0);
+  --border: oklch(0.895 0 0); /* Slightly less bright than before */
   --input: oklch(0.92 0 0);
-  --ring: oklch(0.45 0.18 145);
+  --ring: oklch(
+    0.475 0.18 145
+  ); /* Slightly less bright ring than previous edit */
   --chart-1: oklch(0.45 0.18 145);
   --chart-2: oklch(0.55 0.15 200);
   --chart-3: oklch(0.65 0.15 85);
@@ -38,8 +40,8 @@
   --sidebar-primary-foreground: oklch(0.98 0 0);
   --sidebar-accent: oklch(0.94 0.01 145);
   --sidebar-accent-foreground: oklch(0.35 0.15 145);
-  --sidebar-border: oklch(0.88 0 0);
-  --sidebar-ring: oklch(0.45 0.18 145);
+  --sidebar-border: oklch(0.895 0 0); /* Slightly less bright than before */
+  --sidebar-ring: oklch(0.475 0.18 145); /* Slightly less bright than before */
 
   /* Status colors - light mode */
   --status-up: oklch(0.45 0.18 145);
@@ -65,9 +67,9 @@
   --accent-foreground: oklch(0.72 0.19 145);
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.95 0 0);
-  --border: oklch(0.15 0 0);
+  --border: oklch(0.21 0 0); /* Slightly less bright than previous edit */
   --input: oklch(0.12 0 0);
-  --ring: oklch(0.72 0.19 145);
+  --ring: oklch(0.77 0.19 145); /* Slightly less bright than previous edit */
   --chart-1: oklch(0.72 0.19 145);
   --chart-2: oklch(0.65 0.15 200);
   --chart-3: oklch(0.75 0.15 85);
@@ -79,8 +81,12 @@
   --sidebar-primary-foreground: oklch(0.03 0 0);
   --sidebar-accent: oklch(0.1 0.01 145);
   --sidebar-accent-foreground: oklch(0.72 0.19 145);
-  --sidebar-border: oklch(0.12 0 0);
-  --sidebar-ring: oklch(0.72 0.19 145);
+  --sidebar-border: oklch(
+    0.21 0 0
+  ); /* Slightly less bright than previous edit */
+  --sidebar-ring: oklch(
+    0.77 0.19 145
+  ); /* Slightly less bright than previous edit */
 
   --status-up: oklch(0.85 0.3 145);
   --status-down: oklch(0.75 0.32 25);

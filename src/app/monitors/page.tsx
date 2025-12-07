@@ -1,9 +1,16 @@
 import { Terminal, Zap } from "lucide-react";
 import { MonitorCard } from "@/components/monitor-card";
 import { getMonitors } from "@/lib/data";
+import { timeRangeCache, getTimeRange } from "@/lib/time-range";
 
-export default async function MonitorsPage() {
+interface Props {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function MonitorsPage({ searchParams }: Props) {
   const monitors = await getMonitors();
+  const { preset, from, to } = await timeRangeCache.parse(searchParams);
+  const timeRange = getTimeRange({ preset, from, to });
   const activeCount = monitors.filter((m) => m.isActive).length;
   const pausedCount = monitors.length - activeCount;
 
@@ -34,9 +41,13 @@ export default async function MonitorsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-3">
+        <div className="grid gap-3 md:grid-cols-2">
           {monitors.map((monitor) => (
-            <MonitorCard key={monitor.id} monitor={monitor} />
+            <MonitorCard
+              key={monitor.id}
+              monitor={monitor}
+              timeRange={timeRange}
+            />
           ))}
         </div>
       )}

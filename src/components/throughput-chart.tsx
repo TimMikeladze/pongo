@@ -4,49 +4,38 @@ import { useMemo, useEffect, useState } from "react";
 import {
   Area,
   AreaChart,
+  Bar,
+  BarChart,
   XAxis,
   YAxis,
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import type { CheckResult } from "@/lib/types";
-import { format } from "date-fns";
 import { useTheme } from "@/components/theme-provider";
+import { useChartType, useChartFullscreen } from "@/components/chart-card";
+import type { ChartType } from "@/components/chart-type-toggle";
+import type { ThroughputDataPoint } from "@/lib/data";
 
 interface ThroughputChartProps {
-  results: CheckResult[];
+  data: ThroughputDataPoint[];
   height?: number;
+  chartType?: ChartType;
 }
 
 export function ThroughputChart({
-  results,
+  data,
   height = 120,
+  chartType: chartTypeProp,
 }: ThroughputChartProps) {
+  const contextChartType = useChartType();
+  const chartType = chartTypeProp ?? contextChartType;
+  const isFullscreen = useChartFullscreen();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const chartData = useMemo(() => {
-    const hourlyData: { [key: string]: number } = {};
-
-    results.forEach((r) => {
-      const hour = format(new Date(r.checkedAt), "HH:00");
-      if (!hourlyData[hour]) {
-        hourlyData[hour] = 0;
-      }
-      hourlyData[hour]++;
-    });
-
-    return Object.entries(hourlyData)
-      .map(([hour, count]) => ({
-        hour,
-        checks: count,
-      }))
-      .slice(-24);
-  }, [results]);
 
   const isDark = mounted ? resolvedTheme === "dark" : true;
   const colors = useMemo(() => {
@@ -58,7 +47,7 @@ export function ThroughputChart({
     };
   }, [isDark]);
 
-  if (chartData.length === 0) {
+  if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-[120px] text-xs text-muted-foreground">
         no data available
@@ -66,10 +55,10 @@ export function ThroughputChart({
     );
   }
 
-  return (
-    <ResponsiveContainer width="100%" height={height}>
+  const chartContent =
+    chartType === "line" ? (
       <AreaChart
-        data={chartData}
+        data={data}
         margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
       >
         <defs>
@@ -79,7 +68,7 @@ export function ThroughputChart({
           </linearGradient>
         </defs>
         <XAxis
-          dataKey="hour"
+          dataKey="time"
           tick={{ fill: colors.text, fontSize: 9 }}
           axisLine={{ stroke: colors.grid }}
           tickLine={false}
@@ -107,8 +96,40 @@ export function ThroughputChart({
           strokeWidth={1.5}
           fill="url(#throughputGradient)"
           dot={false}
+          activeDot={{ r: 3, fill: colors.stroke }}
         />
       </AreaChart>
+    ) : (
+      <BarChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+        <XAxis
+          dataKey="time"
+          tick={{ fill: colors.text, fontSize: 9 }}
+          axisLine={{ stroke: colors.grid }}
+          tickLine={false}
+          interval="preserveStartEnd"
+        />
+        <YAxis
+          tick={{ fill: colors.text, fontSize: 9 }}
+          axisLine={false}
+          tickLine={false}
+        />
+        <Tooltip
+          contentStyle={{
+            backgroundColor: isDark ? "#0a0a0a" : "#fafafa",
+            border: `1px solid ${colors.grid}`,
+            borderRadius: "4px",
+            fontSize: "10px",
+            fontFamily: "monospace",
+          }}
+          formatter={(value: number) => [`${value}`, "checks"]}
+        />
+        <Bar dataKey="checks" fill={colors.stroke} radius={[2, 2, 0, 0]} />
+      </BarChart>
+    );
+
+  return (
+    <ResponsiveContainer width="100%" height={isFullscreen ? "100%" : height}>
+      {chartContent}
     </ResponsiveContainer>
   );
 }

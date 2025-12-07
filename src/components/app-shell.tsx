@@ -40,6 +40,7 @@ import { useEffect, useState } from "react";
 import { DensityToggle } from "@/components/density-toggle";
 import { useTheme } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { TimeRangePicker } from "@/components/time-range-picker";
 import {
   Dialog,
   DialogContent,
@@ -96,6 +97,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   const isDense = mounted && density === "dense";
+
+  // Hide time range picker on list pages
+  const showTimeRangePicker =
+    pathname !== "/monitors" &&
+    pathname !== "/dashboards" &&
+    !pathname.startsWith("/settings");
 
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden relative">
@@ -154,6 +161,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2">
+            {showTimeRangePicker && <TimeRangePicker />}
             <button
               type="button"
               onClick={toggleFullWidth}
