@@ -29,13 +29,16 @@ export function logToConsole(result: ExecutionResult): void {
 /**
  * Log execution result to database
  */
-export async function logToDatabase(result: ExecutionResult): Promise<void> {
+export async function logToDatabase(result: ExecutionResult): Promise<string> {
   const db = await getDbAsync();
   const driver = getDbDriver();
   const checkResults = driver === "pg" ? pgCheckResults : sqliteCheckResults;
 
+  const id = crypto.randomUUID();
+
   // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union issue
   await (db as any).insert(checkResults).values({
+    id,
     monitorId: result.monitorId,
     status: result.result.status,
     responseTimeMs: result.result.responseTime,
@@ -43,12 +46,14 @@ export async function logToDatabase(result: ExecutionResult): Promise<void> {
     message: result.result.message ?? null,
     checkedAt: result.executedAt,
   });
+
+  return id;
 }
 
 /**
  * Log execution result to both console and database
  */
-export async function logResult(result: ExecutionResult): Promise<void> {
+export async function logResult(result: ExecutionResult): Promise<string> {
   logToConsole(result);
-  await logToDatabase(result);
+  return await logToDatabase(result);
 }

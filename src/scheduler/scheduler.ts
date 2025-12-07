@@ -6,6 +6,9 @@ import { parseDuration, type MonitorConfig } from "@/lib/config-types";
 import type { ScheduledMonitor, SchedulerConfig, MonitorState } from "./types";
 import { runMonitor } from "./runner";
 import { logResult } from "./logger";
+import { evaluateAlerts } from "./alerts/evaluator";
+import { loadChannels } from "@/lib/loader";
+import type { ChannelsConfig } from "@/lib/config-types";
 
 /**
  * Convert interval string to croner-compatible schedule
@@ -21,6 +24,7 @@ export class Scheduler {
   private jobs: Map<string, Cron> = new Map();
   private states: Map<string, MonitorState> = new Map();
   private limit: ReturnType<typeof pLimit>;
+  private channels: ChannelsConfig = {};
 
   constructor(config: SchedulerConfig) {
     this.config = config;
@@ -30,7 +34,9 @@ export class Scheduler {
   /**
    * Load monitors from config
    */
-  loadMonitors(): void {
+  async loadMonitors(): Promise<void> {
+    this.channels = await loadChannels();
+
     for (const [id, rawConfig] of Object.entries(monitorConfigs)) {
       const config = rawConfig as MonitorConfig;
 
@@ -85,7 +91,18 @@ export class Scheduler {
         state.consecutiveFailures = 0;
       }
 
-      await logResult(result);
+      const checkId = await logResult(result);
+
+      // Evaluate alerts after logging
+      if (monitor.config.alerts && monitor.config.alerts.length > 0) {
+        await evaluateAlerts(
+          monitorId,
+          monitor.config.name,
+          monitor.config.alerts,
+          this.channels,
+          checkId
+        );
+      }
     } catch (error) {
       console.error(`[scheduler] Error executing ${monitorId}:`, error);
     } finally {

@@ -27,7 +27,7 @@ async function main() {
   const scheduler = new Scheduler(config);
 
   // Load and start monitors
-  scheduler.loadMonitors();
+  await scheduler.loadMonitors();
   scheduler.start();
 
   // Start HTTP API
