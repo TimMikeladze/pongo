@@ -20,10 +20,40 @@ import type {
   Monitor,
   MonitorStatus,
 } from "./types";
+import {
+  alertState as sqliteAlertState,
+  alertEvents as sqliteAlertEvents,
+} from "@/db/schema.sqlite";
+import {
+  alertState as pgAlertState,
+  alertEvents as pgAlertEvents,
+} from "@/db/schema.pg";
 
 export interface TimeRange {
   from: Date;
   to: Date;
+}
+
+export interface AlertEventWithMonitor {
+  id: string;
+  alertId: string;
+  monitorId: string;
+  monitorName: string;
+  alertName: string;
+  eventType: "fired" | "resolved";
+  triggeredAt: Date;
+  resolvedAt: Date | null;
+  snapshot: Record<string, unknown> | null;
+  duration: number | null; // milliseconds, null if still firing
+}
+
+export interface FiringAlert {
+  alertId: string;
+  monitorId: string;
+  monitorName: string;
+  alertName: string;
+  lastFiredAt: Date;
+  currentEventId: string | null;
 }
 
 // Cache data loading per request
@@ -342,6 +372,75 @@ export async function getUpcomingMaintenance(
 ): Promise<MaintenanceWindow[]> {
   return [];
 }
+
+export const getFiringAlerts = cache(async (): Promise<FiringAlert[]> => {
+  const db = await getDbAsync();
+  const driver = getDbDriver();
+  const alertStateTable = driver === "pg" ? pgAlertState : sqliteAlertState;
+
+  // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
+  const rows = await (db as any)
+    .select()
+    .from(alertStateTable)
+    .where(eq(alertStateTable.status, "firing"));
+
+  const monitors = await getMonitors();
+  const monitorMap = new Map(monitors.map((m) => [m.id, m.name]));
+
+  // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
+  return rows.map((row: any) => ({
+    alertId: row.alertId,
+    monitorId: row.monitorId,
+    monitorName: monitorMap.get(row.monitorId) || row.monitorId,
+    alertName: row.alertId, // Will be enhanced when we have alert names in state
+    lastFiredAt: row.lastFiredAt instanceof Date ? row.lastFiredAt : new Date(row.lastFiredAt),
+    currentEventId: row.currentEventId,
+  }));
+});
+
+export const getAlertEvents = cache(
+  async (timeRange: TimeRange): Promise<AlertEventWithMonitor[]> => {
+    const db = await getDbAsync();
+    const driver = getDbDriver();
+    const alertEventsTable = driver === "pg" ? pgAlertEvents : sqliteAlertEvents;
+
+    // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
+    const rows = await (db as any)
+      .select()
+      .from(alertEventsTable)
+      .where(
+        and(
+          gte(alertEventsTable.triggeredAt, timeRange.from),
+          lte(alertEventsTable.triggeredAt, timeRange.to)
+        )
+      )
+      .orderBy(desc(alertEventsTable.triggeredAt));
+
+    const monitors = await getMonitors();
+    const monitorMap = new Map(monitors.map((m) => [m.id, m.name]));
+
+    // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
+    return rows.map((row: any) => {
+      const triggeredAt = row.triggeredAt instanceof Date ? row.triggeredAt : new Date(row.triggeredAt);
+      const resolvedAt = row.resolvedAt
+        ? (row.resolvedAt instanceof Date ? row.resolvedAt : new Date(row.resolvedAt))
+        : null;
+
+      return {
+        id: row.id,
+        alertId: row.alertId,
+        monitorId: row.monitorId,
+        monitorName: monitorMap.get(row.monitorId) || row.monitorId,
+        alertName: row.alertId,
+        eventType: row.eventType,
+        triggeredAt,
+        resolvedAt,
+        snapshot: row.snapshot,
+        duration: resolvedAt ? resolvedAt.getTime() - triggeredAt.getTime() : null,
+      };
+    });
+  }
+);
 
 // ============================================
 // Server-side aggregation for charts (SQL-based)
