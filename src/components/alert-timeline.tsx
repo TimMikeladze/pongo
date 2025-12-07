@@ -1,0 +1,123 @@
+import { formatDistanceToNow, format } from "date-fns";
+import { Bell, CheckCircle } from "lucide-react";
+import type { AlertEventWithMonitor } from "@/lib/data";
+
+interface AlertTimelineProps {
+  events: AlertEventWithMonitor[];
+}
+
+function formatDuration(ms: number): string {
+  const minutes = Math.floor(ms / 60000);
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ${minutes % 60}m`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ${hours % 24}h`;
+}
+
+function formatSnapshot(snapshot: Record<string, unknown> | null): string {
+  if (!snapshot) return "";
+  if (snapshot.consecutiveFailures) {
+    return `${snapshot.consecutiveFailures} consecutive failures`;
+  }
+  if (snapshot.lastResponseTimeMs) {
+    return `latency: ${snapshot.lastResponseTimeMs}ms`;
+  }
+  if (snapshot.lastMessage) {
+    return String(snapshot.lastMessage);
+  }
+  return "";
+}
+
+export function AlertTimeline({ events }: AlertTimelineProps) {
+  if (events.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 border border-dashed border-border rounded">
+        <Bell className="h-6 w-6 text-muted-foreground mb-3" />
+        <p className="text-xs text-muted-foreground">
+          no alert activity in this time range
+        </p>
+      </div>
+    );
+  }
+
+  // Group events by alertId to show fired/resolved pairs
+  const groupedEvents = events.reduce((acc, event) => {
+    const key = event.alertId;
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    acc[key].push(event);
+    return acc;
+  }, {} as Record<string, AlertEventWithMonitor[]>);
+
+  return (
+    <div className="space-y-3">
+      {Object.entries(groupedEvents).map(([alertId, alertEvents]) => {
+        const latestEvent = alertEvents[0];
+        const isFiring = latestEvent.eventType === "fired" && !latestEvent.resolvedAt;
+
+        return (
+          <div
+            key={`${alertId}-${latestEvent.id}`}
+            className="border border-border rounded bg-card p-4"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{alertId}</span>
+                  {isFiring && (
+                    <span className="text-[10px] px-1.5 py-0.5 bg-red-500/20 text-red-500 rounded">
+                      FIRING
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  {latestEvent.monitorName}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-3 space-y-2">
+              {alertEvents.slice(0, 5).map((event) => (
+                <div key={event.id} className="flex items-start gap-2 text-[10px]">
+                  {event.eventType === "fired" ? (
+                    <span className="text-red-500 mt-0.5">●</span>
+                  ) : (
+                    <span className="text-green-500 mt-0.5">●</span>
+                  )}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className={event.eventType === "fired" ? "text-red-500" : "text-green-500"}>
+                        {event.eventType === "fired" ? "Fired" : "Resolved"}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {format(event.triggeredAt, "MMM d, h:mm a")}
+                      </span>
+                      {event.duration && (
+                        <span className="text-muted-foreground">
+                          duration: {formatDuration(event.duration)}
+                        </span>
+                      )}
+                    </div>
+                    {event.eventType === "fired" && event.snapshot && (
+                      <p className="text-muted-foreground mt-0.5">
+                        {formatSnapshot(event.snapshot)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {!latestEvent.resolvedAt && latestEvent.eventType === "fired" && (
+                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                  <span className="text-yellow-500 mt-0.5">●</span>
+                  <span>ongoing... ({formatDistanceToNow(latestEvent.triggeredAt)})</span>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
