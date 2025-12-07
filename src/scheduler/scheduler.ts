@@ -2,7 +2,7 @@
 import { Cron } from "croner";
 import pLimit from "p-limit";
 import { monitors as monitorConfigs } from "@data/monitors";
-import { parseDuration } from "@/lib/config-types";
+import { parseDuration, type MonitorConfig } from "@/lib/config-types";
 import type { ScheduledMonitor, SchedulerConfig, MonitorState } from "./types";
 import { runMonitor } from "./runner";
 import { logResult } from "./logger";
@@ -31,7 +31,10 @@ export class Scheduler {
    * Load monitors from config
    */
   loadMonitors(): void {
-    for (const [id, config] of Object.entries(monitorConfigs)) {
+    for (const [id, rawConfig] of Object.entries(monitorConfigs)) {
+      const config = rawConfig as MonitorConfig;
+
+      // active defaults to true, only skip if explicitly false
       if (config.active === false) {
         console.log(`[scheduler] Skipping inactive monitor: ${id}`);
         continue;

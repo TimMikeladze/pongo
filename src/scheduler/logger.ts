@@ -1,5 +1,7 @@
 // src/scheduler/logger.ts
-import { getDbAsync, getSchema } from "@/db";
+import { getDbAsync, getDbDriver } from "@/db";
+import { checkResults as sqliteCheckResults } from "@/db/schema.sqlite";
+import { checkResults as pgCheckResults } from "@/db/schema.pg";
 import type { ExecutionResult } from "./types";
 
 /**
@@ -29,9 +31,11 @@ export function logToConsole(result: ExecutionResult): void {
  */
 export async function logToDatabase(result: ExecutionResult): Promise<void> {
   const db = await getDbAsync();
-  const schema = getSchema();
+  const driver = getDbDriver();
+  const checkResults = driver === "pg" ? pgCheckResults : sqliteCheckResults;
 
-  await db.insert(schema.checkResults).values({
+  // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union issue
+  await (db as any).insert(checkResults).values({
     monitorId: result.monitorId,
     status: result.result.status,
     responseTimeMs: result.result.responseTime,
