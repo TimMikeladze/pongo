@@ -77,3 +77,65 @@ export const checkResultsIndexes = {
   /** Index for archival queries - finds rows eligible for archival */
   archivalIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_archival ON pongo_check_results(checked_at) WHERE archived_at IS NULL`,
 };
+
+/**
+ * Alert status enum values
+ */
+export const alertStatusEnum = ["ok", "firing"] as const;
+export type AlertStatusEnum = (typeof alertStatusEnum)[number];
+
+/**
+ * Alert event type enum values
+ */
+export const alertEventTypeEnum = ["fired", "resolved"] as const;
+export type AlertEventTypeEnum = (typeof alertEventTypeEnum)[number];
+
+/**
+ * Alert state table - current state of each alert
+ */
+export const alertState = sqliteTable("pongo_alert_state", {
+  alertId: text("alert_id").primaryKey(),
+  monitorId: text("monitor_id").notNull(),
+  status: text("status", { enum: alertStatusEnum }).notNull().default("ok"),
+  lastFiredAt: integer("last_fired_at", { mode: "timestamp_ms" }),
+  lastResolvedAt: integer("last_resolved_at", { mode: "timestamp_ms" }),
+  currentEventId: text("current_event_id"),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export type AlertState = typeof alertState.$inferSelect;
+export type NewAlertState = typeof alertState.$inferInsert;
+
+/**
+ * Alert events table - immutable log of all alert activity
+ */
+export const alertEvents = sqliteTable("pongo_alert_events", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  alertId: text("alert_id").notNull(),
+  monitorId: text("monitor_id").notNull(),
+  eventType: text("event_type", { enum: alertEventTypeEnum }).notNull(),
+  triggeredAt: integer("triggered_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  resolvedAt: integer("resolved_at", { mode: "timestamp_ms" }),
+  snapshot: text("snapshot", { mode: "json" }).$type<Record<string, unknown>>(),
+  triggerCheckId: text("trigger_check_id"),
+  resolveCheckId: text("resolve_check_id"),
+});
+
+export type AlertEvent = typeof alertEvents.$inferSelect;
+export type NewAlertEvent = typeof alertEvents.$inferInsert;
+
+/**
+ * Indexes for alert tables
+ */
+export const alertIndexes = {
+  alertStateMonitorIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_alert_state_monitor_id ON pongo_alert_state(monitor_id)`,
+  alertEventsAlertIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_alert_events_alert_id ON pongo_alert_events(alert_id)`,
+  alertEventsMonitorIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_alert_events_monitor_id ON pongo_alert_events(monitor_id)`,
+  alertEventsTriggeredAtIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_alert_events_triggered_at ON pongo_alert_events(triggered_at DESC)`,
+};

@@ -3,6 +3,8 @@ import {
   doublePrecision,
   index,
   integer,
+  jsonb,
+  pgEnum,
   pgTable,
   text,
   timestamp,
@@ -79,3 +81,53 @@ export type NewCheckResult = typeof checkResults.$inferInsert;
  * Type for a check result from the database
  */
 export type CheckResult = typeof checkResults.$inferSelect;
+
+/**
+ * Alert status enum
+ */
+export const alertStatusPgEnum = pgEnum("alert_status", ["ok", "firing"]);
+
+/**
+ * Alert event type enum
+ */
+export const alertEventTypePgEnum = pgEnum("alert_event_type", ["fired", "resolved"]);
+
+/**
+ * Alert state table - current state of each alert
+ */
+export const alertState = pgTable("pongo_alert_state", {
+  alertId: text("alert_id").primaryKey(),
+  monitorId: text("monitor_id").notNull(),
+  status: alertStatusPgEnum("status").notNull().default("ok"),
+  lastFiredAt: timestamp("last_fired_at", { mode: "date" }),
+  lastResolvedAt: timestamp("last_resolved_at", { mode: "date" }),
+  currentEventId: text("current_event_id"),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export type AlertState = typeof alertState.$inferSelect;
+export type NewAlertState = typeof alertState.$inferInsert;
+
+/**
+ * Alert events table - immutable log of all alert activity
+ */
+export const alertEvents = pgTable("pongo_alert_events", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  alertId: text("alert_id").notNull(),
+  monitorId: text("monitor_id").notNull(),
+  eventType: alertEventTypePgEnum("event_type").notNull(),
+  triggeredAt: timestamp("triggered_at", { mode: "date" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  resolvedAt: timestamp("resolved_at", { mode: "date" }),
+  snapshot: jsonb("snapshot").$type<Record<string, unknown>>(),
+  triggerCheckId: text("trigger_check_id"),
+  resolveCheckId: text("resolve_check_id"),
+});
+
+export type AlertEvent = typeof alertEvents.$inferSelect;
+export type NewAlertEvent = typeof alertEvents.$inferInsert;
