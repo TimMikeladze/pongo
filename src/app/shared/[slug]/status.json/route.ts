@@ -47,7 +47,7 @@ function getIndicatorFromMonitorStatus(status: MonitorStatus): StatusIndicator {
       return "major";
     case "degraded":
       return "minor";
-    case "up":
+    default:
       return "none";
   }
 }
