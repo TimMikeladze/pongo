@@ -61,11 +61,11 @@ async function initDatabase(): Promise<Database> {
     `);
 
     // Apply indexes (IF NOT EXISTS makes this safe to run on every init)
-    for (const idx of Object.values(sqliteSchema.checkResultsIndexes)) {
-      await client.execute(idx.queryChunks[0].value as string);
+    for (const sql of sqliteSchema.checkResultsIndexes) {
+      await client.execute(sql);
     }
-    for (const idx of Object.values(sqliteSchema.alertIndexes)) {
-      await client.execute(idx.queryChunks[0].value as string);
+    for (const sql of sqliteSchema.alertIndexes) {
+      await client.execute(sql);
     }
 
     _db = drizzle(client, { schema: sqliteSchema });

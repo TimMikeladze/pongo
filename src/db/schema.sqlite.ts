@@ -1,4 +1,3 @@
-import { sql } from "drizzle-orm";
 import {
   integer,
   primaryKey,
@@ -68,33 +67,26 @@ export type NewCheckResult = typeof checkResults.$inferInsert;
 export type CheckResult = typeof checkResults.$inferSelect;
 
 /**
- * Indexes for common queries - defined separately for migrations
+ * Indexes for common queries - plain SQL strings for easy execution
  */
-export const checkResultsIndexes = {
-  /** Index for querying by monitor ID */
-  monitorIdIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_monitor_id ON pongo_check_results(monitor_id)`,
-
-  /** Index for querying by check time (for time-based queries) */
-  checkedAtIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_checked_at ON pongo_check_results(checked_at DESC)`,
-
-  /** Composite index for monitor + time queries (most common) */
-  monitorCheckedAtIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_monitor_checked_at ON pongo_check_results(monitor_id, checked_at DESC)`,
-
-  /** Index for status filtering */
-  statusIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_status ON pongo_check_results(status)`,
-
-  /** Index for region filtering */
-  regionIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_region ON pongo_check_results(region)`,
-
-  /** Composite index for monitor + region + time queries */
-  monitorRegionCheckedAtIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_monitor_region_checked_at ON pongo_check_results(monitor_id, region, checked_at DESC)`,
-
-  /** Index for archival queries - finds rows eligible for archival */
-  archivalIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_archival ON pongo_check_results(checked_at) WHERE archived_at IS NULL`,
-
-  /** Covering index for dashboard/listing queries - avoids table lookups */
-  monitorCoveringIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_monitor_covering ON pongo_check_results(monitor_id, checked_at DESC, status, response_time_ms, region)`,
-};
+export const checkResultsIndexes = [
+  // Index for querying by monitor ID
+  "CREATE INDEX IF NOT EXISTS idx_pongo_check_results_monitor_id ON pongo_check_results(monitor_id)",
+  // Index for querying by check time (for time-based queries)
+  "CREATE INDEX IF NOT EXISTS idx_pongo_check_results_checked_at ON pongo_check_results(checked_at DESC)",
+  // Composite index for monitor + time queries (most common)
+  "CREATE INDEX IF NOT EXISTS idx_pongo_check_results_monitor_checked_at ON pongo_check_results(monitor_id, checked_at DESC)",
+  // Index for status filtering
+  "CREATE INDEX IF NOT EXISTS idx_pongo_check_results_status ON pongo_check_results(status)",
+  // Index for region filtering
+  "CREATE INDEX IF NOT EXISTS idx_pongo_check_results_region ON pongo_check_results(region)",
+  // Composite index for monitor + region + time queries
+  "CREATE INDEX IF NOT EXISTS idx_pongo_check_results_monitor_region_checked_at ON pongo_check_results(monitor_id, region, checked_at DESC)",
+  // Index for archival queries - finds rows eligible for archival
+  "CREATE INDEX IF NOT EXISTS idx_pongo_check_results_archival ON pongo_check_results(checked_at) WHERE archived_at IS NULL",
+  // Covering index for dashboard/listing queries - avoids table lookups
+  "CREATE INDEX IF NOT EXISTS idx_pongo_check_results_monitor_covering ON pongo_check_results(monitor_id, checked_at DESC, status, response_time_ms, region)",
+] as const;
 
 /**
  * Alert status enum values
@@ -157,11 +149,11 @@ export type AlertEvent = typeof alertEvents.$inferSelect;
 export type NewAlertEvent = typeof alertEvents.$inferInsert;
 
 /**
- * Indexes for alert tables
+ * Indexes for alert tables - plain SQL strings for easy execution
  */
-export const alertIndexes = {
-  alertStateMonitorIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_alert_state_monitor_id ON pongo_alert_state(monitor_id)`,
-  alertEventsAlertIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_alert_events_alert_id ON pongo_alert_events(alert_id)`,
-  alertEventsMonitorIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_alert_events_monitor_id ON pongo_alert_events(monitor_id)`,
-  alertEventsTriggeredAtIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_alert_events_triggered_at ON pongo_alert_events(triggered_at DESC)`,
-};
+export const alertIndexes = [
+  "CREATE INDEX IF NOT EXISTS idx_pongo_alert_state_monitor_id ON pongo_alert_state(monitor_id)",
+  "CREATE INDEX IF NOT EXISTS idx_pongo_alert_events_alert_id ON pongo_alert_events(alert_id)",
+  "CREATE INDEX IF NOT EXISTS idx_pongo_alert_events_monitor_id ON pongo_alert_events(monitor_id)",
+  "CREATE INDEX IF NOT EXISTS idx_pongo_alert_events_triggered_at ON pongo_alert_events(triggered_at DESC)",
+] as const;
