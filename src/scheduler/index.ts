@@ -4,6 +4,11 @@ import { createServer } from "./server";
 import type { SchedulerConfig } from "./types";
 
 /**
+ * Region where this scheduler is running
+ */
+export const REGION = process.env.PONGO_REGION || process.env.FLY_REGION || "default";
+
+/**
  * Load config from environment
  */
 function loadConfig(): SchedulerConfig {
@@ -21,6 +26,7 @@ function loadConfig(): SchedulerConfig {
 async function main() {
   console.log("=".repeat(60));
   console.log("Pongo Scheduler");
+  console.log(`Region: ${REGION}`);
   console.log("=".repeat(60));
 
   const config = loadConfig();

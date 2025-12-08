@@ -3,6 +3,7 @@ import { getDbAsync, getDbDriver } from "@/db";
 import { checkResults as sqliteCheckResults } from "@/db/schema.sqlite";
 import { checkResults as pgCheckResults } from "@/db/schema.pg";
 import type { ExecutionResult } from "./types";
+import { REGION } from "./index";
 
 /**
  * Format timestamp for console output
@@ -22,7 +23,7 @@ export function logToConsole(result: ExecutionResult): void {
   const message = r.message ? ` - ${r.message}` : "";
 
   console.log(
-    `[${formatTime(executedAt)}] ${monitorId.padEnd(20)} ${status} ${time}${retriesInfo}${message}`,
+    `[${formatTime(executedAt)}] [${REGION}] ${monitorId.padEnd(20)} ${status} ${time}${retriesInfo}${message}`,
   );
 }
 
@@ -44,6 +45,7 @@ export async function logToDatabase(result: ExecutionResult): Promise<string> {
     responseTimeMs: result.result.responseTime,
     statusCode: result.result.statusCode ?? null,
     message: result.result.message ?? null,
+    region: REGION,
     checkedAt: result.executedAt,
   });
 
