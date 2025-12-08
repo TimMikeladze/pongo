@@ -38,6 +38,15 @@ export type ConditionCallback = (
 export type AlertCondition = DeclarativeCondition | ConditionCallback;
 
 /**
+ * Region threshold for multi-region alerting
+ * - 'any': fire if any region triggers (default)
+ * - 'majority': fire if >50% of regions trigger
+ * - 'all': fire only if all regions trigger
+ * - number: fire if N or more regions trigger
+ */
+export type RegionThreshold = "any" | "majority" | "all" | number;
+
+/**
  * Alert definition within a monitor
  */
 export interface AlertConfig {
@@ -45,6 +54,7 @@ export interface AlertConfig {
   name: string;
   condition: AlertCondition;
   channels: string[];
+  regionThreshold?: RegionThreshold;
 }
 
 /**
@@ -88,4 +98,7 @@ export interface WebhookPayload {
     message: string | null;
     checkedAt: string;
   };
+  region?: string;
+  firingRegions?: string[];
+  healthyRegions?: string[];
 }
