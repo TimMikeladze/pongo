@@ -21,9 +21,6 @@ const dataDir = "/data";
   }
   console.log(`Volume at ${dataDir} is accessible`);
 
-  // Sync schema before starting any service (push is idempotent, migrate fails if tables exist)
-  await exec("bun run db:sqlite:migrate");
-
   // If running the web server, prerender pages and optionally start background services
   if (command === "bun run start") {
     await exec("bun next build --experimental-build-mode generate");
