@@ -11,77 +11,75 @@ export const contentType = "image/png";
 
 export default async function Image() {
   return new ImageResponse(
-    (
+    <div
+      style={{
+        background: "#080808",
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 40,
+      }}
+    >
+      {/* Logo circle with dalmatian */}
       <div
         style={{
-          background: "#080808",
-          width: "100%",
-          height: "100%",
+          width: 280,
+          height: 280,
+          borderRadius: "50%",
+          border: "8px solid #4ade80",
+          background: "#1a1a1a",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://pongo.sh/banner.png"
+          alt="Pongo logo"
+          width={280}
+          height={280}
+          style={{
+            objectFit: "cover",
+          }}
+        />
+      </div>
+
+      {/* Text */}
+      <div
+        style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
-          gap: 40,
+          gap: 16,
         }}
       >
-        {/* Logo circle with dalmatian */}
         <div
           style={{
-            width: 280,
-            height: 280,
-            borderRadius: "50%",
-            border: "8px solid #4ade80",
-            background: "#1a1a1a",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden",
+            fontSize: 72,
+            fontWeight: 700,
+            color: "#ffffff",
+            letterSpacing: "-2px",
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://pongo.sh/banner.png"
-            alt="Pongo logo"
-            width={280}
-            height={280}
-            style={{
-              objectFit: "cover",
-            }}
-          />
+          Pongo.sh
         </div>
-
-        {/* Text */}
         <div
           style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 16,
+            fontSize: 32,
+            color: "#a1a1aa",
           }}
         >
-          <div
-            style={{
-              fontSize: 72,
-              fontWeight: 700,
-              color: "#ffffff",
-              letterSpacing: "-2px",
-            }}
-          >
-            Pongo.sh
-          </div>
-          <div
-            style={{
-              fontSize: 32,
-              color: "#a1a1aa",
-            }}
-          >
-            Self-hosted uptime monitoring
-          </div>
+          Self-hosted uptime monitoring
         </div>
       </div>
-    ),
+    </div>,
     {
       ...size,
-    }
+    },
   );
 }
