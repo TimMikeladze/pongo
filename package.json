@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -H 0.0.0.0",
     "lint": "bun biome check . && bun biome format .",
     "lint:fix": "bun biome check --unsafe --write . && bun biome format --write .",
     "lint:errors": "bun biome check --diagnostic-level error --unsafe .",
@@ -19,7 +19,7 @@
     "db:pg:studio": "drizzle-kit studio --config=drizzle.config.pg.ts",
     "db:sqlite:generate": "drizzle-kit generate --config=drizzle.config.sqlite.ts",
     "db:sqlite:migrate": "drizzle-kit migrate --config=drizzle.config.sqlite.ts",
-    "db:sqlite:push": "drizzle-kit push --config=drizzle.config.sqlite.ts",
+    "db:sqlite:push": "drizzle-kit push --config=drizzle.config.sqlite.ts --force",
     "db:sqlite:studio": "drizzle-kit studio --config=drizzle.config.sqlite.ts",
     "scheduler": "bun run src/scheduler/index.ts",
     "archiver": "bun run src/archiver/index.ts"

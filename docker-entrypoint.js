@@ -8,8 +8,8 @@ const schedulerEnabled = process.env.SCHEDULER_ENABLED === "true";
 const archiverEnabled = process.env.ARCHIVAL_ENABLED === "true";
 
 (async () => {
-  // Run migrations before starting any service
-  await exec("bun run db:sqlite:migrate");
+  // Sync schema before starting any service (push is idempotent, migrate fails if tables exist)
+  await exec("bun run db:sqlite:push");
 
   // If running the web server, prerender pages and optionally start background services
   if (command === "bun run start") {
