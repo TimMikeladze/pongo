@@ -1,7 +1,7 @@
 import { monitor } from "../../src/lib/config-types";
 
 export default monitor({
-  name: "GitHub",
+  name: "OpenAI",
   interval: "1m",
   timeout: "30s",
 
@@ -9,9 +9,7 @@ export default monitor({
     const start = Date.now();
 
     try {
-      const res = await fetch(
-        "https://www.githubstatus.com/api/v2/status.json",
-      );
+      const res = await fetch("https://status.openai.com/api/v2/status.json");
       const responseTime = Date.now() - start;
 
       if (!res.ok) {

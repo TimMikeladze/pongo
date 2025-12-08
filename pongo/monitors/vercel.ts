@@ -1,7 +1,7 @@
 import { monitor } from "../../src/lib/config-types";
 
 export default monitor({
-  name: "GitHub",
+  name: "Vercel",
   interval: "1m",
   timeout: "30s",
 
@@ -10,7 +10,7 @@ export default monitor({
 
     try {
       const res = await fetch(
-        "https://www.githubstatus.com/api/v2/status.json",
+        "https://www.vercel-status.com/api/v2/status.json",
       );
       const responseTime = Date.now() - start;
 

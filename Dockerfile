@@ -40,7 +40,7 @@ FROM pongo-config AS build
 COPY . .
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     --mount=type=cache,target=/app/.next/cache \
-    bun next build
+    bun next build --experimental-build-mode compile
 
 
 # Production dependencies only

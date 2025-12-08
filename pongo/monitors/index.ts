@@ -1,17 +1,15 @@
-import apiHealth from "./api-health";
-import authService from "./auth-service";
-import cdn from "./cdn";
-import database from "./database";
-import example from "./example";
+import aws from "./aws";
+import cloudflare from "./cloudflare";
 import github from "./github";
-import payments from "./payments";
+import npm from "./npm";
+import openai from "./openai";
+import vercel from "./vercel";
 
 export default {
-  apiHealth,
-  authService,
-  cdn,
-  database,
-  example,
+  aws,
+  cloudflare,
   github,
-  payments,
+  npm,
+  openai,
+  vercel,
 };

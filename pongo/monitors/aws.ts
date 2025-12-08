@@ -1,17 +1,16 @@
 import { monitor } from "../../src/lib/config-types";
 
-const TEST_SERVER = process.env.TEST_SERVER_URL || "http://localhost:4000";
-
 export default monitor({
-  name: "CDN",
+  name: "AWS",
   interval: "1m",
-  timeout: "10s",
+  timeout: "30s",
 
   async handler() {
     const start = Date.now();
 
     try {
-      const res = await fetch(`${TEST_SERVER}/cdn/health`);
+      // Check AWS health dashboard
+      const res = await fetch("https://health.aws.amazon.com/health/status");
       const responseTime = Date.now() - start;
 
       if (!res.ok) {
@@ -19,12 +18,12 @@ export default monitor({
           status: "down",
           responseTime,
           statusCode: res.status,
-          message: `CDN error: HTTP ${res.status}`,
+          message: `HTTP ${res.status}`,
         };
       }
 
       return {
-        status: responseTime > 300 ? "degraded" : "up",
+        status: responseTime > 2000 ? "degraded" : "up",
         responseTime,
         statusCode: res.status,
       };
@@ -32,17 +31,8 @@ export default monitor({
       return {
         status: "down",
         responseTime: Date.now() - start,
-        message: error instanceof Error ? error.message : "Connection failed",
+        message: error instanceof Error ? error.message : "Unknown error",
       };
     }
   },
-
-  alerts: [
-    {
-      id: "cdn-down",
-      name: "CDN down",
-      condition: { consecutiveFailures: 3 },
-      channels: ["default"],
-    },
-  ],
 });
