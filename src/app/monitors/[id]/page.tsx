@@ -63,6 +63,7 @@ export default async function MonitorDetailPage({
     latestResult,
     results,
     stats,
+    regionStats,
     dashboards,
     allMonitors,
     responseTimeData,
@@ -72,6 +73,7 @@ export default async function MonitorDetailPage({
     getLatestCheckResult(id),
     getCheckResults(id, { timeRange, limit: 10 }), // Only fetch what we need for recent checks list
     getMonitorStats(id, timeRange),
+    getMonitorStatsByRegion(id, timeRange),
     getDashboards(),
     getMonitors(),
     getResponseTimeChartData(id, timeRange, interval),
@@ -174,6 +176,9 @@ export default async function MonitorDetailPage({
             }
           />
         </div>
+
+        {/* Region breakdown */}
+        {regionStats.length > 1 && <RegionBreakdown stats={regionStats} />}
 
         {/* Uptime bars */}
         <div className="border border-border rounded bg-card p-4">
