@@ -1,26 +1,27 @@
 ---
 dashboard: demo
-title: Database Connectivity Issues
+title: "[Demo] Example.com Connectivity Issues"
 severity: major
 status: resolved
 affectedMonitors:
-  - database
-  - api-health
+  - example
 resolvedAt: "2025-12-05T14:30:00Z"
 ---
 
+> **Note:** This is mock data for demonstration purposes.
+
 ## Investigating - Dec 5, 10:15 UTC
 
-We are investigating reports of increased database connection errors. Some API requests may be failing or experiencing high latency.
+We are investigating reports of Example.com being unreachable. Some requests may be failing or experiencing high latency.
 
 ## Identified - Dec 5, 11:00 UTC
 
-Root cause identified: a connection pool exhaustion issue caused by a recent deployment. Rolling back the change now.
+Root cause identified: DNS propagation issues. Working on resolution.
 
 ## Monitoring - Dec 5, 12:30 UTC
 
-Rollback complete. Database connections are recovering. We are monitoring the situation closely.
+DNS issues resolved. Connectivity is recovering. We are monitoring the situation closely.
 
 ## Resolved - Dec 5, 14:30 UTC
 
-All systems are operating normally. The connection pool configuration has been fixed and will be re-deployed with proper testing.
+All systems are operating normally. Example.com is fully accessible.

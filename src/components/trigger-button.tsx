@@ -4,12 +4,21 @@ import { Loader2, Play } from "lucide-react";
 import { useState } from "react";
 import { triggerMonitor } from "@/app/monitors/[id]/actions";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TriggerButtonProps {
   monitorId: string;
+  enabled?: boolean;
 }
 
-export function TriggerButton({ monitorId }: TriggerButtonProps) {
+export function TriggerButton({
+  monitorId,
+  enabled = true,
+}: TriggerButtonProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [result, setResult] = useState<{
     status?: string;
@@ -18,6 +27,7 @@ export function TriggerButton({ monitorId }: TriggerButtonProps) {
   } | null>(null);
 
   async function handleTrigger() {
+    if (!enabled) return;
     setIsRunning(true);
     setResult(null);
 
@@ -38,27 +48,40 @@ export function TriggerButton({ monitorId }: TriggerButtonProps) {
     }
   }
 
+  const button = (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleTrigger}
+      disabled={isRunning || !enabled}
+      className="h-7 text-xs"
+    >
+      {isRunning ? (
+        <>
+          <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
+          Running...
+        </>
+      ) : (
+        <>
+          <Play className="h-3 w-3 mr-1.5" />
+          Run Now
+        </>
+      )}
+    </Button>
+  );
+
   return (
     <div className="flex flex-col items-end gap-1">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleTrigger}
-        disabled={isRunning}
-        className="h-7 text-xs"
-      >
-        {isRunning ? (
-          <>
-            <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
-            Running...
-          </>
-        ) : (
-          <>
-            <Play className="h-3 w-3 mr-1.5" />
-            Run Now
-          </>
-        )}
-      </Button>
+      {enabled ? (
+        button
+      ) : (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>{button}</span>
+          </TooltipTrigger>
+          <TooltipContent>Manual runs are disabled</TooltipContent>
+        </Tooltip>
+      )}
       <span className="text-[10px] text-muted-foreground h-4">
         {result ? (
           result.error ? (

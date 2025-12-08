@@ -1,13 +1,15 @@
 ---
 dashboard: demo
-title: Performance Improvements Deployed
+title: "[Demo] Performance Improvements"
 type: info
 ---
 
-We've deployed several performance improvements to our monitoring infrastructure:
+> **Note:** This is mock data for demonstration purposes.
+
+We've deployed several performance improvements to our Example.com monitoring:
 
 - Reduced check execution latency by 40%
 - Improved alert delivery time
-- Optimized database queries for faster dashboard loading
+- Optimized dashboard loading
 
 These changes should result in more responsive monitoring and faster alert notifications.

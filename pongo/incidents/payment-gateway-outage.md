@@ -1,25 +1,27 @@
 ---
 dashboard: demo
-title: Payment Gateway Timeout Errors
+title: "[Demo] Example.com Complete Outage"
 severity: critical
 status: resolved
 affectedMonitors:
-  - payments
+  - example
 resolvedAt: "2025-12-01T09:45:00Z"
 ---
 
+> **Note:** This is mock data for demonstration purposes.
+
 ## Investigating - Dec 1, 06:00 UTC
 
-We are seeing elevated timeout errors from our payment gateway provider. Payment processing may be delayed or failing.
+Example.com is completely unreachable. All requests are timing out.
 
 ## Identified - Dec 1, 07:15 UTC
 
-Our payment provider has confirmed they are experiencing infrastructure issues on their end. We are in contact with their support team.
+The issue has been identified as a server-side problem at Example.com.
 
 ## Monitoring - Dec 1, 08:30 UTC
 
-Payment provider reports the issue is resolved on their side. We are seeing recovery in our systems.
+Example.com is coming back online. We are seeing recovery.
 
 ## Resolved - Dec 1, 09:45 UTC
 
-Payment processing is fully restored. All queued transactions have been processed successfully.
+Example.com is fully restored and responding normally.

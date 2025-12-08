@@ -142,7 +142,10 @@ export default async function MonitorDetailPage({
             )}
           </div>
         </div>
-        <TriggerButton monitorId={id} />
+        <TriggerButton
+          monitorId={id}
+          enabled={process.env.ENABLE_MANUAL_RUN === "true"}
+        />
       </div>
 
       <div className="space-y-6">

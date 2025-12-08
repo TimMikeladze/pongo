@@ -1,14 +1,16 @@
 ---
 dashboard: demo
-title: CDN Performance Degradation
-severity: minorfl
+title: "[Demo] Example.com Slow Response"
+severity: minor
 status: investigating
 affectedMonitors:
-  - cdn
+  - example
 ---
+
+> **Note:** This is mock data for demonstration purposes.
 
 ## Investigating - Dec 7, 08:00 UTC
 
-We are seeing slightly elevated response times from our CDN edge nodes in the EU-West region. Static asset loading may be slower than usual for users in Europe.
+We are seeing slightly elevated response times from Example.com. Page loading may be slower than usual.
 
-We are working with our CDN provider to identify the cause.
+We are monitoring the situation.

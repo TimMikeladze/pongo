@@ -1,14 +1,12 @@
 ---
 dashboard: demo
-title: Scheduled Database Maintenance
+title: "[Demo] Scheduled Maintenance"
 type: maintenance
 expiresAt: "2025-12-15T06:00:00Z"
 ---
 
-We will be performing scheduled maintenance on our database infrastructure on **December 14th, 2025** from 2:00 AM to 4:00 AM UTC.
+> **Note:** This is mock data for demonstration purposes.
 
-During this window, you may experience brief interruptions to the following services:
-- Database connections
-- API responses (increased latency expected)
+We will be performing scheduled maintenance on Example.com monitoring on **December 14th, 2025** from 2:00 AM to 4:00 AM UTC.
 
-No action is required on your part. We apologize for any inconvenience.
+During this window, you may experience brief interruptions to monitoring checks. No action is required on your part.

@@ -1,15 +1,14 @@
-import { subDays } from "date-fns";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { Sparkline } from "@/components/sparkline";
 import { StatusBadge } from "@/components/status-badge";
+import { UptimeBarsCompact } from "@/components/uptime-bars-compact";
 import {
-  getCheckResults,
   getLatestCheckResult,
   getMonitorStats,
+  getStatusBuckets,
   type TimeRange,
 } from "@/lib/data";
-import type { CheckResult, Monitor } from "@/lib/types";
+import type { Monitor } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface MonitorCardProps {
@@ -17,70 +16,12 @@ interface MonitorCardProps {
   timeRange: TimeRange;
 }
 
-// Aggregate check results into hourly buckets
-function aggregateByHour(results: CheckResult[], hours: number): CheckResult[] {
-  if (results.length === 0) return [];
-
-  const now = Date.now();
-  const buckets: Map<number, CheckResult[]> = new Map();
-
-  // Create hourly buckets
-  for (let i = 0; i < hours; i++) {
-    buckets.set(i, []);
-  }
-
-  // Assign results to buckets
-  for (const result of results) {
-    const resultTime = new Date(result.checkedAt).getTime();
-    const hoursAgo = Math.floor((now - resultTime) / (60 * 60 * 1000));
-    if (hoursAgo >= 0 && hoursAgo < hours) {
-      buckets.get(hoursAgo)?.push(result);
-    }
-  }
-
-  // Aggregate each bucket into a single representative result
-  const aggregated: CheckResult[] = [];
-  for (let i = hours - 1; i >= 0; i--) {
-    const bucket = buckets.get(i) || [];
-    if (bucket.length === 0) continue;
-
-    // Use average response time, worst status
-    const avgResponseTime = Math.round(
-      bucket.reduce((sum, r) => sum + r.responseTimeMs, 0) / bucket.length,
-    );
-    const hasDown = bucket.some((r) => r.status === "down");
-    const hasDegraded = bucket.some((r) => r.status === "degraded");
-    const status = hasDown ? "down" : hasDegraded ? "degraded" : "up";
-
-    aggregated.push({
-      id: `agg-${i}`,
-      monitorId: bucket[0].monitorId,
-      status,
-      responseTimeMs: avgResponseTime,
-      statusCode: bucket[0].statusCode,
-      errorMessage: null,
-      checkedAt: new Date(now - i * 60 * 60 * 1000).toISOString(),
-    });
-  }
-
-  return aggregated;
-}
-
 export async function MonitorCard({ monitor, timeRange }: MonitorCardProps) {
-  // Fixed 3-day range for sparkline
-  const sparklineRange: TimeRange = {
-    from: subDays(new Date(), 3),
-    to: new Date(),
-  };
-
-  const [latestResult, sparklineResults, stats] = await Promise.all([
+  const [latestResult, stats, statusBuckets] = await Promise.all([
     getLatestCheckResult(monitor.id),
-    getCheckResults(monitor.id, { timeRange: sparklineRange }),
     getMonitorStats(monitor.id, timeRange),
+    getStatusBuckets(monitor.id, timeRange, "1h"),
   ]);
-
-  // Aggregate to hourly intervals (72 hours = 3 days)
-  const aggregatedResults = aggregateByHour(sparklineResults, 72);
 
   const status = latestResult?.status ?? "pending";
 
@@ -105,10 +46,6 @@ export async function MonitorCard({ monitor, timeRange }: MonitorCardProps) {
               {monitor.id}.ts
             </p>
           </div>
-        </div>
-
-        <div className="flex-shrink-0 hidden sm:block w-24">
-          <Sparkline results={aggregatedResults} height={32} />
         </div>
 
         <Link
@@ -149,6 +86,11 @@ export async function MonitorCard({ monitor, timeRange }: MonitorCardProps) {
             paused
           </span>
         )}
+      </div>
+
+      {/* Uptime bars */}
+      <div className="mt-3">
+        <UptimeBarsCompact statusBuckets={statusBuckets} />
       </div>
     </div>
   );
