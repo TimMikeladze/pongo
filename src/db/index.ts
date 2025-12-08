@@ -48,7 +48,11 @@ async function initDatabase(): Promise<Database> {
     const { createClient } = await import("@libsql/client");
     const { drizzle } = await import("drizzle-orm/libsql");
 
-    const databasePath = process.env.DATABASE_URL ?? "file:./pongo/pongo.db";
+    let databasePath = process.env.DATABASE_URL ?? "file:./pongo/pongo.db";
+    // Ensure file: prefix for local paths (required by libsql)
+    if (!databasePath.includes("://") && !databasePath.startsWith("file:")) {
+      databasePath = `file:${databasePath}`;
+    }
     const client = createClient({ url: databasePath });
 
     // Production SQLite performance pragmas
