@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   getActiveIncidents,
-  getFiringAlerts,
+  getDashboardBySlug,
   getLatestCheckResult,
   getMonitors,
 } from "@/lib/data";
@@ -82,25 +82,33 @@ function getDescription(indicator: StatusIndicator): string {
   }
 }
 
-export async function GET(request: Request) {
+interface Props {
+  params: Promise<{ slug: string }>;
+}
+
+export async function GET(request: Request, { params }: Props) {
+  const { slug } = await params;
+  const dashboard = await getDashboardBySlug(slug);
+
+  if (!dashboard || !dashboard.isPublic) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   const indicators: StatusIndicator[] = [];
 
-  // Check active incidents
-  const activeIncidents = await getActiveIncidents();
+  // Check active incidents for this dashboard
+  const activeIncidents = await getActiveIncidents(dashboard.id);
   for (const incident of activeIncidents) {
     indicators.push(getIndicatorFromIncidentSeverity(incident.severity));
   }
 
-  // Check firing alerts
-  const firingAlerts = await getFiringAlerts();
-  if (firingAlerts.length > 0) {
-    // Firing alerts indicate at least minor issues
-    indicators.push("minor");
-  }
+  // Check latest monitor statuses for this dashboard's monitors
+  const allMonitors = await getMonitors();
+  const dashboardMonitors = allMonitors.filter((m) =>
+    dashboard.monitorIds.includes(m.id),
+  );
 
-  // Check latest monitor statuses
-  const monitors = await getMonitors();
-  for (const monitor of monitors) {
+  for (const monitor of dashboardMonitors) {
     if (!monitor.isActive) continue;
     const latest = await getLatestCheckResult(monitor.id);
     if (latest) {
@@ -117,9 +125,9 @@ export async function GET(request: Request) {
 
   const response: StatusResponse = {
     page: {
-      id: "pongo",
-      name: "Pongo",
-      url: baseUrl,
+      id: dashboard.id,
+      name: dashboard.name,
+      url: `${baseUrl}/shared/${slug}`,
       time_zone: "Etc/UTC",
       updated_at: new Date().toISOString(),
     },
