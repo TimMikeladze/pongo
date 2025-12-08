@@ -48,7 +48,7 @@ FROM deps-system AS production-deps
 
 COPY bun.lock package.json ./
 RUN --mount=type=cache,target=/root/.bun/install/cache \
-    bun install --frozen-lockfile --production
+    bun install --frozen-lockfile
 
 
 # Final stage for app image
