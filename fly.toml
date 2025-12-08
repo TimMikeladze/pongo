@@ -50,7 +50,7 @@ primary_region = 'sjc'
 
 [[vm]]
   processes = ['nextjs']
-  memory = '256mb'
+  memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
 
