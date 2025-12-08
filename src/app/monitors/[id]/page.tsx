@@ -13,6 +13,7 @@ import { notFound } from "next/navigation";
 import { ChartCard } from "@/components/chart-card";
 import { ErrorRateChart } from "@/components/error-rate-chart";
 import { IncidentCard } from "@/components/incident-card";
+import { RegionBreakdown } from "@/components/region-breakdown";
 import { ResponseTimeChart } from "@/components/response-time-chart";
 import { SectionWithTooltip } from "@/components/section-with-tooltip";
 import { StatsCard } from "@/components/stats-card";
@@ -29,6 +30,7 @@ import {
   getLatestCheckResult,
   getMonitor,
   getMonitorStats,
+  getMonitorStatsByRegion,
   getMonitors,
   getResponseTimeChartData,
   getErrorRateChartData,

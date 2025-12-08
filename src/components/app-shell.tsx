@@ -453,7 +453,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </TooltipTrigger>
               <TooltipContent>GitHub</TooltipContent>
             </Tooltip>
-            <SupportDialog mode="support" showLabel={false} />
+            <SupportDialog showLabel={false} />
             <Tooltip>
               <TooltipTrigger asChild>
                 <button

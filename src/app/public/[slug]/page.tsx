@@ -1,11 +1,11 @@
 import { format } from "date-fns";
-import { PawPrint, Clock, Github, Heart } from "lucide-react";
+import { Clock, Github, PawPrint, } from "lucide-react";
 import { notFound } from "next/navigation";
 import { DashboardView } from "@/components/dashboard-view";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
 import { SupportDialog } from "@/components/support-dialog";
 import { getActiveIncidents, getDashboardBySlug } from "@/lib/data";
-import { timeRangeCache, getTimeRange } from "@/lib/time-range";
+import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -89,7 +89,7 @@ export default async function PublicDashboardPage({
             </div>
             <div className="flex items-center gap-4">
               <a
-                href="https://github.com/timcole/pongo"
+                href="https://github.com/tim-mikeladze/pongo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-foreground transition-colors flex items-center gap-1"
