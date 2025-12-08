@@ -101,5 +101,6 @@ export function createServer(scheduler: Scheduler, port: number) {
   return {
     fetch: app.fetch,
     port,
+    hostname: "0.0.0.0",
   };
 }

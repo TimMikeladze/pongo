@@ -45,6 +45,11 @@ primary_region = 'sjc'
     timeout = "5s"
     path = "/health"
 
+[mounts]
+  source = "pongo_data"
+  destination = "/data"
+  initial_size = "1gb"
+
 [[vm]]
   processes = ['nextjs']
   memory = '1gb'
