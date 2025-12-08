@@ -2,7 +2,7 @@ import { monitor } from "../../src/lib/config-types";
 
 export default monitor({
   name: "AWS",
-  interval: "1m",
+  interval: "15m",
   timeout: "30s",
 
   async handler() {

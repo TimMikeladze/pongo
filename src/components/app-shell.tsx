@@ -114,7 +114,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/settings");
 
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden relative">
+    <div className="h-dvh bg-background flex flex-col overflow-hidden relative">
       <div className="fixed inset-0 z-0 pointer-events-none">
         <GridPattern
           width={30}
