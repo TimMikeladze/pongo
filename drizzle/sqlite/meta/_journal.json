@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1765136683409,
-      "tag": "0000_perpetual_sphinx",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1765144603189,
-      "tag": "0001_dusty_richard_fisk",
+      "when": 1765162112123,
+      "tag": "0000_perfect_mac_gargan",
       "breakpoints": true
     }
   ]

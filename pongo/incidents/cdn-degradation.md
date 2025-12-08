@@ -1,7 +1,7 @@
 ---
 dashboard: demo
 title: CDN Performance Degradation
-severity: minor
+severity: minorfl
 status: investigating
 affectedMonitors:
   - cdn
