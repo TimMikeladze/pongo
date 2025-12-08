@@ -165,8 +165,65 @@ export const getCheckResults = cache(
 
 export const getLatestCheckResult = cache(
   async (monitorId: string): Promise<CheckResult | null> => {
-    const results = await getCheckResults(monitorId, { limit: 1 });
-    return results[0] || null;
+    const db = await getDbAsync();
+    const driver = getDbDriver();
+    const checkResults = driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
+
+    // Get active regions
+    const regions = await getActiveRegions();
+
+    if (regions.length <= 1) {
+      // Single region - return as-is
+      const results = await getCheckResults(monitorId, { limit: 1 });
+      return results[0] || null;
+    }
+
+    // Multiple regions - get latest from each and aggregate
+    const latestPerRegion: Array<{
+      id: string;
+      monitorId: string;
+      status: MonitorStatus;
+      responseTimeMs: number;
+      statusCode: number | null;
+      message: string | null;
+      checkedAt: Date;
+    }> = [];
+
+    for (const region of regions) {
+      // biome-ignore lint/suspicious/noExplicitAny: dual-schema
+      const [result] = await (db as any)
+        .select()
+        .from(checkResults)
+        .where(
+          and(
+            eq(checkResults.monitorId, monitorId),
+            eq(checkResults.region, region)
+          )
+        )
+        .orderBy(desc(checkResults.checkedAt))
+        .limit(1);
+      if (result) latestPerRegion.push(result);
+    }
+
+    if (latestPerRegion.length === 0) return null;
+
+    // Return most recent with aggregated status
+    const mostRecent = latestPerRegion.sort(
+      (a, b) => new Date(b.checkedAt).getTime() - new Date(a.checkedAt).getTime()
+    )[0];
+
+    return {
+      id: mostRecent.id,
+      monitorId: mostRecent.monitorId,
+      status: aggregateStatus(latestPerRegion.map(r => r.status as MonitorStatus)),
+      responseTimeMs: mostRecent.responseTimeMs,
+      statusCode: mostRecent.statusCode,
+      errorMessage: mostRecent.message,
+      checkedAt:
+        mostRecent.checkedAt instanceof Date
+          ? mostRecent.checkedAt.toISOString()
+          : new Date(mostRecent.checkedAt).toISOString(),
+    };
   },
 );
 
@@ -1103,6 +1160,22 @@ export async function getFeedItems(
 // ============================================
 // Multi-region data functions
 // ============================================
+
+/**
+ * Compute aggregate status from multiple regions
+ * - all up = up
+ * - all down = down
+ * - mixed = degraded
+ * - empty = pending
+ */
+export function aggregateStatus(statuses: MonitorStatus[]): MonitorStatus {
+  if (statuses.length === 0) return "pending";
+  const uniqueStatuses = [...new Set(statuses)];
+  if (uniqueStatuses.length === 1) return uniqueStatuses[0];
+  if (uniqueStatuses.every(s => s === "down")) return "down";
+  if (uniqueStatuses.every(s => s === "up")) return "up";
+  return "degraded";
+}
 
 /**
  * Get all regions that have reported results in the last hour
