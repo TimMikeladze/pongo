@@ -1,6 +1,7 @@
 // scripts/migrate-multi-region.ts
-import { getDbAsync, getDbDriver } from "@/db";
+
 import { sql } from "drizzle-orm";
+import { getDbAsync, getDbDriver } from "@/db";
 
 async function migrate() {
   console.log("Running multi-region migration...");
@@ -72,7 +73,10 @@ async function migrate() {
         ALTER TABLE pongo_check_results ADD COLUMN region TEXT NOT NULL DEFAULT 'default'
       `);
     } catch (e: any) {
-      const errMsg = (e.message?.toLowerCase() || "") + " " + (e.cause?.message?.toLowerCase() || "");
+      const errMsg =
+        (e.message?.toLowerCase() || "") +
+        " " +
+        (e.cause?.message?.toLowerCase() || "");
       if (errMsg.includes("duplicate column") || errMsg.includes("duplicate")) {
         console.log("  Column already exists, skipping...");
       } else {
@@ -96,7 +100,10 @@ async function migrate() {
         ALTER TABLE pongo_alert_state ADD COLUMN region TEXT NOT NULL DEFAULT 'default'
       `);
     } catch (e: any) {
-      const errMsg = (e.message?.toLowerCase() || "") + " " + (e.cause?.message?.toLowerCase() || "");
+      const errMsg =
+        (e.message?.toLowerCase() || "") +
+        " " +
+        (e.cause?.message?.toLowerCase() || "");
       if (errMsg.includes("duplicate column") || errMsg.includes("duplicate")) {
         console.log("  Column already exists, skipping...");
       } else {
@@ -110,7 +117,10 @@ async function migrate() {
         ALTER TABLE pongo_alert_events ADD COLUMN region TEXT NOT NULL DEFAULT 'default'
       `);
     } catch (e: any) {
-      const errMsg = (e.message?.toLowerCase() || "") + " " + (e.cause?.message?.toLowerCase() || "");
+      const errMsg =
+        (e.message?.toLowerCase() || "") +
+        " " +
+        (e.cause?.message?.toLowerCase() || "");
       if (errMsg.includes("duplicate column") || errMsg.includes("duplicate")) {
         console.log("  Column already exists, skipping...");
       } else {

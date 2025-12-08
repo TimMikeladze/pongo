@@ -1,20 +1,20 @@
 "use client";
 
-import { useMemo, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
   Bar,
   BarChart,
-  XAxis,
-  YAxis,
+  Cell,
   ResponsiveContainer,
   Tooltip,
-  Cell,
+  XAxis,
+  YAxis,
 } from "recharts";
-import { useTheme } from "@/components/theme-provider";
-import { useChartType, useChartFullscreen } from "@/components/chart-card";
+import { useChartFullscreen, useChartType } from "@/components/chart-card";
 import type { ChartType } from "@/components/chart-type-toggle";
+import { useTheme } from "@/components/theme-provider";
 import type { ErrorRateDataPoint } from "@/lib/data";
 
 interface ErrorRateChartProps {
@@ -87,9 +87,9 @@ export function ErrorRateChart({
           ]}
         />
         <Bar dataKey="errorRate" radius={[2, 2, 0, 0]}>
-          {data.map((entry, index) => (
+          {data.map((entry) => (
             <Cell
-              key={`cell-${index}`}
+              key={entry.time}
               fill={entry.errorRate > 0 ? colors.bar : colors.barLight}
             />
           ))}

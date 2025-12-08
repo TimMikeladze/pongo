@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
-import { AreaChart, Area, ResponsiveContainer, YAxis } from "recharts";
+import { useEffect, useMemo, useState } from "react";
+import { Area, AreaChart, ResponsiveContainer, YAxis } from "recharts";
 import { useTheme } from "@/components/theme-provider";
 import type { CheckResult } from "@/lib/types";
 

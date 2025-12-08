@@ -1,14 +1,14 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import type { MonitorStatus } from "@/lib/types";
-import type { StatusTimelineDataPoint } from "@/lib/data";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { StatusTimelineDataPoint } from "@/lib/data";
+import type { MonitorStatus } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 interface StatusTimelineProps {
   data: StatusTimelineDataPoint[];
@@ -67,6 +67,7 @@ export function StatusTimeline({ data, limit = 30 }: StatusTimelineProps) {
               </TooltipContent>
             </Tooltip>
           ) : (
+            // biome-ignore lint/suspicious/noArrayIndexKey: empty slots have no unique identifier
             <div
               key={`empty-${index}`}
               className="h-6 w-1 rounded-[1px] bg-secondary opacity-30"

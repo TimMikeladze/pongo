@@ -1,19 +1,19 @@
 "use client";
 
-import { useMemo, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
   Bar,
   BarChart,
-  XAxis,
-  YAxis,
   ResponsiveContainer,
   Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
-import { useTheme } from "@/components/theme-provider";
-import { useChartType, useChartFullscreen } from "@/components/chart-card";
+import { useChartFullscreen, useChartType } from "@/components/chart-card";
 import type { ChartType } from "@/components/chart-type-toggle";
+import { useTheme } from "@/components/theme-provider";
 import type { ResponseTimeDataPoint } from "@/lib/data";
 
 interface ResponseTimeChartProps {

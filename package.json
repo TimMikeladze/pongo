@@ -6,8 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "biome check",
-    "format": "biome format --write",
+    "lint": "bun biome check . && bun biome format .",
+    "lint:fix": "bun biome check --unsafe --write . && bun biome format --write .",
+    "lint:errors": "bun biome check --diagnostic-level error --unsafe .",
+    "check": "if [ \"$CI\" = \"true\" ]; then bun run lint && bun run tsc && bun run test; else bun run lint:fix && bun run tsc && bun run test; fi",
+    "prepare": "simple-git-hooks",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
     "db:pg:generate": "drizzle-kit generate --config=drizzle.config.pg.ts",
     "db:pg:migrate": "drizzle-kit migrate --config=drizzle.config.pg.ts",
     "db:pg:push": "drizzle-kit push --config=drizzle.config.pg.ts",
@@ -18,6 +23,9 @@
     "db:sqlite:studio": "drizzle-kit studio --config=drizzle.config.sqlite.ts",
     "scheduler": "bun run src/scheduler/index.ts",
     "archiver": "bun run src/archiver/index.ts"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "bun run check && git add ."
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.946.0",
@@ -83,13 +91,14 @@
     "@biomejs/biome": "2.3.8",
     "@flydotio/dockerfile": "^0.7.10",
     "@tailwindcss/postcss": "^4",
-    "@types/bun": "^1.3.3",
+    "@types/bun": "^1.3.4",
     "@types/marked": "^6.0.0",
     "@types/node": "^24.10.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
     "drizzle-kit": "^0.31.8",
+    "simple-git-hooks": "^2.13.1",
     "tailwindcss": "^4.1.17",
     "tw-animate-css": "^1.4.0",
     "typescript": "^5"

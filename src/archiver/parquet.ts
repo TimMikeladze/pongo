@@ -1,8 +1,8 @@
 // src/archiver/parquet.ts
 
-import parquet from "parquetjs-lite";
 import { mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
+import parquet from "parquetjs-lite";
 import type { ArchivalRow } from "./types";
 
 const checkResultsSchema = new parquet.ParquetSchema({

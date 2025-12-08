@@ -1,5 +1,5 @@
-import { formatDistanceToNow, format } from "date-fns";
-import { Bell, CheckCircle } from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
+import { Bell } from "lucide-react";
 import type { AlertEventWithMonitor } from "@/lib/data";
 
 interface AlertTimelineProps {
@@ -42,20 +42,24 @@ export function AlertTimeline({ events }: AlertTimelineProps) {
   }
 
   // Group events by alertId to show fired/resolved pairs
-  const groupedEvents = events.reduce((acc, event) => {
-    const key = event.alertId;
-    if (!acc[key]) {
-      acc[key] = [];
-    }
-    acc[key].push(event);
-    return acc;
-  }, {} as Record<string, AlertEventWithMonitor[]>);
+  const groupedEvents = events.reduce(
+    (acc, event) => {
+      const key = event.alertId;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(event);
+      return acc;
+    },
+    {} as Record<string, AlertEventWithMonitor[]>,
+  );
 
   return (
     <div className="space-y-3">
       {Object.entries(groupedEvents).map(([alertId, alertEvents]) => {
         const latestEvent = alertEvents[0];
-        const isFiring = latestEvent.eventType === "fired" && !latestEvent.resolvedAt;
+        const isFiring =
+          latestEvent.eventType === "fired" && !latestEvent.resolvedAt;
 
         return (
           <div
@@ -80,7 +84,10 @@ export function AlertTimeline({ events }: AlertTimelineProps) {
 
             <div className="mt-3 space-y-2">
               {alertEvents.slice(0, 5).map((event) => (
-                <div key={event.id} className="flex items-start gap-2 text-[10px]">
+                <div
+                  key={event.id}
+                  className="flex items-start gap-2 text-[10px]"
+                >
                   {event.eventType === "fired" ? (
                     <span className="text-red-500 mt-0.5">●</span>
                   ) : (
@@ -88,7 +95,13 @@ export function AlertTimeline({ events }: AlertTimelineProps) {
                   )}
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className={event.eventType === "fired" ? "text-red-500" : "text-green-500"}>
+                      <span
+                        className={
+                          event.eventType === "fired"
+                            ? "text-red-500"
+                            : "text-green-500"
+                        }
+                      >
                         {event.eventType === "fired" ? "Fired" : "Resolved"}
                       </span>
                       <span className="text-muted-foreground">
@@ -111,7 +124,9 @@ export function AlertTimeline({ events }: AlertTimelineProps) {
               {!latestEvent.resolvedAt && latestEvent.eventType === "fired" && (
                 <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                   <span className="text-yellow-500 mt-0.5">●</span>
-                  <span>ongoing... ({formatDistanceToNow(latestEvent.triggeredAt)})</span>
+                  <span>
+                    ongoing... ({formatDistanceToNow(latestEvent.triggeredAt)})
+                  </span>
                 </div>
               )}
             </div>

@@ -26,7 +26,12 @@ import { cn } from "@/lib/utils";
 
 function BlueskyIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="currentColor"
+      aria-label="Bluesky"
+    >
       <path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z" />
     </svg>
   );
@@ -86,6 +91,7 @@ export function SupportDialog({
     <Dialog>
       <DialogTrigger asChild>
         <button
+          type="button"
           className={
             triggerClassName ??
             "hover:text-foreground transition-colors flex items-center gap-1"
@@ -107,19 +113,20 @@ export function SupportDialog({
             <>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 pongo is an open source uptime monitoring solution designed for
-                developers who prefer configuration as code. define your monitors as
-                simple typescript files, commit them to your repository, and deploy
-                anywhere that runs node.
+                developers who prefer configuration as code. define your
+                monitors as simple typescript files, commit them to your
+                repository, and deploy anywhere that runs node.
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                track response times, uptime percentages, error rates, and latency
-                percentiles with real-time dashboards. create beautiful public status
-                pages to keep your users informed about service health.
+                track response times, uptime percentages, error rates, and
+                latency percentiles with real-time dashboards. create beautiful
+                public status pages to keep your users informed about service
+                health.
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                no database required — pongo reads monitor definitions directly from
-                your filesystem. results are stored locally in sqlite, making it
-                lightweight, portable, and easy to backup.
+                no database required — pongo reads monitor definitions directly
+                from your filesystem. results are stored locally in sqlite,
+                making it lightweight, portable, and easy to backup.
               </p>
             </>
           ) : (
@@ -180,7 +187,7 @@ export function SupportDialog({
                 <div
                   className={cn(
                     "overflow-hidden transition-all duration-200",
-                    shareExpanded ? "max-h-40" : "max-h-0"
+                    shareExpanded ? "max-h-40" : "max-h-0",
                   )}
                 >
                   <div className="relative border-t border-border">
@@ -199,7 +206,9 @@ export function SupportDialog({
                       <Copy className="h-4 w-4" />
                     </button>
                     {copied && (
-                      <span className="absolute bottom-3 right-3 text-[10px] text-green-500">copied!</span>
+                      <span className="absolute bottom-3 right-3 text-[10px] text-green-500">
+                        copied!
+                      </span>
                     )}
                   </div>
                   <div className="flex items-center border-t border-border">
@@ -211,7 +220,8 @@ export function SupportDialog({
                         rel="noopener noreferrer"
                         className={cn(
                           "flex-1 flex items-center justify-center gap-1.5 p-2 hover:bg-accent transition-colors text-muted-foreground hover:text-foreground",
-                          index < sharePlatforms.length - 1 && "border-r border-border"
+                          index < sharePlatforms.length - 1 &&
+                            "border-r border-border",
                         )}
                         title={`Share on ${platform.name}`}
                       >
@@ -226,7 +236,9 @@ export function SupportDialog({
                 <div className="flex items-center gap-3 p-3">
                   <UserPlus className="h-4 w-4 text-muted-foreground" />
                   <div className="flex-1">
-                    <div className="text-xs font-medium">follow the developer</div>
+                    <div className="text-xs font-medium">
+                      follow the developer
+                    </div>
                     <div className="text-[10px] text-muted-foreground">
                       stay updated on new features
                     </div>

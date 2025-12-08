@@ -1,20 +1,20 @@
 "use client";
 
-import { useMemo, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  Line,
-  LineChart,
   Bar,
   BarChart,
-  XAxis,
-  YAxis,
+  Legend,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
-  Legend,
+  XAxis,
+  YAxis,
 } from "recharts";
-import { useTheme } from "@/components/theme-provider";
-import { useChartType, useChartFullscreen } from "@/components/chart-card";
+import { useChartFullscreen, useChartType } from "@/components/chart-card";
 import type { ChartType } from "@/components/chart-type-toggle";
+import { useTheme } from "@/components/theme-provider";
 import type { LatencyPercentilesDataPoint } from "@/lib/data";
 
 interface LatencyPercentilesChartProps {

@@ -1,7 +1,7 @@
 // src/scheduler/server.ts
 import { Hono } from "hono";
-import type { Scheduler } from "./scheduler";
 import { REGION } from "./index";
+import type { Scheduler } from "./scheduler";
 
 export function createServer(scheduler: Scheduler, port: number) {
   const app = new Hono();

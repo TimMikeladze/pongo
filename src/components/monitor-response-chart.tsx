@@ -1,6 +1,6 @@
 import { getResponseTimeChartData, type TimeRange } from "@/lib/data";
-import { ResponseTimeChart } from "./response-time-chart";
 import type { IntervalOption } from "@/lib/time-range";
+import { ResponseTimeChart } from "./response-time-chart";
 
 interface MonitorResponseChartProps {
   monitorId: string;

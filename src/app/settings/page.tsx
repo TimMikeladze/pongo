@@ -1,5 +1,5 @@
+import { Bell, Database, Palette } from "lucide-react";
 import Link from "next/link";
-import { Bell, Palette, Database } from "lucide-react";
 import {
   Card,
   CardDescription,

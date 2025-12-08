@@ -1,14 +1,15 @@
 // src/scheduler/scheduler.ts
+
 import { Cron } from "croner";
 import pLimit from "p-limit";
-import monitorConfigs from "@pongo/monitors";
-import { parseDuration, type MonitorConfig } from "@/lib/config-types";
-import type { ScheduledMonitor, SchedulerConfig, MonitorState } from "./types";
-import { runMonitor } from "./runner";
-import { logResult } from "./logger";
-import { evaluateAlerts } from "./alerts/evaluator";
-import { loadChannels } from "@/lib/loader";
 import type { ChannelsConfig } from "@/lib/config-types";
+import { type MonitorConfig, parseDuration } from "@/lib/config-types";
+import { loadChannels } from "@/lib/loader";
+import monitorConfigs from "@/pongo/monitors";
+import { evaluateAlerts } from "./alerts/evaluator";
+import { logResult } from "./logger";
+import { runMonitor } from "./runner";
+import type { MonitorState, ScheduledMonitor, SchedulerConfig } from "./types";
 
 /**
  * Convert interval string to croner-compatible schedule
@@ -36,7 +37,9 @@ export class Scheduler {
    */
   async loadMonitors(): Promise<void> {
     this.channels = await loadChannels();
-    console.log(`[scheduler] Loaded ${Object.keys(this.channels).length} channels`);
+    console.log(
+      `[scheduler] Loaded ${Object.keys(this.channels).length} channels`,
+    );
 
     for (const [id, rawConfig] of Object.entries(monitorConfigs)) {
       const config = rawConfig as MonitorConfig;
@@ -101,7 +104,7 @@ export class Scheduler {
           monitor.config.name,
           monitor.config.alerts,
           this.channels,
-          checkId
+          checkId,
         );
       }
     } catch (error) {

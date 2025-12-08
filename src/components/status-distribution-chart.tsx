@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useEffect, useState } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { useEffect, useMemo, useState } from "react";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { useTheme } from "@/components/theme-provider";
 import type { StatusDistributionData } from "@/lib/data";
 
@@ -70,8 +70,8 @@ export function StatusDistributionChart({
             dataKey="value"
             strokeWidth={0}
           >
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={getColor(entry.name)} />
+            {chartData.map((entry) => (
+              <Cell key={entry.name} fill={getColor(entry.name)} />
             ))}
           </Pie>
           <Tooltip

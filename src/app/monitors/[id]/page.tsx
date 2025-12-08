@@ -2,10 +2,10 @@
 
 import { formatDistanceToNow } from "date-fns";
 import {
-  ArrowLeft,
-  Info,
   AlertTriangle,
+  ArrowLeft,
   CheckCircle,
+  Info,
   Wrench,
 } from "lucide-react";
 import Link from "next/link";
@@ -18,7 +18,6 @@ import { ResponseTimeChart } from "@/components/response-time-chart";
 import { SectionWithTooltip } from "@/components/section-with-tooltip";
 import { StatsCard } from "@/components/stats-card";
 import { StatusBadge } from "@/components/status-badge";
-import { StatusTimeline } from "@/components/status-timeline";
 import { TriggerButton } from "@/components/trigger-button";
 import { Button } from "@/components/ui/button";
 import { UptimeBars } from "@/components/uptime-bars";
@@ -26,6 +25,7 @@ import {
   getAnnouncements,
   getCheckResults,
   getDashboards,
+  getErrorRateChartData,
   getIncidents,
   getLatestCheckResult,
   getMonitor,
@@ -33,7 +33,6 @@ import {
   getMonitorStatsByRegion,
   getMonitors,
   getResponseTimeChartData,
-  getErrorRateChartData,
   getStatusTimelineData,
 } from "@/lib/data";
 import { getTimeRange, timeRangeCache } from "@/lib/time-range";

@@ -29,7 +29,7 @@ export type DeclarativeCondition =
  */
 export type ConditionCallback = (
   result: CheckResultWithId,
-  history: CheckResultWithId[]
+  history: CheckResultWithId[],
 ) => boolean;
 
 /**

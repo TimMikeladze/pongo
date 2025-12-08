@@ -2,10 +2,10 @@
 
 import {
   createContext,
+  type ReactNode,
   useContext,
   useEffect,
   useState,
-  type ReactNode,
 } from "react";
 
 type Theme = "dark" | "light" | "system";

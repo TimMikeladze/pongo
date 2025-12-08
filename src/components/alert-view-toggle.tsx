@@ -1,7 +1,7 @@
 "use client";
 
-import { useQueryState } from "nuqs";
 import { List, Table } from "lucide-react";
+import { useQueryState } from "nuqs";
 import { cn } from "@/lib/utils";
 
 export type AlertView = "timeline" | "table";
@@ -21,7 +21,7 @@ export function AlertViewToggle() {
           "flex items-center gap-1.5 px-2 py-1 text-[10px]",
           view === "timeline"
             ? "bg-primary text-primary-foreground"
-            : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+            : "text-muted-foreground hover:text-foreground hover:bg-secondary",
         )}
       >
         <List className="h-3 w-3" />
@@ -34,7 +34,7 @@ export function AlertViewToggle() {
           "flex items-center gap-1.5 px-2 py-1 text-[10px]",
           view === "table"
             ? "bg-primary text-primary-foreground"
-            : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+            : "text-muted-foreground hover:text-foreground hover:bg-secondary",
         )}
       >
         <Table className="h-3 w-3" />

@@ -1,16 +1,15 @@
-import Link from "next/link";
 import { subDays } from "date-fns";
 import { ExternalLink } from "lucide-react";
-import { StatusBadge } from "@/components/status-badge";
+import Link from "next/link";
 import { Sparkline } from "@/components/sparkline";
+import { StatusBadge } from "@/components/status-badge";
 import {
-  getLatestCheckResult,
   getCheckResults,
+  getLatestCheckResult,
   getMonitorStats,
   type TimeRange,
 } from "@/lib/data";
-import type { Monitor } from "@/lib/types";
-import type { CheckResult } from "@/lib/types";
+import type { CheckResult, Monitor } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface MonitorCardProps {

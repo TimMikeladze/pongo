@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Maximize2, Minimize2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +15,10 @@ export function DensityToggle() {
 
   if (!mounted) {
     return (
-      <button className="p-1.5 text-muted-foreground rounded hover:bg-secondary">
+      <button
+        type="button"
+        className="p-1.5 text-muted-foreground rounded hover:bg-secondary"
+      >
         <Maximize2 className="h-3.5 w-3.5" />
       </button>
     );
@@ -23,6 +26,7 @@ export function DensityToggle() {
 
   return (
     <button
+      type="button"
       onClick={toggleDensity}
       className={cn(
         "p-1.5 rounded transition-colors",

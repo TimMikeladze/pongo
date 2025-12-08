@@ -20,7 +20,7 @@ export type ChannelsConfig = Record<string, ChannelConfig>;
  */
 export async function dispatchWebhook(
   channel: ChannelConfig,
-  payload: WebhookPayload
+  payload: WebhookPayload,
 ): Promise<void> {
   try {
     const response = await fetch(channel.url, {
@@ -34,13 +34,13 @@ export async function dispatchWebhook(
 
     if (!response.ok) {
       console.error(
-        `[alerts] Webhook failed: ${channel.url} returned ${response.status}`
+        `[alerts] Webhook failed: ${channel.url} returned ${response.status}`,
       );
     }
   } catch (error) {
     console.error(
       `[alerts] Webhook error: ${channel.url}`,
-      error instanceof Error ? error.message : error
+      error instanceof Error ? error.message : error,
     );
   }
 }
@@ -51,7 +51,7 @@ export async function dispatchWebhook(
 export async function dispatchToChannels(
   channelIds: string[],
   channels: ChannelsConfig,
-  payload: WebhookPayload
+  payload: WebhookPayload,
 ): Promise<void> {
   const dispatches = channelIds.map(async (channelId) => {
     const channel = channels[channelId];

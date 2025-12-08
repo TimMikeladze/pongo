@@ -7,6 +7,7 @@ export function PongoLogo(props: SVGProps<SVGSVGElement>) {
       width={24}
       height={24}
       viewBox="0 0 24 24"
+      aria-label="Pongo logo"
       {...props}
     >
       <path
@@ -16,4 +17,3 @@ export function PongoLogo(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
-

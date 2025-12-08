@@ -12,7 +12,7 @@ function escapeXml(str: string): string {
 export function generateRss(
   dashboard: Dashboard,
   baseUrl: string,
-  items: FeedItem[]
+  items: FeedItem[],
 ): string {
   const feedUrl = `${baseUrl}/dashboards/shared/${dashboard.slug}/feed.xml`;
   const siteUrl = `${baseUrl}/dashboards/shared/${dashboard.slug}`;
@@ -26,7 +26,7 @@ export function generateRss(
       <pubDate>${item.timestamp.toUTCString()}</pubDate>
       <description>${escapeXml(item.description)}</description>
       <category>${escapeXml(item.type)}</category>
-    </item>`
+    </item>`,
     )
     .join("\n");
 
@@ -47,7 +47,7 @@ ${itemsXml}
 export function generateAtom(
   dashboard: Dashboard,
   baseUrl: string,
-  items: FeedItem[]
+  items: FeedItem[],
 ): string {
   const feedUrl = `${baseUrl}/dashboards/shared/${dashboard.slug}/feed.atom`;
   const siteUrl = `${baseUrl}/dashboards/shared/${dashboard.slug}`;
@@ -61,7 +61,7 @@ export function generateAtom(
     <updated>${item.timestamp.toISOString()}</updated>
     <summary>${escapeXml(item.description)}</summary>
     <category term="${escapeXml(item.type)}"/>
-  </entry>`
+  </entry>`,
     )
     .join("\n");
 

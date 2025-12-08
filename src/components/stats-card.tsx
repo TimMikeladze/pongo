@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/theme-provider";
+import { cn } from "@/lib/utils";
 
 interface StatsCardProps {
   title: string;

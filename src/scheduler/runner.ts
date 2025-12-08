@@ -1,9 +1,9 @@
 // src/scheduler/runner.ts
 import type { MonitorResult } from "@/lib/config-types";
 import type {
+  ExecutionResult,
   ScheduledMonitor,
   SchedulerConfig,
-  ExecutionResult,
 } from "./types";
 
 /**
@@ -73,7 +73,7 @@ export async function runMonitor(
 
       // If down and we have retries left, wait and retry
       if (i < config.maxRetries) {
-        const delay = config.retryBaseDelayMs * Math.pow(2, i); // 5s, 10s, 20s
+        const delay = config.retryBaseDelayMs * 2 ** i; // 5s, 10s, 20s
         console.log(
           `[${monitor.id}] Check failed (attempt ${attempts}/${config.maxRetries + 1}), retrying in ${delay}ms...`,
         );
@@ -87,7 +87,7 @@ export async function runMonitor(
       };
 
       if (i < config.maxRetries) {
-        const delay = config.retryBaseDelayMs * Math.pow(2, i);
+        const delay = config.retryBaseDelayMs * 2 ** i;
         console.log(
           `[${monitor.id}] Check error (attempt ${attempts}/${config.maxRetries + 1}), retrying in ${delay}ms...`,
         );

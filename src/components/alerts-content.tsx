@@ -1,9 +1,9 @@
 "use client";
 
 import { useQueryState } from "nuqs";
-import { AlertTimeline } from "./alert-timeline";
-import { AlertTable } from "./alert-table";
 import type { AlertEventWithMonitor } from "@/lib/data";
+import { AlertTable } from "./alert-table";
+import { AlertTimeline } from "./alert-timeline";
 
 interface AlertsContentProps {
   events: AlertEventWithMonitor[];

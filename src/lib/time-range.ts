@@ -1,9 +1,9 @@
+import { subDays, subHours } from "date-fns";
 import {
   createSearchParamsCache,
   parseAsStringLiteral,
   parseAsTimestamp,
 } from "nuqs/server";
-import { subHours, subDays } from "date-fns";
 
 export const TIME_RANGE_PRESETS = [
   "1h",

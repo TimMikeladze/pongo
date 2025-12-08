@@ -100,7 +100,10 @@ export const alertStatusPgEnum = pgEnum("alert_status", ["ok", "firing"]);
 /**
  * Alert event type enum
  */
-export const alertEventTypePgEnum = pgEnum("alert_event_type", ["fired", "resolved"]);
+export const alertEventTypePgEnum = pgEnum("alert_event_type", [
+  "fired",
+  "resolved",
+]);
 
 /**
  * Alert state table - current state of each alert

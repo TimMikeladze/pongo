@@ -172,6 +172,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {isDense && (
         <div
+          role="group"
           className="fixed top-4 right-4 z-50"
           onMouseEnter={() => setShowZenControls(true)}
           onMouseLeave={() => setShowZenControls(false)}
@@ -202,6 +203,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               )}
             >
               <button
+                type="button"
                 onClick={toggleFullWidth}
                 className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 title={fullWidth ? "Constrain width" : "Full width"}
@@ -213,6 +215,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 )}
               </button>
               <button
+                type="button"
                 onClick={toggleDensity}
                 className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 title="Exit zen mode (Esc)"
@@ -220,6 +223,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Minimize2 className="h-3.5 w-3.5" />
               </button>
               <button
+                type="button"
                 onClick={() => {
                   // Cycle: dark -> light -> system -> dark
                   if (theme === "dark") setTheme("light");
@@ -245,6 +249,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Dialog open={zenSupportOpen} onOpenChange={setZenSupportOpen}>
                 <DialogTrigger asChild>
                   <button
+                    type="button"
                     className="p-2 rounded-full text-muted-foreground hover:text-pink-500 hover:bg-accent transition-colors"
                     title="Support pongo.sh"
                   >
@@ -366,6 +371,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Dialog open={zenAboutOpen} onOpenChange={setZenAboutOpen}>
                 <DialogTrigger asChild>
                   <button
+                    type="button"
                     className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                     title="About pongo.sh"
                   >
@@ -380,20 +386,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </DialogHeader>
                   <div className="space-y-3 pt-2">
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      pongo.sh is an open source uptime monitoring solution designed for
-                      developers who prefer configuration as code. define your monitors as
-                      simple typescript files, commit them to your repository, and deploy
-                      anywhere that runs node.
+                      pongo.sh is an open source uptime monitoring solution
+                      designed for developers who prefer configuration as code.
+                      define your monitors as simple typescript files, commit
+                      them to your repository, and deploy anywhere that runs
+                      node.
                     </p>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      track response times, uptime percentages, error rates, and latency
-                      percentiles with real-time dashboards. create beautiful public status
-                      pages to keep your users informed about service health.
+                      track response times, uptime percentages, error rates, and
+                      latency percentiles with real-time dashboards. create
+                      beautiful public status pages to keep your users informed
+                      about service health.
                     </p>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      no database required — pongo.sh reads monitor definitions directly from
-                      your filesystem. results are stored locally in sqlite, making it
-                      lightweight, portable, and easy to backup.
+                      no database required — pongo.sh reads monitor definitions
+                      directly from your filesystem. results are stored locally
+                      in sqlite, making it lightweight, portable, and easy to
+                      backup.
                     </p>
                   </div>
                 </DialogContent>
@@ -413,7 +422,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       )}
 
       <main className="flex-1 overflow-y-auto relative z-10">
-        <div className={cn("mx-auto px-4 md:px-6 py-4 md:py-6", !fullWidth && "md:max-w-6xl")}>
+        <div
+          className={cn(
+            "mx-auto px-4 md:px-6 py-4 md:py-6",
+            !fullWidth && "md:max-w-6xl",
+          )}
+        >
           {children}
         </div>
       </main>

@@ -1,7 +1,7 @@
-import type React from "react";
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import type React from "react";
 import "./globals.css";
 import { AppShell } from "@/components/app-shell";
 import { ThemeProvider } from "@/components/theme-provider";

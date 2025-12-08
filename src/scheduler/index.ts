@@ -6,7 +6,8 @@ import type { SchedulerConfig } from "./types";
 /**
  * Region where this scheduler is running
  */
-export const REGION = process.env.PONGO_REGION || process.env.FLY_REGION || "default";
+export const REGION =
+  process.env.PONGO_REGION || process.env.FLY_REGION || "default";
 
 /**
  * Load config from environment

@@ -1073,7 +1073,7 @@ Add loader function:
  */
 export async function loadChannels(): Promise<ChannelsConfig> {
   try {
-    const channelsModule = await import("@pongo/channels");
+    const channelsModule = await import("@/pongo/channels");
     return channelsModule.default ?? {};
   } catch {
     return {};
@@ -1086,7 +1086,7 @@ export async function loadChannels(): Promise<ChannelsConfig> {
 Add to `tsconfig.json` paths:
 
 ```json
-"@pongo/channels": ["./pongo/channels.ts"]
+"@/pongo/channels": ["./pongo/channels.ts"]
 ```
 
 **Step 4: Verify it compiles**

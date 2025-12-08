@@ -1,8 +1,16 @@
 // src/lib/data.ts
 
-import { desc, eq, and, gte, lte } from "drizzle-orm";
+import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { cache } from "react";
-import { getDbAsync, getDbDriver, sqliteSchema, pgSchema } from "@/db";
+import { getDbAsync, getDbDriver, pgSchema, sqliteSchema } from "@/db";
+import {
+  alertEvents as pgAlertEvents,
+  alertState as pgAlertState,
+} from "@/db/schema.pg";
+import {
+  alertEvents as sqliteAlertEvents,
+  alertState as sqliteAlertState,
+} from "@/db/schema.sqlite";
 import {
   loadAnnouncements,
   loadDashboards,
@@ -21,14 +29,6 @@ import type {
   Monitor,
   MonitorStatus,
 } from "./types";
-import {
-  alertState as sqliteAlertState,
-  alertEvents as sqliteAlertEvents,
-} from "@/db/schema.sqlite";
-import {
-  alertState as pgAlertState,
-  alertEvents as pgAlertEvents,
-} from "@/db/schema.pg";
 
 export interface TimeRange {
   from: Date;
@@ -167,7 +167,8 @@ export const getLatestCheckResult = cache(
   async (monitorId: string): Promise<CheckResult | null> => {
     const db = await getDbAsync();
     const driver = getDbDriver();
-    const checkResults = driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
+    const checkResults =
+      driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
 
     // Get active regions
     const regions = await getActiveRegions();
@@ -197,8 +198,8 @@ export const getLatestCheckResult = cache(
         .where(
           and(
             eq(checkResults.monitorId, monitorId),
-            eq(checkResults.region, region)
-          )
+            eq(checkResults.region, region),
+          ),
         )
         .orderBy(desc(checkResults.checkedAt))
         .limit(1);
@@ -209,13 +210,16 @@ export const getLatestCheckResult = cache(
 
     // Return most recent with aggregated status
     const mostRecent = latestPerRegion.sort(
-      (a, b) => new Date(b.checkedAt).getTime() - new Date(a.checkedAt).getTime()
+      (a, b) =>
+        new Date(b.checkedAt).getTime() - new Date(a.checkedAt).getTime(),
     )[0];
 
     return {
       id: mostRecent.id,
       monitorId: mostRecent.monitorId,
-      status: aggregateStatus(latestPerRegion.map(r => r.status as MonitorStatus)),
+      status: aggregateStatus(
+        latestPerRegion.map((r) => r.status as MonitorStatus),
+      ),
       responseTimeMs: mostRecent.responseTimeMs,
       statusCode: mostRecent.statusCode,
       errorMessage: mostRecent.message,
@@ -451,7 +455,10 @@ export const getFiringAlerts = cache(async (): Promise<FiringAlert[]> => {
     monitorId: row.monitorId,
     monitorName: monitorMap.get(row.monitorId) || row.monitorId,
     alertName: row.alertId, // Will be enhanced when we have alert names in state
-    lastFiredAt: row.lastFiredAt instanceof Date ? row.lastFiredAt : new Date(row.lastFiredAt),
+    lastFiredAt:
+      row.lastFiredAt instanceof Date
+        ? row.lastFiredAt
+        : new Date(row.lastFiredAt),
     currentEventId: row.currentEventId,
   }));
 });
@@ -460,7 +467,8 @@ export const getAlertEvents = cache(
   async (timeRange: TimeRange): Promise<AlertEventWithMonitor[]> => {
     const db = await getDbAsync();
     const driver = getDbDriver();
-    const alertEventsTable = driver === "pg" ? pgAlertEvents : sqliteAlertEvents;
+    const alertEventsTable =
+      driver === "pg" ? pgAlertEvents : sqliteAlertEvents;
 
     // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
     const rows = await (db as any)
@@ -469,8 +477,8 @@ export const getAlertEvents = cache(
       .where(
         and(
           gte(alertEventsTable.triggeredAt, timeRange.from),
-          lte(alertEventsTable.triggeredAt, timeRange.to)
-        )
+          lte(alertEventsTable.triggeredAt, timeRange.to),
+        ),
       )
       .orderBy(desc(alertEventsTable.triggeredAt));
 
@@ -479,9 +487,14 @@ export const getAlertEvents = cache(
 
     // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
     return rows.map((row: any) => {
-      const triggeredAt = row.triggeredAt instanceof Date ? row.triggeredAt : new Date(row.triggeredAt);
+      const triggeredAt =
+        row.triggeredAt instanceof Date
+          ? row.triggeredAt
+          : new Date(row.triggeredAt);
       const resolvedAt = row.resolvedAt
-        ? (row.resolvedAt instanceof Date ? row.resolvedAt : new Date(row.resolvedAt))
+        ? row.resolvedAt instanceof Date
+          ? row.resolvedAt
+          : new Date(row.resolvedAt)
         : null;
 
       return {
@@ -494,10 +507,12 @@ export const getAlertEvents = cache(
         triggeredAt,
         resolvedAt,
         snapshot: row.snapshot,
-        duration: resolvedAt ? resolvedAt.getTime() - triggeredAt.getTime() : null,
+        duration: resolvedAt
+          ? resolvedAt.getTime() - triggeredAt.getTime()
+          : null,
       };
     });
-  }
+  },
 );
 
 // ============================================
@@ -1097,7 +1112,7 @@ export async function getFeedItems(
   monitorIds: string[],
   baseUrl: string,
   slug: string,
-  limit = 50
+  limit = 50,
 ): Promise<FeedItem[]> {
   const items: FeedItem[] = [];
 
@@ -1120,7 +1135,10 @@ export async function getFeedItems(
         ? `Status: ${(event.snapshot as Record<string, unknown>).status || "unknown"}`
         : `Alert ${eventType}`,
       link: `${baseUrl}/dashboards/shared/${slug}#monitor-${event.monitorId}`,
-      timestamp: event.eventType === "fired" ? event.triggeredAt : (event.resolvedAt || event.triggeredAt),
+      timestamp:
+        event.eventType === "fired"
+          ? event.triggeredAt
+          : event.resolvedAt || event.triggeredAt,
     });
   }
 
@@ -1172,8 +1190,8 @@ export function aggregateStatus(statuses: MonitorStatus[]): MonitorStatus {
   if (statuses.length === 0) return "pending";
   const uniqueStatuses = [...new Set(statuses)];
   if (uniqueStatuses.length === 1) return uniqueStatuses[0];
-  if (uniqueStatuses.every(s => s === "down")) return "down";
-  if (uniqueStatuses.every(s => s === "up")) return "up";
+  if (uniqueStatuses.every((s) => s === "down")) return "down";
+  if (uniqueStatuses.every((s) => s === "up")) return "up";
   return "degraded";
 }
 
@@ -1183,7 +1201,8 @@ export function aggregateStatus(statuses: MonitorStatus[]): MonitorStatus {
 export const getActiveRegions = cache(async (): Promise<string[]> => {
   const db = await getDbAsync();
   const driver = getDbDriver();
-  const checkResults = driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
+  const checkResults =
+    driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
 
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
 
@@ -1203,7 +1222,8 @@ export const getLatestCheckResultByRegion = cache(
   async (monitorId: string): Promise<Record<string, CheckResult | null>> => {
     const db = await getDbAsync();
     const driver = getDbDriver();
-    const checkResults = driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
+    const checkResults =
+      driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
 
     const regions = await getActiveRegions();
     const result: Record<string, CheckResult | null> = {};
@@ -1216,8 +1236,8 @@ export const getLatestCheckResultByRegion = cache(
         .where(
           and(
             eq(checkResults.monitorId, monitorId),
-            eq(checkResults.region, region)
-          )
+            eq(checkResults.region, region),
+          ),
         )
         .orderBy(desc(checkResults.checkedAt))
         .limit(1);
@@ -1241,7 +1261,7 @@ export const getLatestCheckResultByRegion = cache(
     }
 
     return result;
-  }
+  },
 );
 
 export interface RegionStats {
@@ -1259,7 +1279,8 @@ export const getMonitorStatsByRegion = cache(
   async (monitorId: string, timeRange: TimeRange): Promise<RegionStats[]> => {
     const db = await getDbAsync();
     const driver = getDbDriver();
-    const checkResults = driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
+    const checkResults =
+      driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
 
     const regions = await getActiveRegions();
     const stats: RegionStats[] = [];
@@ -1274,8 +1295,8 @@ export const getMonitorStatsByRegion = cache(
             eq(checkResults.monitorId, monitorId),
             eq(checkResults.region, region),
             gte(checkResults.checkedAt, timeRange.from),
-            lte(checkResults.checkedAt, timeRange.to)
-          )
+            lte(checkResults.checkedAt, timeRange.to),
+          ),
         )
         .orderBy(desc(checkResults.checkedAt));
 
@@ -1283,11 +1304,14 @@ export const getMonitorStatsByRegion = cache(
 
       // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
       const upCount = results.filter((r: any) => r.status === "up").length;
-      const uptime = results.length > 0 ? (upCount / results.length) * 100 : 100;
-      const avgResponseTime = results.length > 0
-        // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
-        ? results.reduce((sum: number, r: any) => sum + r.responseTimeMs, 0) / results.length
-        : 0;
+      const uptime =
+        results.length > 0 ? (upCount / results.length) * 100 : 100;
+      const avgResponseTime =
+        results.length > 0
+          ? // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
+            results.reduce((sum: number, r: any) => sum + r.responseTimeMs, 0) /
+            results.length
+          : 0;
 
       stats.push({
         region,
@@ -1299,5 +1323,5 @@ export const getMonitorStatsByRegion = cache(
     }
 
     return stats;
-  }
+  },
 );

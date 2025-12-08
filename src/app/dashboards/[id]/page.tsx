@@ -1,12 +1,13 @@
 // src/app/dashboards/[id]/page.tsx
-import { notFound } from "next/navigation";
-import Link from "next/link";
+
 import { ArrowLeft, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 import { DashboardView } from "@/components/dashboard-view";
 import { TriggerAllButton } from "@/components/trigger-all-button";
+import { Button } from "@/components/ui/button";
 import { getDashboard } from "@/lib/data";
-import { timeRangeCache, getTimeRange } from "@/lib/time-range";
+import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 
 interface Props {
   params: Promise<{ id: string }>;

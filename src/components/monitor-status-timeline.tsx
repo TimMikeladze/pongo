@@ -1,6 +1,6 @@
 import { getStatusTimelineData, type TimeRange } from "@/lib/data";
-import { StatusTimeline } from "./status-timeline";
 import type { IntervalOption } from "@/lib/time-range";
+import { StatusTimeline } from "./status-timeline";
 
 interface MonitorStatusTimelineProps {
   monitorId: string;

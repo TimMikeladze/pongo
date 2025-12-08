@@ -1,4 +1,4 @@
-import { getUpcomingMaintenance, getMonitors } from "@/lib/data";
+import { getMonitors, getUpcomingMaintenance } from "@/lib/data";
 
 interface MaintenanceScheduleProps {
   dashboardId?: string;

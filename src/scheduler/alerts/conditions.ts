@@ -9,10 +9,10 @@ import type {
  * Check if a condition is a callback function
  */
 function isCallback(
-  condition: AlertCondition
+  condition: AlertCondition,
 ): condition is (
   result: CheckResultWithId,
-  history: CheckResultWithId[]
+  history: CheckResultWithId[],
 ) => boolean {
   return typeof condition === "function";
 }
@@ -22,7 +22,7 @@ function isCallback(
  */
 function countConsecutive(
   history: CheckResultWithId[],
-  predicate: (check: CheckResultWithId) => boolean
+  predicate: (check: CheckResultWithId) => boolean,
 ): number {
   let count = 0;
   for (const check of history) {
@@ -40,7 +40,7 @@ function countConsecutive(
  */
 function evaluateDeclarative(
   condition: DeclarativeCondition,
-  history: CheckResultWithId[]
+  history: CheckResultWithId[],
 ): boolean {
   if ("consecutiveFailures" in condition) {
     const failures = countConsecutive(history, (c) => c.status === "down");
@@ -50,7 +50,7 @@ function evaluateDeclarative(
   if ("consecutiveSuccesses" in condition) {
     const successes = countConsecutive(
       history,
-      (c) => c.status === "up" || c.status === "degraded"
+      (c) => c.status === "up" || c.status === "degraded",
     );
     return successes >= condition.consecutiveSuccesses;
   }
@@ -59,7 +59,9 @@ function evaluateDeclarative(
     const forChecks = condition.forChecks ?? 1;
     const recentChecks = history.slice(0, forChecks);
     if (recentChecks.length < forChecks) return false;
-    return recentChecks.every((c) => c.responseTimeMs > condition.latencyAboveMs);
+    return recentChecks.every(
+      (c) => c.responseTimeMs > condition.latencyAboveMs,
+    );
   }
 
   if ("status" in condition) {
@@ -105,7 +107,7 @@ function evaluateDeclarative(
 export function evaluateCondition(
   condition: AlertCondition,
   result: CheckResultWithId,
-  history: CheckResultWithId[]
+  history: CheckResultWithId[],
 ): boolean {
   if (isCallback(condition)) {
     return condition(result, history);

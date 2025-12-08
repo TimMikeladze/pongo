@@ -1,5 +1,5 @@
 import { getIronSession } from "iron-session";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import type { SessionData } from "@/lib/auth";
 
 const ACCESS_CODE = process.env.ACCESS_CODE;

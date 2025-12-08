@@ -2,10 +2,10 @@
 
 import {
   createContext,
+  type ReactNode,
+  useCallback,
   useContext,
   useState,
-  useCallback,
-  type ReactNode,
 } from "react";
 
 interface FullscreenContextType {

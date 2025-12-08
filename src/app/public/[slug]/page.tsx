@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Clock, Github, PawPrint, } from "lucide-react";
+import { Clock, Github, PawPrint } from "lucide-react";
 import { notFound } from "next/navigation";
 import { DashboardView } from "@/components/dashboard-view";
 import { IncidentsTimeline } from "@/components/incidents-timeline";

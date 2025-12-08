@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
 import type { MonitorStatus } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 interface StatusBadgeProps {
   status: MonitorStatus;

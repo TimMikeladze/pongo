@@ -1,9 +1,9 @@
-import monitorConfigs from "@pongo/monitors";
 import { desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getDbAsync, getDbDriver, pgSchema, sqliteSchema } from "@/db";
 import { type MonitorConfig, parseDuration } from "@/lib/config-types";
 import { loadChannels } from "@/lib/loader";
+import monitorConfigs from "@/pongo/monitors";
 import { evaluateAlerts } from "@/scheduler/alerts/evaluator";
 import { logResult } from "@/scheduler/logger";
 import { runMonitor } from "@/scheduler/runner";

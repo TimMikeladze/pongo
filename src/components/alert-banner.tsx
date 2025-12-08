@@ -17,7 +17,8 @@ export function AlertBanner({ firingAlerts }: AlertBannerProps) {
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-red-500" />
           <span className="text-sm text-red-500 font-medium">
-            {firingAlerts.length} alert{firingAlerts.length > 1 ? "s" : ""} currently firing
+            {firingAlerts.length} alert{firingAlerts.length > 1 ? "s" : ""}{" "}
+            currently firing
           </span>
         </div>
         <Link

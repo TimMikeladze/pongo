@@ -1,24 +1,24 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { BarChart3, TrendingUp } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
-  ResponsiveContainer,
   Tooltip as RechartsTooltip,
+  ResponsiveContainer,
   XAxis,
 } from "recharts";
-import { BarChart3, TrendingUp } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useTheme } from "@/components/theme-provider";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useTheme } from "@/components/theme-provider";
 import type { StatusBucket } from "@/lib/data";
 import type { MonitorStatus } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 type DisplayMode = "bars" | "sparkline";
 
@@ -181,7 +181,13 @@ export function UptimeDisplay({
                 margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
               >
                 <defs>
-                  <linearGradient id="uptimeGradient" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient
+                    id="uptimeGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
                     <stop offset="0%" stopColor={colors.up} stopOpacity={0.3} />
                     <stop offset="100%" stopColor={colors.up} stopOpacity={0} />
                   </linearGradient>

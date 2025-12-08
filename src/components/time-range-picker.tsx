@@ -1,8 +1,8 @@
 "use client";
 
+import { format } from "date-fns";
 import { CalendarIcon, Clock } from "lucide-react";
 import { useQueryStates } from "nuqs";
-import { format } from "date-fns";
 import { Suspense, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
@@ -13,17 +13,24 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  timeRangeSearchParams,
-  TIME_RANGE_PRESETS,
-  INTERVAL_OPTIONS,
-  formatPresetLabel,
   formatIntervalLabel,
-  type TimeRangePreset,
+  formatPresetLabel,
+  INTERVAL_OPTIONS,
   type IntervalOption,
+  TIME_RANGE_PRESETS,
+  type TimeRangePreset,
+  timeRangeSearchParams,
 } from "@/lib/time-range";
 import { cn } from "@/lib/utils";
 
-export function TimeRangePicker() {
+interface TimeRangePickerProps {
+  disabled?: boolean;
+}
+
+export function TimeRangePicker({ disabled }: TimeRangePickerProps = {}) {
+  if (disabled) {
+    return <TimeRangePickerFallback />;
+  }
   return (
     <Suspense fallback={<TimeRangePickerFallback />}>
       <TimeRangePickerInner />
@@ -34,6 +41,7 @@ export function TimeRangePicker() {
 function TimeRangePickerFallback() {
   return (
     <button
+      type="button"
       className={cn(
         "flex items-center gap-2 px-2.5 py-1.5 text-xs rounded border border-border",
         "text-muted-foreground",
@@ -87,6 +95,7 @@ function TimeRangePickerInner() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
+          type="button"
           className={cn(
             "flex items-center gap-2 px-2.5 py-1.5 text-xs rounded border border-border",
             "text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors",

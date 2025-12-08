@@ -1,14 +1,21 @@
 // src/scheduler/alerts/dispatcher.test.ts
-import { describe, test, expect, mock, beforeEach } from "bun:test";
-import { dispatchWebhook, type ChannelConfig } from "./dispatcher";
+import { beforeEach, describe, expect, mock, test } from "bun:test";
+import { type ChannelConfig, dispatchWebhook } from "./dispatcher";
 import type { WebhookPayload } from "./types";
 
+type MockFetch = ReturnType<
+  typeof mock<(url: string, options: RequestInit) => Promise<Response>>
+>;
+
 describe("dispatchWebhook", () => {
+  let fetchMock: MockFetch;
+
   beforeEach(() => {
     // Reset fetch mock
-    globalThis.fetch = mock(() =>
-      Promise.resolve(new Response(null, { status: 200 }))
+    fetchMock = mock(() =>
+      Promise.resolve(new Response(null, { status: 200 })),
     );
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
   });
 
   test("sends POST request with JSON payload", async () => {
@@ -44,13 +51,14 @@ describe("dispatchWebhook", () => {
 
     await dispatchWebhook(channel, payload);
 
-    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
-    const [url, options] = (globalThis.fetch as ReturnType<typeof mock>).mock
-      .calls[0];
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("https://example.com/webhook");
     expect(options.method).toBe("POST");
-    expect(options.headers["Content-Type"]).toBe("application/json");
-    expect(JSON.parse(options.body)).toEqual(payload);
+    expect((options.headers as Record<string, string>)["Content-Type"]).toBe(
+      "application/json",
+    );
+    expect(JSON.parse(options.body as string)).toEqual(payload);
   });
 
   test("includes custom headers", async () => {
@@ -82,9 +90,9 @@ describe("dispatchWebhook", () => {
 
     await dispatchWebhook(channel, payload);
 
-    const [, options] = (globalThis.fetch as ReturnType<typeof mock>).mock
-      .calls[0];
-    expect(options.headers["X-Source"]).toBe("pongo");
-    expect(options.headers["Authorization"]).toBe("Bearer token");
+    const [, options] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const headers = options.headers as Record<string, string>;
+    expect(headers["X-Source"]).toBe("pongo");
+    expect(headers.Authorization).toBe("Bearer token");
   });
 });

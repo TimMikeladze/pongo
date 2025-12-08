@@ -1,9 +1,9 @@
 "use client";
 
+import { CheckCircle, Loader2, Play, XCircle } from "lucide-react";
 import { useState } from "react";
-import { Play, Loader2, CheckCircle, XCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { triggerAllMonitors } from "@/app/dashboards/[id]/actions";
+import { Button } from "@/components/ui/button";
 
 interface TriggerAllButtonProps {
   monitorIds: string[];
@@ -46,7 +46,7 @@ export function TriggerAllButton({
       } else {
         setResult({ error: res.error });
       }
-    } catch (error) {
+    } catch (_error) {
       setResult({ error: "Failed to trigger monitors" });
     } finally {
       setIsRunning(false);

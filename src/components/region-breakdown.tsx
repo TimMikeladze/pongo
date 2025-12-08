@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
-import { StatusBadge } from "./status-badge";
 import type { RegionStats } from "@/lib/data";
+import { StatusBadge } from "./status-badge";
 
 interface RegionBreakdownProps {
   stats: RegionStats[];

@@ -1,19 +1,19 @@
 // src/scheduler/alerts/evaluator.ts
-import { eq, desc, and, gt } from "drizzle-orm";
+import { and, desc, eq, gt } from "drizzle-orm";
 import { getDbAsync, getDbDriver } from "@/db";
-import { REGION } from "../index";
 import {
-  alertState as sqliteAlertState,
-  alertEvents as sqliteAlertEvents,
-  checkResults as sqliteCheckResults,
-} from "@/db/schema.sqlite";
-import {
-  alertState as pgAlertState,
   alertEvents as pgAlertEvents,
+  alertState as pgAlertState,
   checkResults as pgCheckResults,
 } from "@/db/schema.pg";
+import {
+  alertEvents as sqliteAlertEvents,
+  alertState as sqliteAlertState,
+  checkResults as sqliteCheckResults,
+} from "@/db/schema.sqlite";
+import { REGION } from "../index";
 import { evaluateCondition } from "./conditions";
-import { dispatchToChannels, type ChannelsConfig } from "./dispatcher";
+import { type ChannelsConfig, dispatchToChannels } from "./dispatcher";
 import type {
   AlertConfig,
   AlertSnapshot,
@@ -30,7 +30,7 @@ const HISTORY_LIMIT = 20;
 async function getActiveRegions(
   db: any,
   checkResultsTable: any,
-  monitorId: string
+  monitorId: string,
 ): Promise<string[]> {
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
 
@@ -40,8 +40,8 @@ async function getActiveRegions(
     .where(
       and(
         eq(checkResultsTable.monitorId, monitorId),
-        gt(checkResultsTable.checkedAt, oneHourAgo)
-      )
+        gt(checkResultsTable.checkedAt, oneHourAgo),
+      ),
     );
 
   return results.map((r: { region: string }) => r.region);
@@ -54,7 +54,7 @@ async function getFiringRegions(
   db: any,
   alertStateTable: any,
   monitorId: string,
-  alertId: string
+  alertId: string,
 ): Promise<string[]> {
   const results = await db
     .select({ region: alertStateTable.region })
@@ -63,8 +63,8 @@ async function getFiringRegions(
       and(
         eq(alertStateTable.monitorId, monitorId),
         eq(alertStateTable.alertId, alertId),
-        eq(alertStateTable.status, "firing")
-      )
+        eq(alertStateTable.status, "firing"),
+      ),
     );
 
   return results.map((r: { region: string }) => r.region);
@@ -76,7 +76,7 @@ async function getFiringRegions(
 function shouldDispatchGlobal(
   threshold: RegionThreshold,
   firingCount: number,
-  totalCount: number
+  totalCount: number,
 ): boolean {
   if (threshold === "any") return firingCount >= 1;
   if (threshold === "all") return firingCount === totalCount && totalCount > 0;
@@ -91,7 +91,7 @@ function shouldDispatchGlobal(
 function buildSnapshot(
   history: CheckResultWithId[],
   consecutiveFailures: number,
-  consecutiveSuccesses: number
+  consecutiveSuccesses: number,
 ): AlertSnapshot {
   const latest = history[0];
   return {
@@ -108,7 +108,7 @@ function buildSnapshot(
  */
 function countConsecutive(
   history: CheckResultWithId[],
-  status: "up" | "down" | "degraded"
+  status: "up" | "down" | "degraded",
 ): number {
   let count = 0;
   for (const check of history) {
@@ -129,7 +129,7 @@ export async function evaluateAlerts(
   monitorName: string,
   alerts: AlertConfig[],
   channels: ChannelsConfig,
-  latestCheckId: string
+  latestCheckId: string,
 ): Promise<void> {
   if (alerts.length === 0) return;
 
@@ -139,7 +139,8 @@ export async function evaluateAlerts(
   // Select correct schema based on driver
   const alertStateTable = driver === "pg" ? pgAlertState : sqliteAlertState;
   const alertEventsTable = driver === "pg" ? pgAlertEvents : sqliteAlertEvents;
-  const checkResultsTable = driver === "pg" ? pgCheckResults : sqliteCheckResults;
+  const checkResultsTable =
+    driver === "pg" ? pgCheckResults : sqliteCheckResults;
 
   // Fetch recent check history
   // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
@@ -149,8 +150,8 @@ export async function evaluateAlerts(
     .where(
       and(
         eq(checkResultsTable.monitorId, monitorId),
-        eq(checkResultsTable.region, REGION)
-      )
+        eq(checkResultsTable.region, REGION),
+      ),
     )
     .orderBy(desc(checkResultsTable.checkedAt))
     .limit(HISTORY_LIMIT)) as CheckResultWithId[];
@@ -162,10 +163,7 @@ export async function evaluateAlerts(
   const consecutiveSuccesses =
     latestCheck.status === "down"
       ? 0
-      : countConsecutive(
-          history,
-          latestCheck.status as "up" | "degraded"
-        );
+      : countConsecutive(history, latestCheck.status as "up" | "degraded");
 
   for (const alert of alerts) {
     // Get current alert state
@@ -176,8 +174,8 @@ export async function evaluateAlerts(
       .where(
         and(
           eq(alertStateTable.alertId, alert.id),
-          eq(alertStateTable.region, REGION)
-        )
+          eq(alertStateTable.region, REGION),
+        ),
       )) as Array<{
       alertId: string;
       status: "ok" | "firing";
@@ -185,14 +183,18 @@ export async function evaluateAlerts(
     }>;
 
     const isCurrentlyFiring = currentState?.status === "firing";
-    const conditionMet = evaluateCondition(alert.condition, latestCheck, history);
+    const conditionMet = evaluateCondition(
+      alert.condition,
+      latestCheck,
+      history,
+    );
 
     if (conditionMet && !isCurrentlyFiring) {
       // Alert should fire
       const snapshot = buildSnapshot(
         history,
         consecutiveFailures,
-        consecutiveSuccesses
+        consecutiveSuccesses,
       );
 
       // Create alert event
@@ -223,8 +225,8 @@ export async function evaluateAlerts(
           .where(
             and(
               eq(alertStateTable.alertId, alert.id),
-              eq(alertStateTable.region, REGION)
-            )
+              eq(alertStateTable.region, REGION),
+            ),
           );
       } else {
         // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
@@ -240,11 +242,28 @@ export async function evaluateAlerts(
 
       // Check if we should dispatch globally
       const threshold = alert.regionThreshold ?? "any";
-      const activeRegions = await getActiveRegions(db as any, checkResultsTable, monitorId);
-      const firingRegions = await getFiringRegions(db as any, alertStateTable, monitorId, alert.id);
-      const healthyRegions = activeRegions.filter(r => !firingRegions.includes(r));
+      const activeRegions = await getActiveRegions(
+        db as any,
+        checkResultsTable,
+        monitorId,
+      );
+      const firingRegions = await getFiringRegions(
+        db as any,
+        alertStateTable,
+        monitorId,
+        alert.id,
+      );
+      const healthyRegions = activeRegions.filter(
+        (r) => !firingRegions.includes(r),
+      );
 
-      if (shouldDispatchGlobal(threshold, firingRegions.length, activeRegions.length)) {
+      if (
+        shouldDispatchGlobal(
+          threshold,
+          firingRegions.length,
+          activeRegions.length,
+        )
+      ) {
         const payload: WebhookPayload = {
           event: "alert.fired",
           alert: {
@@ -268,16 +287,20 @@ export async function evaluateAlerts(
         };
 
         await dispatchToChannels(alert.channels, channels, payload);
-        console.log(`[alerts] FIRED: ${alert.name} (${alert.id}) - ${firingRegions.length}/${activeRegions.length} regions`);
+        console.log(
+          `[alerts] FIRED: ${alert.name} (${alert.id}) - ${firingRegions.length}/${activeRegions.length} regions`,
+        );
       } else {
-        console.log(`[alerts] ${alert.name} (${alert.id}) firing in ${REGION}, but threshold not met (${firingRegions.length}/${activeRegions.length})`);
+        console.log(
+          `[alerts] ${alert.name} (${alert.id}) firing in ${REGION}, but threshold not met (${firingRegions.length}/${activeRegions.length})`,
+        );
       }
     } else if (!conditionMet && isCurrentlyFiring) {
       // Alert should resolve
       const snapshot = buildSnapshot(
         history,
         consecutiveFailures,
-        consecutiveSuccesses
+        consecutiveSuccesses,
       );
 
       // Update the existing event with resolution
@@ -305,18 +328,35 @@ export async function evaluateAlerts(
         .where(
           and(
             eq(alertStateTable.alertId, alert.id),
-            eq(alertStateTable.region, REGION)
-          )
+            eq(alertStateTable.region, REGION),
+          ),
         );
 
       // Check if we should dispatch resolution globally
       const threshold = alert.regionThreshold ?? "any";
-      const activeRegions = await getActiveRegions(db as any, checkResultsTable, monitorId);
-      const firingRegions = await getFiringRegions(db as any, alertStateTable, monitorId, alert.id);
-      const healthyRegions = activeRegions.filter(r => !firingRegions.includes(r));
+      const activeRegions = await getActiveRegions(
+        db as any,
+        checkResultsTable,
+        monitorId,
+      );
+      const firingRegions = await getFiringRegions(
+        db as any,
+        alertStateTable,
+        monitorId,
+        alert.id,
+      );
+      const healthyRegions = activeRegions.filter(
+        (r) => !firingRegions.includes(r),
+      );
 
       // Dispatch if alert is no longer firing in enough regions
-      if (!shouldDispatchGlobal(threshold, firingRegions.length, activeRegions.length)) {
+      if (
+        !shouldDispatchGlobal(
+          threshold,
+          firingRegions.length,
+          activeRegions.length,
+        )
+      ) {
         const payload: WebhookPayload = {
           event: "alert.resolved",
           alert: {
@@ -340,9 +380,13 @@ export async function evaluateAlerts(
         };
 
         await dispatchToChannels(alert.channels, channels, payload);
-        console.log(`[alerts] RESOLVED: ${alert.name} (${alert.id}) - ${firingRegions.length}/${activeRegions.length} regions`);
+        console.log(
+          `[alerts] RESOLVED: ${alert.name} (${alert.id}) - ${firingRegions.length}/${activeRegions.length} regions`,
+        );
       } else {
-        console.log(`[alerts] ${alert.name} (${alert.id}) resolved in ${REGION}, but still firing in other regions (${firingRegions.length}/${activeRegions.length})`);
+        console.log(
+          `[alerts] ${alert.name} (${alert.id}) resolved in ${REGION}, but still firing in other regions (${firingRegions.length}/${activeRegions.length})`,
+        );
       }
     }
   }

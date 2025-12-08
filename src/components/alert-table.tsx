@@ -1,8 +1,8 @@
 "use client";
 
 import { format } from "date-fns";
-import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { useState } from "react";
 import type { AlertEventWithMonitor } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +22,7 @@ function formatDuration(ms: number | null): string {
 
 function formatOngoingDuration(triggeredAt: Date): string {
   const ms = Date.now() - triggeredAt.getTime();
-  return formatDuration(ms) + "+";
+  return `${formatDuration(ms)}+`;
 }
 
 export function AlertTable({ events }: AlertTableProps) {
@@ -71,7 +71,7 @@ export function AlertTable({ events }: AlertTableProps) {
                   key={event.id}
                   className={cn(
                     "border-t border-border hover:bg-secondary/30 cursor-pointer",
-                    isFiring && "bg-red-500/5"
+                    isFiring && "bg-red-500/5",
                   )}
                   onClick={() => toggleRow(event.id)}
                 >
@@ -83,7 +83,9 @@ export function AlertTable({ events }: AlertTableProps) {
                     )}
                   </td>
                   <td className="p-2 font-medium">{event.alertId}</td>
-                  <td className="p-2 text-muted-foreground">{event.monitorName}</td>
+                  <td className="p-2 text-muted-foreground">
+                    {event.monitorName}
+                  </td>
                   <td className="p-2">
                     {isFiring ? (
                       <span className="text-red-500 flex items-center gap-1">
@@ -101,10 +103,14 @@ export function AlertTable({ events }: AlertTableProps) {
                     {format(event.triggeredAt, "MMM d, h:mm a")}
                   </td>
                   <td className="p-2 text-muted-foreground">
-                    {event.resolvedAt ? format(event.resolvedAt, "MMM d, h:mm a") : "—"}
+                    {event.resolvedAt
+                      ? format(event.resolvedAt, "MMM d, h:mm a")
+                      : "—"}
                   </td>
                   <td className="p-2 text-muted-foreground">
-                    {isFiring ? formatOngoingDuration(event.triggeredAt) : formatDuration(event.duration)}
+                    {isFiring
+                      ? formatOngoingDuration(event.triggeredAt)
+                      : formatDuration(event.duration)}
                   </td>
                 </tr>
                 {isExpanded && event.snapshot && (
@@ -112,7 +118,9 @@ export function AlertTable({ events }: AlertTableProps) {
                     <td />
                     <td colSpan={6} className="p-2">
                       <div className="text-[10px] text-muted-foreground space-y-1">
-                        <p className="font-medium text-foreground">Snapshot at trigger:</p>
+                        <p className="font-medium text-foreground">
+                          Snapshot at trigger:
+                        </p>
                         <pre className="bg-secondary/50 p-2 rounded overflow-auto">
                           {JSON.stringify(event.snapshot, null, 2)}
                         </pre>

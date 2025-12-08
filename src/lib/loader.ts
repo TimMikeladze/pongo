@@ -3,21 +3,21 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { marked } from "marked";
-import monitorConfigs from "@pongo/monitors";
-import dashboardConfigs from "@pongo/dashboards";
+import dashboardConfigs from "@/pongo/dashboards";
+import monitorConfigs from "@/pongo/monitors";
 import type {
   AnnouncementFrontmatter,
-  IncidentFrontmatter,
   ChannelsConfig,
+  IncidentFrontmatter,
 } from "./config-types";
 import { parseDuration as parseDur } from "./config-types";
 import type {
-  Monitor,
-  Dashboard,
   Announcement,
+  CheckResult,
+  Dashboard,
   Incident,
   IncidentUpdate,
-  CheckResult,
+  Monitor,
   MonitorStatus,
 } from "./types";
 
@@ -170,7 +170,7 @@ function parseIncidentUpdates(body: string): IncidentUpdate[] {
     const match = headerLine.match(/^(\w+)\s*-\s*(.+)$/);
     if (match) {
       const statusStr = match[1].toLowerCase();
-      const dateStr = match[2];
+      const _dateStr = match[2];
 
       let status: IncidentUpdate["status"] = "investigating";
       if (statusStr === "identified") status = "identified";
@@ -238,7 +238,7 @@ export function generateMockCheckResults(
  */
 export async function loadChannels(): Promise<ChannelsConfig> {
   try {
-    const channelsModule = await import("@pongo/channels");
+    const channelsModule = await import("@/pongo/channels");
     return channelsModule.default ?? {};
   } catch {
     return {};

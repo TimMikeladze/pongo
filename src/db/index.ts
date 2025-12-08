@@ -1,7 +1,7 @@
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import * as sqliteSchema from "./schema.sqlite";
 import * as pgSchema from "./schema.pg";
+import * as sqliteSchema from "./schema.sqlite";
 
 /**
  * Database driver type

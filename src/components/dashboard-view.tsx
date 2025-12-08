@@ -1,19 +1,19 @@
 import Link from "next/link";
-import { StatsCard } from "@/components/stats-card";
 import { AnnouncementsList } from "@/components/announcements-list";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
 import { MaintenanceSchedule } from "@/components/maintenance-schedule";
-import { SLAStatus } from "@/components/sla-status";
-import { UptimeBars } from "@/components/uptime-bars";
-import { MonitorResponseChart } from "@/components/monitor-response-chart";
 import { MonitorErrorRateChart } from "@/components/monitor-error-rate-chart";
+import { MonitorResponseChart } from "@/components/monitor-response-chart";
+import { SLAStatus } from "@/components/sla-status";
+import { StatsCard } from "@/components/stats-card";
+import { UptimeBars } from "@/components/uptime-bars";
 import {
-  getDashboard,
-  getMonitors,
   getActiveIncidents,
-  getLatestCheckResult,
-  getUptimePercentage,
   getAverageResponseTime,
+  getDashboard,
+  getLatestCheckResult,
+  getMonitors,
+  getUptimePercentage,
   type TimeRange,
 } from "@/lib/data";
 import type { IntervalOption } from "@/lib/time-range";

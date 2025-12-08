@@ -1,6 +1,6 @@
 import { getErrorRateChartData, type TimeRange } from "@/lib/data";
-import { ErrorRateChart } from "./error-rate-chart";
 import type { IntervalOption } from "@/lib/time-range";
+import { ErrorRateChart } from "./error-rate-chart";
 
 interface MonitorErrorRateChartProps {
   monitorId: string;

@@ -1,9 +1,9 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
 import { MaintenanceSchedule } from "@/components/maintenance-schedule";
+import { Button } from "@/components/ui/button";
 import { getDashboard } from "@/lib/data";
 
 interface Props {

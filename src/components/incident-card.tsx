@@ -1,19 +1,19 @@
 "use client";
 
-import { formatDistanceToNow, format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import {
   type AlertCircle,
-  Search,
-  Eye,
   CheckCircle,
   ChevronDown,
   ChevronUp,
+  Eye,
+  Search,
 } from "lucide-react";
 import { useState } from "react";
 import type {
   Incident,
-  IncidentStatus,
   IncidentSeverity,
+  IncidentStatus,
   Monitor,
 } from "@/lib/types";
 
@@ -58,6 +58,7 @@ export function IncidentCard({
   return (
     <div className={`rounded-lg border ${severityStyles[incident.severity]}`}>
       <button
+        type="button"
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between p-4 text-left"
       >

@@ -1,9 +1,9 @@
 "use client";
 
+import { Loader2, Play } from "lucide-react";
 import { useState } from "react";
-import { Play, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { triggerMonitor } from "@/app/monitors/[id]/actions";
+import { Button } from "@/components/ui/button";
 
 interface TriggerButtonProps {
   monitorId: string;
@@ -31,7 +31,7 @@ export function TriggerButton({ monitorId }: TriggerButtonProps) {
       } else {
         setResult({ error: res.error });
       }
-    } catch (error) {
+    } catch (_error) {
       setResult({ error: "Failed to trigger monitor" });
     } finally {
       setIsRunning(false);

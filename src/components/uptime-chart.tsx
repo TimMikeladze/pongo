@@ -1,19 +1,19 @@
 "use client";
 
-import { useMemo, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
   Bar,
   BarChart,
-  XAxis,
+  Cell,
   ResponsiveContainer,
   Tooltip,
-  Cell,
+  XAxis,
 } from "recharts";
-import { useTheme } from "@/components/theme-provider";
-import { useChartType, useChartFullscreen } from "@/components/chart-card";
+import { useChartFullscreen, useChartType } from "@/components/chart-card";
 import type { ChartType } from "@/components/chart-type-toggle";
+import { useTheme } from "@/components/theme-provider";
 import type { UptimeDataPoint } from "@/lib/data";
 
 interface UptimeChartProps {
@@ -83,8 +83,8 @@ export function UptimeChart({
           formatter={(value: number) => [`${value}%`, "uptime"]}
         />
         <Bar dataKey="uptime" radius={[2, 2, 0, 0]}>
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={getBarColor(entry.uptime)} />
+          {data.map((entry) => (
+            <Cell key={entry.time} fill={getBarColor(entry.uptime)} />
           ))}
         </Bar>
       </BarChart>

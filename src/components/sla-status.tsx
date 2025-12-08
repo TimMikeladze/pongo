@@ -1,5 +1,5 @@
+import { Target, TrendingDown, TrendingUp } from "lucide-react";
 import { getSLAStatus, type TimeRange } from "@/lib/data";
-import { Target, TrendingUp, TrendingDown } from "lucide-react";
 
 interface SLAStatusProps {
   dashboardId: string;

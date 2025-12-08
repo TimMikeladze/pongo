@@ -75,7 +75,6 @@ export default async function PublicDashboardPage({
           <DashboardView
             dashboardId={dashboard.id}
             isPublic
-            publicSlug={slug}
             timeRange={timeRange}
             interval={interval}
           />

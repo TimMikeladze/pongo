@@ -1,10 +1,10 @@
 // src/scheduler/alerts/conditions.test.ts
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { evaluateCondition } from "./conditions";
-import type { CheckResultWithId, AlertCondition } from "./types";
+import type { AlertCondition, CheckResultWithId } from "./types";
 
 function makeCheck(
-  overrides: Partial<CheckResultWithId> = {}
+  overrides: Partial<CheckResultWithId> = {},
 ): CheckResultWithId {
   return {
     id: crypto.randomUUID(),
@@ -88,7 +88,7 @@ describe("evaluateCondition", () => {
 
   describe("callback condition", () => {
     test("invokes callback with result and history", () => {
-      const condition: AlertCondition = (result, history) => {
+      const condition: AlertCondition = (_result, history) => {
         return history.filter((r) => r.status === "degraded").length >= 3;
       };
       const history = [

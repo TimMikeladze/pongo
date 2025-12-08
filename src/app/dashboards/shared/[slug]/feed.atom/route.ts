@@ -3,7 +3,7 @@ import { generateAtom } from "@/lib/feed";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
   const dashboard = await getDashboardBySlug(slug);
@@ -17,7 +17,7 @@ export async function GET(
     dashboard.id,
     dashboard.monitorIds,
     baseUrl,
-    slug
+    slug,
   );
 
   return new Response(generateAtom(dashboard, baseUrl, items), {

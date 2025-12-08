@@ -1,11 +1,11 @@
 // src/archiver/s3.ts
 
+import { readFile, unlink } from "node:fs/promises";
 import {
-  S3Client,
   PutObjectCommand,
   type PutObjectCommandInput,
+  S3Client,
 } from "@aws-sdk/client-s3";
-import { readFile, unlink } from "node:fs/promises";
 import type { ArchiverConfig } from "./types";
 
 let s3Client: S3Client | null = null;

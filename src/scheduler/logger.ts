@@ -1,9 +1,9 @@
 // src/scheduler/logger.ts
 import { getDbAsync, getDbDriver } from "@/db";
-import { checkResults as sqliteCheckResults } from "@/db/schema.sqlite";
 import { checkResults as pgCheckResults } from "@/db/schema.pg";
-import type { ExecutionResult } from "./types";
+import { checkResults as sqliteCheckResults } from "@/db/schema.sqlite";
 import { REGION } from "./index";
+import type { ExecutionResult } from "./types";
 
 /**
  * Format timestamp for console output

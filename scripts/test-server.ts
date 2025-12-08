@@ -35,11 +35,31 @@ function resetEndpoints() {
   endpoints.clear();
   // Default endpoints matching the test monitors
   endpoints.set("/health", { ...defaultState });
-  endpoints.set("/api/health", { ...defaultState, body: '{"status":"healthy"}', contentType: "application/json" });
-  endpoints.set("/db/health", { ...defaultState, body: '{"status":"connected"}', contentType: "application/json" });
-  endpoints.set("/auth/health", { ...defaultState, body: '{"status":"ready"}', contentType: "application/json" });
-  endpoints.set("/payments/health", { ...defaultState, body: '{"status":"operational"}', contentType: "application/json" });
-  endpoints.set("/cdn/health", { ...defaultState, body: '{"status":"serving"}', contentType: "application/json" });
+  endpoints.set("/api/health", {
+    ...defaultState,
+    body: '{"status":"healthy"}',
+    contentType: "application/json",
+  });
+  endpoints.set("/db/health", {
+    ...defaultState,
+    body: '{"status":"connected"}',
+    contentType: "application/json",
+  });
+  endpoints.set("/auth/health", {
+    ...defaultState,
+    body: '{"status":"ready"}',
+    contentType: "application/json",
+  });
+  endpoints.set("/payments/health", {
+    ...defaultState,
+    body: '{"status":"operational"}',
+    contentType: "application/json",
+  });
+  endpoints.set("/cdn/health", {
+    ...defaultState,
+    body: '{"status":"serving"}',
+    contentType: "application/json",
+  });
 }
 
 resetEndpoints();
@@ -77,7 +97,10 @@ async function handleAdmin(req: Request, url: URL): Promise<Response> {
     const body = await parseBody(req);
     for (const [endpointPath, config] of Object.entries(body)) {
       const existing = endpoints.get(endpointPath) || { ...defaultState };
-      endpoints.set(endpointPath, { ...existing, ...(config as Partial<EndpointState>) });
+      endpoints.set(endpointPath, {
+        ...existing,
+        ...(config as Partial<EndpointState>),
+      });
     }
     return Response.json({ ok: true, endpoints: Object.keys(body) });
   }
@@ -87,8 +110,15 @@ async function handleAdmin(req: Request, url: URL): Promise<Response> {
     const endpointPath = getEndpointPath(url);
     const body = await parseBody(req);
     const existing = endpoints.get(endpointPath) || { ...defaultState };
-    endpoints.set(endpointPath, { ...existing, ...(body as Partial<EndpointState>) });
-    return Response.json({ ok: true, path: endpointPath, state: endpoints.get(endpointPath) });
+    endpoints.set(endpointPath, {
+      ...existing,
+      ...(body as Partial<EndpointState>),
+    });
+    return Response.json({
+      ok: true,
+      path: endpointPath,
+      state: endpoints.get(endpointPath),
+    });
   }
 
   // DELETE /admin/endpoints/* - delete endpoint
