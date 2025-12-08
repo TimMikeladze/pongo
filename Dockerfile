@@ -60,8 +60,13 @@ COPY --from=production-deps /app/node_modules ./node_modules
 # Copy everything from build
 COPY --from=build /app ./
 
-# Entrypoint sets up the container.
+# The ENTRYPOINT instruction sets the executable that will always run when the container starts.
+# The CMD instruction provides default arguments to the ENTRYPOINT, or supplies a default command if ENTRYPOINT is not set.
+# If both are used, CMD's values are passed as arguments to ENTRYPOINT.
+# In this example, ENTRYPOINT runs the entrypoint script, and CMD runs the app server.
+
 ENTRYPOINT [ "/app/docker-entrypoint.js" ]
 
 EXPOSE 3000
+
 CMD [ "bun", "run", "start" ]
