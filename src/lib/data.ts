@@ -1099,3 +1099,132 @@ export async function getFeedItems(
     .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
     .slice(0, limit);
 }
+
+// ============================================
+// Multi-region data functions
+// ============================================
+
+/**
+ * Get all regions that have reported results in the last hour
+ */
+export const getActiveRegions = cache(async (): Promise<string[]> => {
+  const db = await getDbAsync();
+  const driver = getDbDriver();
+  const checkResults = driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
+
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+  // biome-ignore lint/suspicious/noExplicitAny: dual-schema
+  const results = await (db as any)
+    .selectDistinct({ region: checkResults.region })
+    .from(checkResults)
+    .where(gte(checkResults.checkedAt, oneHourAgo));
+
+  return results.map((r: { region: string }) => r.region);
+});
+
+/**
+ * Get latest check result per region for a monitor
+ */
+export const getLatestCheckResultByRegion = cache(
+  async (monitorId: string): Promise<Record<string, CheckResult | null>> => {
+    const db = await getDbAsync();
+    const driver = getDbDriver();
+    const checkResults = driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
+
+    const regions = await getActiveRegions();
+    const result: Record<string, CheckResult | null> = {};
+
+    for (const region of regions) {
+      // biome-ignore lint/suspicious/noExplicitAny: dual-schema
+      const [latest] = await (db as any)
+        .select()
+        .from(checkResults)
+        .where(
+          and(
+            eq(checkResults.monitorId, monitorId),
+            eq(checkResults.region, region)
+          )
+        )
+        .orderBy(desc(checkResults.checkedAt))
+        .limit(1);
+
+      if (latest) {
+        result[region] = {
+          id: latest.id,
+          monitorId: latest.monitorId,
+          status: latest.status as MonitorStatus,
+          responseTimeMs: latest.responseTimeMs,
+          statusCode: latest.statusCode,
+          errorMessage: latest.message,
+          checkedAt:
+            latest.checkedAt instanceof Date
+              ? latest.checkedAt.toISOString()
+              : new Date(latest.checkedAt).toISOString(),
+        };
+      } else {
+        result[region] = null;
+      }
+    }
+
+    return result;
+  }
+);
+
+export interface RegionStats {
+  region: string;
+  uptime: number;
+  avgResponseTime: number;
+  lastCheck: Date | null;
+  status: MonitorStatus;
+}
+
+/**
+ * Get monitor stats broken down by region
+ */
+export const getMonitorStatsByRegion = cache(
+  async (monitorId: string, timeRange: TimeRange): Promise<RegionStats[]> => {
+    const db = await getDbAsync();
+    const driver = getDbDriver();
+    const checkResults = driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
+
+    const regions = await getActiveRegions();
+    const stats: RegionStats[] = [];
+
+    for (const region of regions) {
+      // biome-ignore lint/suspicious/noExplicitAny: dual-schema
+      const results = await (db as any)
+        .select()
+        .from(checkResults)
+        .where(
+          and(
+            eq(checkResults.monitorId, monitorId),
+            eq(checkResults.region, region),
+            gte(checkResults.checkedAt, timeRange.from),
+            lte(checkResults.checkedAt, timeRange.to)
+          )
+        )
+        .orderBy(desc(checkResults.checkedAt));
+
+      if (results.length === 0) continue;
+
+      // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
+      const upCount = results.filter((r: any) => r.status === "up").length;
+      const uptime = results.length > 0 ? (upCount / results.length) * 100 : 100;
+      const avgResponseTime = results.length > 0
+        // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
+        ? results.reduce((sum: number, r: any) => sum + r.responseTimeMs, 0) / results.length
+        : 0;
+
+      stats.push({
+        region,
+        uptime: Math.round(uptime * 100) / 100,
+        avgResponseTime: Math.round(avgResponseTime),
+        lastCheck: results[0]?.checkedAt ?? null,
+        status: results[0]?.status ?? "pending",
+      });
+    }
+
+    return stats;
+  }
+);
