@@ -56,6 +56,9 @@ function isMonitorDue(
 export async function GET(request: Request) {
   // Verify the request is from Vercel Cron (in production)
   const authHeader = request.headers.get("authorization");
+  if (!process.env.CRON_SECRET) {
+    return NextResponse.json({ error: "Cron secret not set" }, { status: 500 });
+  }
   if (
     process.env.CRON_SECRET &&
     authHeader !== `Bearer ${process.env.CRON_SECRET}`
