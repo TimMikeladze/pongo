@@ -10,6 +10,7 @@ jobs:
     name: Deploy app
     runs-on: ubuntu-latest
     concurrency: deploy-group
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
