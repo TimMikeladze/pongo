@@ -1,6 +1,7 @@
 // src/scheduler/alerts/evaluator.ts
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { getDbAsync, getDbDriver } from "@/db";
+import { REGION } from "../index";
 import {
   alertState as sqliteAlertState,
   alertEvents as sqliteAlertEvents,
@@ -83,7 +84,12 @@ export async function evaluateAlerts(
   const history = (await (db as any)
     .select()
     .from(checkResultsTable)
-    .where(eq(checkResultsTable.monitorId, monitorId))
+    .where(
+      and(
+        eq(checkResultsTable.monitorId, monitorId),
+        eq(checkResultsTable.region, REGION)
+      )
+    )
     .orderBy(desc(checkResultsTable.checkedAt))
     .limit(HISTORY_LIMIT)) as CheckResultWithId[];
 
@@ -105,7 +111,12 @@ export async function evaluateAlerts(
     const [currentState] = (await (db as any)
       .select()
       .from(alertStateTable)
-      .where(eq(alertStateTable.alertId, alert.id))) as Array<{
+      .where(
+        and(
+          eq(alertStateTable.alertId, alert.id),
+          eq(alertStateTable.region, REGION)
+        )
+      )) as Array<{
       alertId: string;
       status: "ok" | "firing";
       currentEventId: string | null;
@@ -129,6 +140,7 @@ export async function evaluateAlerts(
         id: eventId,
         alertId: alert.id,
         monitorId,
+        region: REGION,
         eventType: "fired",
         triggeredAt: new Date(),
         snapshot,
@@ -146,12 +158,18 @@ export async function evaluateAlerts(
             currentEventId: eventId,
             updatedAt: new Date(),
           })
-          .where(eq(alertStateTable.alertId, alert.id));
+          .where(
+            and(
+              eq(alertStateTable.alertId, alert.id),
+              eq(alertStateTable.region, REGION)
+            )
+          );
       } else {
         // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
         await (db as any).insert(alertStateTable).values({
           alertId: alert.id,
           monitorId,
+          region: REGION,
           status: "firing",
           lastFiredAt: new Date(),
           currentEventId: eventId,
@@ -176,6 +194,7 @@ export async function evaluateAlerts(
           message: latestCheck.message,
           checkedAt: latestCheck.checkedAt.toISOString(),
         },
+        region: REGION,
       };
 
       await dispatchToChannels(alert.channels, channels, payload);
@@ -211,7 +230,12 @@ export async function evaluateAlerts(
           currentEventId: null,
           updatedAt: new Date(),
         })
-        .where(eq(alertStateTable.alertId, alert.id));
+        .where(
+          and(
+            eq(alertStateTable.alertId, alert.id),
+            eq(alertStateTable.region, REGION)
+          )
+        );
 
       // Dispatch resolution webhook
       const payload: WebhookPayload = {
@@ -231,6 +255,7 @@ export async function evaluateAlerts(
           message: latestCheck.message,
           checkedAt: latestCheck.checkedAt.toISOString(),
         },
+        region: REGION,
       };
 
       await dispatchToChannels(alert.channels, channels, payload);
