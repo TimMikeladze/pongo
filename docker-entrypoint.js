@@ -5,8 +5,9 @@ const { spawn } = require("node:child_process");
 const env = { ...process.env };
 
 (async () => {
-  // If running the web server then prerender pages
+  // If running the web server then migrate and prerender pages
   if (process.argv.slice(-3).join(" ") === "bun run start") {
+    await exec("bun run db:sqlite:migrate");
     await exec("bun next build --experimental-build-mode generate");
   }
 
