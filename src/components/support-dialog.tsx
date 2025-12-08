@@ -99,14 +99,14 @@ export function SupportDialog({
           }
           title={`${label} pongo`}
         >
-          <Icon className="h-3 w-3" />
+          <Icon className="h-4 w-4" />
           {showLabel && <span>{label}</span>}
         </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-sm font-mono">
-            {isAbout ? "about pongo" : "support pongo"}
+            {isAbout ? "about" : "support"}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3 pt-2">
@@ -132,8 +132,8 @@ export function SupportDialog({
             </>
           ) : (
             <p className="text-xs text-muted-foreground">
-              pongo is free and open source. here are some ways to support the
-              project:
+              this project is totally free and open source. here are some ways
+              you can support it:
             </p>
           )}
           {!isAbout && (
@@ -267,7 +267,7 @@ export function SupportDialog({
                     <span className="text-[10px]">Bluesky</span>
                   </a>
                   <a
-                    href="https://linkedin.com/in/timmikeladze"
+                    href="https://linkedin.com/in/tim-mikeladze"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 flex items-center justify-center gap-1.5 p-2 hover:bg-accent transition-colors text-muted-foreground hover:text-[#0a66c2] border-r border-border"

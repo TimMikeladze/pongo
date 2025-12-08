@@ -13,6 +13,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   formatIntervalLabel,
   formatPresetLabel,
   INTERVAL_OPTIONS,
@@ -29,7 +34,7 @@ interface TimeRangePickerProps {
 
 export function TimeRangePicker({ disabled }: TimeRangePickerProps = {}) {
   if (disabled) {
-    return <TimeRangePickerFallback />;
+    return <TimeRangePickerFallback showTooltip />;
   }
   return (
     <Suspense fallback={<TimeRangePickerFallback />}>
@@ -38,13 +43,17 @@ export function TimeRangePicker({ disabled }: TimeRangePickerProps = {}) {
   );
 }
 
-function TimeRangePickerFallback() {
-  return (
+function TimeRangePickerFallback({
+  showTooltip = false,
+}: {
+  showTooltip?: boolean;
+}) {
+  const button = (
     <button
       type="button"
       className={cn(
         "flex items-center gap-2 px-2.5 py-1.5 text-xs rounded border border-border",
-        "text-muted-foreground",
+        "text-muted-foreground cursor-not-allowed",
       )}
       disabled
     >
@@ -52,6 +61,19 @@ function TimeRangePickerFallback() {
       <span>Last 24h</span>
     </button>
   );
+
+  if (showTooltip) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span>{button}</span>
+        </TooltipTrigger>
+        <TooltipContent>Not available on this page</TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return button;
 }
 
 function TimeRangePickerInner() {

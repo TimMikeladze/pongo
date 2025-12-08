@@ -45,7 +45,7 @@ export async function AnnouncementsList({
         return (
           <div
             key={announcement.id}
-            className={`flex items-start gap-3 p-4 rounded-lg border ${typeStyles[announcement.type]}`}
+            className={`flex items-start gap-3 p-2 md:p-4 rounded-lg border ${typeStyles[announcement.type]}`}
           >
             <Icon className="h-4 w-4 mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">

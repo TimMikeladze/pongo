@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { DashboardView } from "@/components/dashboard-view";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
 import { SupportDialog } from "@/components/support-dialog";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { getActiveIncidents, getDashboardBySlug } from "@/lib/data";
 import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 
@@ -89,7 +90,7 @@ export default async function PublicDashboardPage({
             </div>
             <div className="flex items-center gap-4">
               <a
-                href="https://github.com/tim-mikeladze/pongo"
+                href="https://github.com/TimMikeladze/pongo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-foreground transition-colors flex items-center gap-1"
@@ -98,6 +99,7 @@ export default async function PublicDashboardPage({
                 GitHub
               </a>
               <SupportDialog />
+              <ThemeToggle />
               <div className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 {format(new Date(), "HH:mm:ss")}

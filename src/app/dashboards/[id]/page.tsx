@@ -53,6 +53,8 @@ export default async function DashboardDetailPage({
         <TriggerAllButton
           monitorIds={dashboard.monitorIds}
           dashboardId={dashboard.id}
+          schedulerEnabled={!!process.env.SCHEDULER_URL}
+          enabled={process.env.ENABLE_MANUAL_RUN === "true"}
         />
       </div>
 

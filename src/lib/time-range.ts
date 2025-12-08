@@ -16,7 +16,16 @@ export const TIME_RANGE_PRESETS = [
 ] as const;
 export type TimeRangePreset = (typeof TIME_RANGE_PRESETS)[number];
 
-export const INTERVAL_OPTIONS = ["1h", "24h", "3d", "7d", "30d"] as const;
+export const INTERVAL_OPTIONS = [
+  "5m",
+  "15m",
+  "30m",
+  "1h",
+  "24h",
+  "3d",
+  "7d",
+  "30d",
+] as const;
 export type IntervalOption = (typeof INTERVAL_OPTIONS)[number];
 
 export const DEFAULT_PRESET: TimeRangePreset = "24h";
@@ -91,6 +100,12 @@ export function formatIntervalLabel(interval: IntervalOption): string {
 
 export function getIntervalMs(interval: IntervalOption): number {
   switch (interval) {
+    case "5m":
+      return 5 * 60 * 1000;
+    case "15m":
+      return 15 * 60 * 1000;
+    case "30m":
+      return 30 * 60 * 1000;
     case "1h":
       return 60 * 60 * 1000;
     case "24h":
@@ -113,6 +128,9 @@ export function formatBucketLabel(
 ): string {
   const date = new Date(timestamp);
   switch (interval) {
+    case "5m":
+    case "15m":
+    case "30m":
     case "1h":
       return date.toLocaleTimeString([], {
         hour: "2-digit",

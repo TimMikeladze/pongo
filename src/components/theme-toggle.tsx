@@ -1,6 +1,6 @@
 "use client";
 
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Moon, Sun, SunMoon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTheme } from "@/components/theme-provider";
 import {
@@ -66,7 +66,7 @@ export function ThemeToggle() {
           onClick={() => setTheme("system")}
           className="text-xs gap-2"
         >
-          <Monitor className="h-3.5 w-3.5" />
+          <SunMoon className="h-3.5 w-3.5" />
           system
           {theme === "system" && (
             <span className="ml-auto text-primary">✓</span>

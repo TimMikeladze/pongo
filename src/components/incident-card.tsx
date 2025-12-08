@@ -60,7 +60,7 @@ export function IncidentCard({
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between p-4 text-left"
+        className="w-full flex items-center justify-between p-2 md:p-4 text-left"
       >
         <div className="flex items-center gap-3">
           <StatusIcon className={`h-4 w-4 ${statusStyles[incident.status]}`} />
@@ -96,7 +96,7 @@ export function IncidentCard({
       </button>
 
       {expanded && showUpdates && (
-        <div className="px-4 pb-4 space-y-3">
+        <div className="px-2 md:px-4 pb-2 md:pb-4 space-y-3">
           {affectedMonitors.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {affectedMonitors.map((m) => (

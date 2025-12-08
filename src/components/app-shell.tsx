@@ -10,13 +10,13 @@ import {
   LayoutDashboard,
   Linkedin,
   Maximize,
+  Maximize2,
   Minimize,
-  Minimize2,
-  Monitor,
   Moon,
   Share2,
   Star,
   Sun,
+  SunMoon,
   Terminal,
   Twitter,
 } from "lucide-react";
@@ -36,7 +36,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { GridPattern } from "@/components/ui/grid-pattern";
+import { DotPattern } from "@/components/ui/dot-pattern";
 import {
   Tooltip,
   TooltipContent,
@@ -98,7 +98,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [toggleDensity, density]);
 
-  const isPublicPage = pathname.startsWith("/shared/");
+  const isPublicPage =
+    pathname.startsWith("/shared/") || pathname.startsWith("/public/");
   const isLoginPage = pathname === "/login";
 
   if (isPublicPage || isLoginPage) {
@@ -116,13 +117,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="h-dvh bg-background flex flex-col overflow-hidden relative">
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <GridPattern
-          width={30}
-          height={30}
-          x={-1}
-          y={-1}
-          strokeDasharray="4 2"
-          className="h-full w-full [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,white,transparent)]"
+        <DotPattern
+          width={24}
+          height={24}
+          cr={1}
+          className="h-full w-full opacity-15"
         />
       </div>
       <header
@@ -221,7 +220,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 title="Exit zen mode (Esc)"
               >
-                <Minimize2 className="h-3.5 w-3.5" />
+                <Maximize2 className="h-3.5 w-3.5" />
               </button>
               <button
                 type="button"
@@ -236,7 +235,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               >
                 {theme === "dark" && <Moon className="h-3.5 w-3.5" />}
                 {theme === "light" && <Sun className="h-3.5 w-3.5" />}
-                {theme === "system" && <Monitor className="h-3.5 w-3.5" />}
+                {theme === "system" && <SunMoon className="h-3.5 w-3.5" />}
               </button>
               <a
                 href="https://github.com/timmikeladze/pongo"
@@ -347,7 +346,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           <Twitter className="h-4 w-4" />
                         </a>
                         <a
-                          href="https://bsky.app/profile/linesofcode"
+                          href="https://bsky.app/profile/linesofcode.bsky.social"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-muted-foreground hover:text-[#0085ff] transition-colors"
@@ -468,7 +467,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </TooltipTrigger>
               <TooltipContent>GitHub</TooltipContent>
             </Tooltip>
-            <SupportDialog showLabel={false} />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <SupportDialog showLabel={false} />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>Support</TooltipContent>
+            </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -494,7 +500,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   onClick={toggleDensity}
                   className="hidden md:flex hover:text-foreground transition-colors"
                 >
-                  <Minimize2 className="h-3.5 w-3.5" />
+                  <Maximize2 className="h-3.5 w-3.5" />
                 </button>
               </TooltipTrigger>
               <TooltipContent>Zen mode</TooltipContent>
@@ -518,7 +524,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <Sun className="h-3.5 w-3.5" />
                   )}
                   {mounted && theme === "system" && (
-                    <Monitor className="h-3.5 w-3.5" />
+                    <SunMoon className="h-3.5 w-3.5" />
                   )}
                   {!mounted && <Moon className="h-3.5 w-3.5" />}
                 </button>

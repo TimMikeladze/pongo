@@ -8,11 +8,14 @@ import { Button } from "@/components/ui/button";
 interface TriggerAllButtonProps {
   monitorIds: string[];
   dashboardId: string;
+  schedulerEnabled?: boolean;
+  enabled?: boolean;
 }
 
 export function TriggerAllButton({
   monitorIds,
   dashboardId,
+  enabled = true,
 }: TriggerAllButtonProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [result, setResult] = useState<{
@@ -59,7 +62,7 @@ export function TriggerAllButton({
         variant="outline"
         size="sm"
         onClick={handleTrigger}
-        disabled={isRunning || monitorIds.length === 0}
+        disabled={!enabled || isRunning || monitorIds.length === 0}
         className="h-7 text-xs"
       >
         {isRunning ? (
