@@ -1,13 +1,17 @@
 // src/scheduler/server.ts
 import { Hono } from "hono";
 import type { Scheduler } from "./scheduler";
+import { REGION } from "./index";
 
 export function createServer(scheduler: Scheduler, port: number) {
   const app = new Hono();
 
   // Health check
   app.get("/health", (c) => {
-    return c.json({ status: "ok" });
+    return c.json({
+      status: "ok",
+      region: REGION,
+    });
   });
 
   // List all monitors
@@ -16,13 +20,14 @@ export function createServer(scheduler: Scheduler, port: number) {
       const state = scheduler.getState(id);
       return {
         id,
+        region: REGION,
         lastRun: state?.lastRun?.toISOString() ?? null,
         lastStatus: state?.lastResult?.status ?? null,
         isRunning: state?.isRunning ?? false,
         consecutiveFailures: state?.consecutiveFailures ?? 0,
       };
     });
-    return c.json({ monitors });
+    return c.json({ monitors, region: REGION });
   });
 
   // Get single monitor state
