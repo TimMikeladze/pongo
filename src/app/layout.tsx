@@ -32,20 +32,11 @@ export const metadata: Metadata = {
     siteName: "Pongo.sh",
     title: "Pongo.sh",
     description: "Self-hosted uptime monitoring",
-    images: [
-      {
-        url: "/banner.png",
-        width: 1200,
-        height: 630,
-        alt: "Pongo.sh - Self-hosted uptime monitoring",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Pongo.sh",
     description: "Self-hosted uptime monitoring",
-    images: ["/banner.png"],
   },
   icons: {
     icon: [{ url: "/logo.png", type: "image/png" }],
