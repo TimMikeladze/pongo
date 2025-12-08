@@ -25,7 +25,6 @@ import { usePathname } from "next/navigation";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useFullscreen } from "@/components/fullscreen-provider";
-import { PongoLogo } from "@/components/pongo-logo";
 import { SupportDialog } from "@/components/support-dialog";
 import { useTheme } from "@/components/theme-provider";
 import { TimeRangePicker } from "@/components/time-range-picker";
@@ -444,14 +443,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             !fullWidth && "md:max-w-6xl",
           )}
         >
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 font-medium">
-              <PongoLogo className="h-5 w-5" />
-              <span>pongo.sh</span>
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo.png"
+              alt="Pongo logo"
+              className="h-6 w-6 rounded-full"
+            />
+            <div className="flex flex-col">
+              <span className="font-medium">pongo.sh</span>
+              <span className="text-[10px] text-muted-foreground/60">
+                open-source uptime monitoring
+              </span>
             </div>
-            <span className="text-muted-foreground/60">
-              open-source uptime monitoring
-            </span>
           </div>
           <div className="flex items-center gap-3">
             <Tooltip>

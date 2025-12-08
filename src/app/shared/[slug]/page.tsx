@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
 import { Github } from "lucide-react";
+import type { Metadata } from "next";
 import { getDashboardBySlug } from "@/lib/data";
 
 export async function generateMetadata({
@@ -16,6 +16,7 @@ export async function generateMetadata({
       : "Public status page",
   };
 }
+
 import { notFound } from "next/navigation";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { DashboardView } from "@/components/dashboard-view";

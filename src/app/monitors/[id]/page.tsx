@@ -1,7 +1,7 @@
 // src/app/monitors/[id]/page.tsx
 
-import type { Metadata } from "next";
 import { formatDistanceToNow } from "date-fns";
+import type { Metadata } from "next";
 import { getMonitor } from "@/lib/data";
 
 export async function generateMetadata({
@@ -18,6 +18,7 @@ export async function generateMetadata({
       : "Monitor details and statistics",
   };
 }
+
 import {
   AlertTriangle,
   ArrowLeft,

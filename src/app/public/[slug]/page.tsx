@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
 import { format } from "date-fns";
+import type { Metadata } from "next";
 import { getDashboardBySlug } from "@/lib/data";
 
 export async function generateMetadata({
@@ -16,6 +16,7 @@ export async function generateMetadata({
       : "Public status page",
   };
 }
+
 import { Clock, Github, PawPrint } from "lucide-react";
 import { notFound } from "next/navigation";
 import { DashboardView } from "@/components/dashboard-view";

@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
 import { Bell } from "lucide-react";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Alerts",
   description: "View alert history and manage notifications",
 };
+
 import { Suspense } from "react";
 import { AlertBanner } from "@/components/alert-banner";
 import { AlertViewToggle } from "@/components/alert-view-toggle";

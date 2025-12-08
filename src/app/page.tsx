@@ -63,52 +63,52 @@ export default async function OverviewPage({ searchParams }: Props) {
   ] =
     monitors.length > 0
       ? await Promise.all([
-        (async () => {
-          const uptimes = await Promise.all(
-            monitors.map((m) => getUptimePercentage(m.id, timeRange)),
-          );
-          return uptimes.reduce((acc, v) => acc + v, 0) / uptimes.length;
-        })(),
-        (async () => {
-          const responseTimes = await Promise.all(
-            monitors.map((m) => getAverageResponseTime(m.id, timeRange)),
-          );
-          return Math.round(
-            responseTimes.reduce((acc, v) => acc + v, 0) /
-            responseTimes.length,
-          );
-        })(),
-        (async () => {
-          const errorRates = await Promise.all(
-            monitors.map((m) => getErrorRate(m.id, timeRange)),
-          );
-          return (
-            errorRates.reduce((acc, v) => acc + v, 0) / errorRates.length
-          );
-        })(),
-        (async () => {
-          const p95s = await Promise.all(
-            monitors.map((m) => getP95ResponseTime(m.id, timeRange)),
-          );
-          return Math.round(
-            p95s.reduce((acc, v) => acc + v, 0) / p95s.length,
-          );
-        })(),
-        (async () => {
-          const p99s = await Promise.all(
-            monitors.map((m) => getP99ResponseTime(m.id, timeRange)),
-          );
-          return Math.round(
-            p99s.reduce((acc, v) => acc + v, 0) / p99s.length,
-          );
-        })(),
-        (async () => {
-          const checks = await Promise.all(
-            monitors.map((m) => getTotalChecks(m.id, timeRange)),
-          );
-          return checks.reduce((acc, v) => acc + v, 0);
-        })(),
-      ])
+          (async () => {
+            const uptimes = await Promise.all(
+              monitors.map((m) => getUptimePercentage(m.id, timeRange)),
+            );
+            return uptimes.reduce((acc, v) => acc + v, 0) / uptimes.length;
+          })(),
+          (async () => {
+            const responseTimes = await Promise.all(
+              monitors.map((m) => getAverageResponseTime(m.id, timeRange)),
+            );
+            return Math.round(
+              responseTimes.reduce((acc, v) => acc + v, 0) /
+                responseTimes.length,
+            );
+          })(),
+          (async () => {
+            const errorRates = await Promise.all(
+              monitors.map((m) => getErrorRate(m.id, timeRange)),
+            );
+            return (
+              errorRates.reduce((acc, v) => acc + v, 0) / errorRates.length
+            );
+          })(),
+          (async () => {
+            const p95s = await Promise.all(
+              monitors.map((m) => getP95ResponseTime(m.id, timeRange)),
+            );
+            return Math.round(
+              p95s.reduce((acc, v) => acc + v, 0) / p95s.length,
+            );
+          })(),
+          (async () => {
+            const p99s = await Promise.all(
+              monitors.map((m) => getP99ResponseTime(m.id, timeRange)),
+            );
+            return Math.round(
+              p99s.reduce((acc, v) => acc + v, 0) / p99s.length,
+            );
+          })(),
+          (async () => {
+            const checks = await Promise.all(
+              monitors.map((m) => getTotalChecks(m.id, timeRange)),
+            );
+            return checks.reduce((acc, v) => acc + v, 0);
+          })(),
+        ])
       : [100, 0, 0, 0, 0, 0];
 
   // Get down count
@@ -134,17 +134,17 @@ export default async function OverviewPage({ searchParams }: Props) {
   ] =
     monitors.length > 0
       ? await Promise.all([
-        getAggregatedResponseTimeChartData(monitorIds, timeRange, interval),
-        getAggregatedUptimeChartData(monitorIds, timeRange, interval),
-        getAggregatedErrorRateChartData(monitorIds, timeRange, interval),
-        getAggregatedLatencyPercentilesChartData(
-          monitorIds,
-          timeRange,
-          interval,
-        ),
-        getAggregatedThroughputChartData(monitorIds, timeRange, interval),
-        getAggregatedStatusDistributionData(monitorIds, timeRange),
-      ])
+          getAggregatedResponseTimeChartData(monitorIds, timeRange, interval),
+          getAggregatedUptimeChartData(monitorIds, timeRange, interval),
+          getAggregatedErrorRateChartData(monitorIds, timeRange, interval),
+          getAggregatedLatencyPercentilesChartData(
+            monitorIds,
+            timeRange,
+            interval,
+          ),
+          getAggregatedThroughputChartData(monitorIds, timeRange, interval),
+          getAggregatedStatusDistributionData(monitorIds, timeRange),
+        ])
       : [[], [], [], [], [], { up: 0, degraded: 0, down: 0 }];
 
   return (
@@ -165,7 +165,9 @@ export default async function OverviewPage({ searchParams }: Props) {
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-2">
-                  <h1 className="text-xl font-medium tracking-tight">pongo.sh</h1>
+                  <h1 className="text-xl font-medium tracking-tight">
+                    pongo.sh
+                  </h1>
                   <a
                     href="https://github.com/TimMikeladze/pongo"
                     target="_blank"
@@ -177,9 +179,9 @@ export default async function OverviewPage({ searchParams }: Props) {
                   </a>
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
-                  Self-hosted, file-driven uptime monitoring designed for developers
-                  who prefer configuration as code. Define monitors in TypeScript,
-                  commit to git, and deploy anywhere.
+                  Self-hosted, file-driven uptime monitoring designed for
+                  developers who prefer configuration as code. Define monitors
+                  in TypeScript, commit to git, and deploy anywhere.
                 </p>
               </div>
             </div>
@@ -208,8 +210,8 @@ export default async function OverviewPage({ searchParams }: Props) {
                 </h3>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Deploy instances across multiple regions for redundant monitoring.
-                Supports custom consistency levels.
+                Deploy instances across multiple regions for redundant
+                monitoring. Supports custom consistency levels.
               </p>
             </div>
 
@@ -221,8 +223,8 @@ export default async function OverviewPage({ searchParams }: Props) {
                 </h3>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Beautiful public and private status pages with historical uptime,
-                incident timeline, and RSS feeds.
+                Beautiful public and private status pages with historical
+                uptime, incident timeline, and RSS feeds.
               </p>
             </div>
 
@@ -234,8 +236,8 @@ export default async function OverviewPage({ searchParams }: Props) {
                 </h3>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Get notified via Slack, Discord, Email, or Webhooks. Configure alert
-                throttling and recovery thresholds.
+                Get notified via Slack, Discord, Email, or Webhooks. Configure
+                alert throttling and recovery thresholds.
               </p>
             </div>
 
@@ -247,8 +249,8 @@ export default async function OverviewPage({ searchParams }: Props) {
                 </h3>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                No vendor lock-in. Runs on SQLite or PostgreSQL. Deploy to Vercel,
-                Railway, Docker, or bare metal.
+                No vendor lock-in. Runs on SQLite or PostgreSQL. Deploy to
+                Vercel, Railway, Docker, or bare metal.
               </p>
             </div>
 

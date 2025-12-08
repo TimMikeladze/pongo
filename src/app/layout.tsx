@@ -18,7 +18,13 @@ export const metadata: Metadata = {
     template: "%s | Pongo.sh - open-source uptime monitoring",
   },
   description: "Self-hosted uptime monitoring",
-  keywords: ["uptime", "monitoring", "status page", "self-hosted", "open source"],
+  keywords: [
+    "uptime",
+    "monitoring",
+    "status page",
+    "self-hosted",
+    "open source",
+  ],
   authors: [{ name: "Pongo.sh" }],
   openGraph: {
     type: "website",
@@ -42,7 +48,8 @@ export const metadata: Metadata = {
     images: ["/banner.png"],
   },
   icons: {
-    icon: "/icon.svg",
+    icon: [{ url: "/logo.png", type: "image/png" }],
+    apple: "/logo.png",
   },
 };
 

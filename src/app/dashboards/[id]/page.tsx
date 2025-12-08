@@ -1,7 +1,7 @@
 // src/app/dashboards/[id]/page.tsx
 
-import type { Metadata } from "next";
 import { ArrowLeft, ExternalLink } from "lucide-react";
+import type { Metadata } from "next";
 import { getDashboard } from "@/lib/data";
 
 export async function generateMetadata({
@@ -18,6 +18,7 @@ export async function generateMetadata({
       : "Dashboard details",
   };
 }
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DashboardView } from "@/components/dashboard-view";

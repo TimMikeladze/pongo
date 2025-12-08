@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
 import { ArrowLeft, Github } from "lucide-react";
+import type { Metadata } from "next";
 import { getDashboardBySlug } from "@/lib/data";
 
 export async function generateMetadata({
@@ -16,6 +16,7 @@ export async function generateMetadata({
       : "Public incidents",
   };
 }
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
