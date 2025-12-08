@@ -8,6 +8,9 @@ primary_region = 'sjc'
 
 [build]
 
+[deploy]
+  release_command = "bun run db:sqlite:migrate"
+
 [processes]
   nextjs = "bun run start"
   scheduler = "bun run src/scheduler/index.ts"
