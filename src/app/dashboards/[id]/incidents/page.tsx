@@ -1,10 +1,26 @@
+import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
+import { getDashboard } from "@/lib/data";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const dashboard = await getDashboard(id);
+  return {
+    title: dashboard ? `Incidents - ${dashboard.name}` : "Incidents",
+    description: dashboard
+      ? `Incident history for ${dashboard.name}`
+      : "Dashboard incidents",
+  };
+}
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
 import { MaintenanceSchedule } from "@/components/maintenance-schedule";
 import { Button } from "@/components/ui/button";
-import { getDashboard } from "@/lib/data";
 
 interface Props {
   params: Promise<{ id: string }>;

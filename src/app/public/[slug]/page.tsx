@@ -1,11 +1,28 @@
+import type { Metadata } from "next";
 import { format } from "date-fns";
+import { getDashboardBySlug } from "@/lib/data";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const dashboard = await getDashboardBySlug(slug);
+  return {
+    title: dashboard?.name ?? "Status Page",
+    description: dashboard
+      ? `Service status for ${dashboard.name}`
+      : "Public status page",
+  };
+}
 import { Clock, Github, PawPrint } from "lucide-react";
 import { notFound } from "next/navigation";
 import { DashboardView } from "@/components/dashboard-view";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
 import { SupportDialog } from "@/components/support-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { getActiveIncidents, getDashboardBySlug } from "@/lib/data";
+import { getActiveIncidents } from "@/lib/data";
 import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 
 interface Props {

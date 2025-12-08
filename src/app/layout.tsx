@@ -12,8 +12,38 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "pongo",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_URL || "https://pongo.sh"),
+  title: {
+    default: "Overview | Pongo.sh - open-source uptime monitoring",
+    template: "%s | Pongo.sh - open-source uptime monitoring",
+  },
   description: "Self-hosted uptime monitoring",
+  keywords: ["uptime", "monitoring", "status page", "self-hosted", "open source"],
+  authors: [{ name: "Pongo.sh" }],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "Pongo.sh",
+    title: "Pongo.sh",
+    description: "Self-hosted uptime monitoring",
+    images: [
+      {
+        url: "/banner.png",
+        width: 1200,
+        height: 630,
+        alt: "Pongo.sh - Self-hosted uptime monitoring",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pongo.sh",
+    description: "Self-hosted uptime monitoring",
+    images: ["/banner.png"],
+  },
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export const viewport: Viewport = {

@@ -1,12 +1,28 @@
 // src/app/dashboards/[id]/page.tsx
 
+import type { Metadata } from "next";
 import { ArrowLeft, ExternalLink } from "lucide-react";
+import { getDashboard } from "@/lib/data";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const dashboard = await getDashboard(id);
+  return {
+    title: dashboard?.name ?? "Dashboard",
+    description: dashboard
+      ? `Status dashboard for ${dashboard.name}`
+      : "Dashboard details",
+  };
+}
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DashboardView } from "@/components/dashboard-view";
 import { TriggerAllButton } from "@/components/trigger-all-button";
 import { Button } from "@/components/ui/button";
-import { getDashboard } from "@/lib/data";
 import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 
 interface Props {

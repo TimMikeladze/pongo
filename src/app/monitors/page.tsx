@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { Terminal, Zap } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Monitors",
+  description: "View and manage all your uptime monitors",
+};
 import { AutoRefresh } from "@/components/auto-refresh";
 import { ListFilter } from "@/components/list-filter";
 import { MonitorCard } from "@/components/monitor-card";

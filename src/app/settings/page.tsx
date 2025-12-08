@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { Bell, Database, Palette } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Settings",
+  description: "Manage your uptime monitor configuration",
+};
 import Link from "next/link";
 import {
   Card,

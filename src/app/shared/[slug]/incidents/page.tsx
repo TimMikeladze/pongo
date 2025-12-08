@@ -1,10 +1,26 @@
+import type { Metadata } from "next";
 import { ArrowLeft, Github } from "lucide-react";
+import { getDashboardBySlug } from "@/lib/data";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const dashboard = await getDashboardBySlug(slug);
+  return {
+    title: dashboard ? `Incidents - ${dashboard.name}` : "Incidents",
+    description: dashboard
+      ? `Incident history for ${dashboard.name}`
+      : "Public incidents",
+  };
+}
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
 import { PongoLogo } from "@/components/pongo-logo";
 import { SupportDialog } from "@/components/support-dialog";
-import { getDashboardBySlug } from "@/lib/data";
 
 interface Props {
   params: Promise<{ slug: string }>;

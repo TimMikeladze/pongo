@@ -1,6 +1,12 @@
 // src/app/dashboards/page.tsx
 
+import type { Metadata } from "next";
 import { ExternalLink, Globe, LayoutDashboard, Lock } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Dashboards",
+  description: "Manage your status page dashboards",
+};
 import Link from "next/link";
 import { ListFilter } from "@/components/list-filter";
 import { Button } from "@/components/ui/button";

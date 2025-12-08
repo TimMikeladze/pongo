@@ -1,9 +1,25 @@
+import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
+import { getDashboard } from "@/lib/data";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const dashboard = await getDashboard(id);
+  return {
+    title: dashboard ? `Announcements - ${dashboard.name}` : "Announcements",
+    description: dashboard
+      ? `Announcements for ${dashboard.name}`
+      : "Dashboard announcements",
+  };
+}
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AnnouncementsList } from "@/components/announcements-list";
 import { Button } from "@/components/ui/button";
-import { getDashboard } from "@/lib/data";
 
 interface Props {
   params: Promise<{ id: string }>;

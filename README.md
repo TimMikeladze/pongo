@@ -1,8 +1,21 @@
-![Pongo Banner](public/banner.png)
+<h1 align="center">
+  <img src="public/banner.png" alt="Pongo" width="50" height="50" style="vertical-align: middle; border-radius: 50%;" />
+  Pongo.sh
+</h1>
+<p align="center">
+  <strong>Self-hosted uptime monitoring and status pages</strong><br/>
+  <sub>Built with Next.js 15, React 19, and Bun</sub>
+</p>
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#getting-started">Getting Started</a> •
+  <a href="#configuration">Configuration</a> •
+  <a href="#architecture">Architecture</a>
+</p>
 
-# Pongo
+---
 
-A self-hosted uptime monitoring and status page application built with Next.js 15, React 19, and Bun. Define monitors, organize dashboards, manage alerts through webhooks, and serve public or private status pages with multi-region monitoring support.
+Define monitors, organize dashboards, manage alerts through webhooks, and serve public or private status pages with multi-region monitoring support.
 
 ## Features
 

@@ -1,6 +1,23 @@
 // src/app/monitors/[id]/page.tsx
 
+import type { Metadata } from "next";
 import { formatDistanceToNow } from "date-fns";
+import { getMonitor } from "@/lib/data";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const monitor = await getMonitor(id);
+  return {
+    title: monitor?.name ?? "Monitor",
+    description: monitor
+      ? `Uptime monitoring for ${monitor.name}`
+      : "Monitor details and statistics",
+  };
+}
 import {
   AlertTriangle,
   ArrowLeft,
@@ -28,7 +45,6 @@ import {
   getErrorRateChartData,
   getIncidents,
   getLatestCheckResult,
-  getMonitor,
   getMonitorStats,
   getMonitorStatsByRegion,
   getMonitors,

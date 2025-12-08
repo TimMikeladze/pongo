@@ -132,7 +132,7 @@ export function SupportDialog({
             </>
           ) : (
             <p className="text-xs text-muted-foreground">
-              this project is totally free and open source. here are some ways
+              pongo is free and open source. here are some ways
               you can support it:
             </p>
           )}
@@ -222,7 +222,7 @@ export function SupportDialog({
                         className={cn(
                           "flex-1 flex items-center justify-center gap-1.5 p-2 hover:bg-accent transition-colors text-muted-foreground hover:text-foreground",
                           index < sharePlatforms.length - 1 &&
-                            "border-r border-border",
+                          "border-r border-border",
                         )}
                         title={`Share on ${platform.name}`}
                       >
