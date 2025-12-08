@@ -57,22 +57,11 @@ FROM base
 # Copy production dependencies
 COPY --from=production-deps /app/node_modules ./node_modules
 
-# Copy pongo config
-COPY --from=pongo-config /app/pongo ./pongo
-
-# Copy built application
-COPY --from=build /app/.next ./.next
-COPY --from=build /app/public ./public
-COPY --from=build /app/package.json ./
-COPY --from=build /app/tsconfig.json ./
-COPY --from=build /app/src ./src
-COPY --from=build /app/drizzle ./drizzle
-COPY --from=build /app/drizzle.config.sqlite.ts ./
-COPY --from=build /app/docker-entrypoint.js ./
+# Copy everything from build
+COPY --from=build /app ./
 
 # Entrypoint sets up the container.
 ENTRYPOINT [ "/app/docker-entrypoint.js" ]
 
-# Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
 CMD [ "bun", "run", "start" ]

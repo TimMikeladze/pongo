@@ -3,16 +3,39 @@
 const { spawn } = require("node:child_process");
 
 const env = { ...process.env };
+const command = process.argv.slice(2).join(" ");
+const schedulerEnabled = process.env.SCHEDULER_ENABLED === "true";
+const archiverEnabled = process.env.ARCHIVAL_ENABLED === "true";
 
 (async () => {
-  // If running the web server then migrate and prerender pages
-  if (process.argv.slice(-3).join(" ") === "bun run start") {
-    await exec("bun run db:sqlite:migrate");
+  // Run migrations before starting any service
+  await exec("bun run db:sqlite:migrate");
+
+  // If running the web server, prerender pages and optionally start background services
+  if (command === "bun run start") {
     await exec("bun next build --experimental-build-mode generate");
+
+    // Start scheduler in background if enabled
+    if (schedulerEnabled) {
+      spawn("bun", ["run", "src/scheduler/index.ts"], {
+        shell: true,
+        stdio: "inherit",
+        env,
+      });
+    }
+
+    // Start archiver in background if enabled
+    if (archiverEnabled) {
+      spawn("bun", ["run", "src/archiver/index.ts"], {
+        shell: true,
+        stdio: "inherit",
+        env,
+      });
+    }
   }
 
-  // launch application
-  await exec(process.argv.slice(2).join(" "));
+  // Launch the requested command
+  await exec(command);
 })();
 
 function exec(command) {
