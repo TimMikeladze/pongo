@@ -1,5 +1,5 @@
 // src/scheduler/alerts/evaluator.ts
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, gt } from "drizzle-orm";
 import { getDbAsync, getDbDriver } from "@/db";
 import { REGION } from "../index";
 import {
@@ -18,10 +18,72 @@ import type {
   AlertConfig,
   AlertSnapshot,
   CheckResultWithId,
+  RegionThreshold,
   WebhookPayload,
 } from "./types";
 
 const HISTORY_LIMIT = 20;
+
+/**
+ * Get regions that have reported check results in the last hour
+ */
+async function getActiveRegions(
+  db: any,
+  checkResultsTable: any,
+  monitorId: string
+): Promise<string[]> {
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+  const results = await db
+    .selectDistinct({ region: checkResultsTable.region })
+    .from(checkResultsTable)
+    .where(
+      and(
+        eq(checkResultsTable.monitorId, monitorId),
+        gt(checkResultsTable.checkedAt, oneHourAgo)
+      )
+    );
+
+  return results.map((r: { region: string }) => r.region);
+}
+
+/**
+ * Get regions where an alert is currently firing
+ */
+async function getFiringRegions(
+  db: any,
+  alertStateTable: any,
+  monitorId: string,
+  alertId: string
+): Promise<string[]> {
+  const results = await db
+    .select({ region: alertStateTable.region })
+    .from(alertStateTable)
+    .where(
+      and(
+        eq(alertStateTable.monitorId, monitorId),
+        eq(alertStateTable.alertId, alertId),
+        eq(alertStateTable.status, "firing")
+      )
+    );
+
+  return results.map((r: { region: string }) => r.region);
+}
+
+/**
+ * Check if global alert should dispatch based on regionThreshold
+ */
+function shouldDispatchGlobal(
+  threshold: RegionThreshold,
+  firingCount: number,
+  totalCount: number
+): boolean {
+  if (threshold === "any") return firingCount >= 1;
+  if (threshold === "all") return firingCount === totalCount && totalCount > 0;
+  if (threshold === "majority") return firingCount > totalCount / 2;
+  if (typeof threshold === "number") return firingCount >= threshold;
+  return firingCount >= 1; // default to 'any'
+}
 
 /**
  * Build snapshot of current state for alert event
@@ -176,30 +238,40 @@ export async function evaluateAlerts(
         });
       }
 
-      // Dispatch webhook
-      const payload: WebhookPayload = {
-        event: "alert.fired",
-        alert: {
-          id: alert.id,
-          name: alert.name,
-          monitorId,
-          monitorName,
-        },
-        timestamp: new Date().toISOString(),
-        snapshot,
-        checkResult: {
-          id: latestCheck.id,
-          status: latestCheck.status,
-          responseTimeMs: latestCheck.responseTimeMs,
-          message: latestCheck.message,
-          checkedAt: latestCheck.checkedAt.toISOString(),
-        },
-        region: REGION,
-      };
+      // Check if we should dispatch globally
+      const threshold = alert.regionThreshold ?? "any";
+      const activeRegions = await getActiveRegions(db as any, checkResultsTable, monitorId);
+      const firingRegions = await getFiringRegions(db as any, alertStateTable, monitorId, alert.id);
+      const healthyRegions = activeRegions.filter(r => !firingRegions.includes(r));
 
-      await dispatchToChannels(alert.channels, channels, payload);
+      if (shouldDispatchGlobal(threshold, firingRegions.length, activeRegions.length)) {
+        const payload: WebhookPayload = {
+          event: "alert.fired",
+          alert: {
+            id: alert.id,
+            name: alert.name,
+            monitorId,
+            monitorName,
+          },
+          timestamp: new Date().toISOString(),
+          snapshot,
+          checkResult: {
+            id: latestCheck.id,
+            status: latestCheck.status,
+            responseTimeMs: latestCheck.responseTimeMs,
+            message: latestCheck.message,
+            checkedAt: latestCheck.checkedAt.toISOString(),
+          },
+          region: REGION,
+          firingRegions,
+          healthyRegions,
+        };
 
-      console.log(`[alerts] FIRED: ${alert.name} (${alert.id})`);
+        await dispatchToChannels(alert.channels, channels, payload);
+        console.log(`[alerts] FIRED: ${alert.name} (${alert.id}) - ${firingRegions.length}/${activeRegions.length} regions`);
+      } else {
+        console.log(`[alerts] ${alert.name} (${alert.id}) firing in ${REGION}, but threshold not met (${firingRegions.length}/${activeRegions.length})`);
+      }
     } else if (!conditionMet && isCurrentlyFiring) {
       // Alert should resolve
       const snapshot = buildSnapshot(
@@ -237,30 +309,41 @@ export async function evaluateAlerts(
           )
         );
 
-      // Dispatch resolution webhook
-      const payload: WebhookPayload = {
-        event: "alert.resolved",
-        alert: {
-          id: alert.id,
-          name: alert.name,
-          monitorId,
-          monitorName,
-        },
-        timestamp: new Date().toISOString(),
-        snapshot,
-        checkResult: {
-          id: latestCheck.id,
-          status: latestCheck.status,
-          responseTimeMs: latestCheck.responseTimeMs,
-          message: latestCheck.message,
-          checkedAt: latestCheck.checkedAt.toISOString(),
-        },
-        region: REGION,
-      };
+      // Check if we should dispatch resolution globally
+      const threshold = alert.regionThreshold ?? "any";
+      const activeRegions = await getActiveRegions(db as any, checkResultsTable, monitorId);
+      const firingRegions = await getFiringRegions(db as any, alertStateTable, monitorId, alert.id);
+      const healthyRegions = activeRegions.filter(r => !firingRegions.includes(r));
 
-      await dispatchToChannels(alert.channels, channels, payload);
+      // Dispatch if alert is no longer firing in enough regions
+      if (!shouldDispatchGlobal(threshold, firingRegions.length, activeRegions.length)) {
+        const payload: WebhookPayload = {
+          event: "alert.resolved",
+          alert: {
+            id: alert.id,
+            name: alert.name,
+            monitorId,
+            monitorName,
+          },
+          timestamp: new Date().toISOString(),
+          snapshot,
+          checkResult: {
+            id: latestCheck.id,
+            status: latestCheck.status,
+            responseTimeMs: latestCheck.responseTimeMs,
+            message: latestCheck.message,
+            checkedAt: latestCheck.checkedAt.toISOString(),
+          },
+          region: REGION,
+          firingRegions,
+          healthyRegions,
+        };
 
-      console.log(`[alerts] RESOLVED: ${alert.name} (${alert.id})`);
+        await dispatchToChannels(alert.channels, channels, payload);
+        console.log(`[alerts] RESOLVED: ${alert.name} (${alert.id}) - ${firingRegions.length}/${activeRegions.length} regions`);
+      } else {
+        console.log(`[alerts] ${alert.name} (${alert.id}) resolved in ${REGION}, but still firing in other regions (${firingRegions.length}/${activeRegions.length})`);
+      }
     }
   }
 }
