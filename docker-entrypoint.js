@@ -7,7 +7,7 @@ const env = { ...process.env };
 (async () => {
   // If running the web server then prerender pages
   if (process.argv.slice(-3).join(" ") === "bun run start") {
-    await exec("bunx next build --experimental-build-mode generate");
+    await exec("bun next build --experimental-build-mode generate");
   }
 
   // launch application
