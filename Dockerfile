@@ -1,8 +1,7 @@
 # syntax = docker/dockerfile:1
 
 # Adjust BUN_VERSION as desired
-ARG BUN_VERSION=1.3.2
-FROM oven/bun:${BUN_VERSION}-slim AS base
+FROM oven/bun:slim AS base
 
 LABEL fly_launch_runtime="Next.js"
 
@@ -24,7 +23,7 @@ RUN apt-get update -qq && \
 # Install node modules
 FROM deps-system AS deps
 
-COPY bun.lock package-lock.json package.json ./
+COPY bun.lock package.json ./
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile
 
@@ -47,7 +46,7 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 # Production dependencies only
 FROM deps-system AS production-deps
 
-COPY bun.lock package-lock.json package.json ./
+COPY bun.lock package.json ./
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile --production
 
