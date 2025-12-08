@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+![Pongo Banner](public/banner.png)
+
+# Pongo
+
+A self-hosted uptime monitoring and status page application built with Next.js 15, React 19, and Bun. Define monitors, organize dashboards, manage alerts through webhooks, and serve public or private status pages with multi-region monitoring support.
+
+## Features
+
+- **Multi-region monitoring** with intelligent alert thresholds (any, all, majority, or specific count)
+- **Flexible scheduling** via interval (`30s`, `5m`) or cron expressions
+- **Database agnostic** backend (SQLite for dev/self-hosted, PostgreSQL for scale)
+- **Webhook-based alerting** with customizable channels
+- **Long-term data archival** to S3 as Parquet files
+- **Public/private status pages** with RSS/Atom feeds
+- **Modern React UI** with dark mode, responsive design, and rich charts
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+bun install
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Configuration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+All user configuration lives in the `pongo/` directory:
 
-## Learn More
+```
+pongo/
+├── monitors/           # Monitor definitions (*.ts)
+├── dashboards/         # Dashboard configs (*.ts)
+├── announcements/      # Status announcements (*.md)
+├── incidents/          # Incident reports (*.md)
+└── channels.ts         # Webhook notification channels
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### `/src/app` - Next.js Application
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Frontend and API routes using Next.js 15 App Router.
 
-## Deploy on Vercel
+| Route | Purpose |
+|-------|---------|
+| `/` | Main dashboard overview |
+| `/dashboards/[id]` | Individual dashboard view |
+| `/dashboards/shared/[slug]` | Public shared dashboard with RSS feeds |
+| `/monitors/[id]` | Monitor detail page with analytics |
+| `/alerts` | Alert management and history |
+| `/settings` | Application configuration |
+| `/public/[slug]` | Public status pages (no auth required) |
+| `/api/cron` | Vercel Cron endpoint for serverless monitoring |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### `/src/scheduler` - Monitor Execution Service
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Standalone Bun service that runs monitors on schedule and evaluates alerts.
+
+- **scheduler.ts** - Core orchestration using Croner
+- **runner.ts** - Executes monitor handlers with timeout management
+- **server.ts** - HTTP API server (port 3001)
+- **alerts/** - Alert condition evaluation and webhook dispatching
+
+### `/src/archiver` - Data Archival Service
+
+Archives old check results to S3 as Parquet files.
+
+- Configurable retention period (default 30 days)
+- Batch processing with partitioned storage (year/month/day)
+- Cron-based scheduling (default: 3 AM UTC)
+
+### `/src/db` - Database Layer
+
+Dual-database support using Drizzle ORM.
+
+- `DB_DRIVER=sqlite` for SQLite (WAL mode enabled)
+- `DB_DRIVER=pg` for PostgreSQL
+
+**Tables:** `checkResults`, `alertState`, `alertEvents`
+
+### `/src/lib` - Core Business Logic
+
+- **config-types.ts** - Monitor, dashboard, announcement, and channel interfaces
+- **data.ts** - Data access layer with React cache wrapping
+- **loader.ts** - Loads configs from `pongo/` directory
+- **types.ts** - Core type definitions
+- **feed.ts** - RSS/Atom feed generation
+
+### `/src/components` - React UI Components
+
+47 components using Radix UI primitives and Tailwind CSS.
+
+**Status & Charts:** `status-badge`, `uptime-bars`, `response-time-chart`, `error-rate-chart`, `sparkline`
+
+**Dashboard:** `dashboard-view`, `monitor-card`, `monitor-response-chart`
+
+**Alerts:** `alert-table`, `alert-timeline`, `alert-banner`, `incident-card`
+
+### `/src/hooks` - React Hooks
+
+- **use-mobile.ts** - Viewport breakpoint detection
+
+### `/src/proxy.ts` - Authentication Middleware
+
+Cookie-based session authentication using iron-session. Set `ACCESS_CODE` env var to enable authentication.
+
+Public routes bypass auth: `/public/*`, `/dashboards/shared/*`, `/login`
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `DB_DRIVER` | Database driver (`sqlite` or `pg`) |
+| `ACCESS_CODE` | Enable authentication with this code |
+| `EXPIRY_DAYS` | Session TTL (default: 7) |
+| `SCHEDULER_MAX_CONCURRENCY` | Max concurrent monitor executions |
+| `PONGO_REGION` | Region identifier for multi-region setups |
+
+## Tech Stack
+
+- **Frontend:** Next.js 15, React 19, Tailwind CSS, Radix UI
+- **Runtime:** Bun
+- **ORM:** Drizzle
+- **Scheduling:** Croner
+- **Auth:** iron-session
+- **Charts:** Recharts

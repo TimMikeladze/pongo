@@ -1,15 +1,28 @@
 #!/usr/bin/env node
 
 const { spawn } = require("node:child_process");
+const fs = require("node:fs");
 
 const env = { ...process.env };
 const command = process.argv.slice(2).join(" ");
 const schedulerEnabled = process.env.SCHEDULER_ENABLED === "true";
 const archiverEnabled = process.env.ARCHIVAL_ENABLED === "true";
+const dataDir = "/data";
 
 (async () => {
+  // Verify volume is accessible
+  if (!fs.existsSync(dataDir)) {
+    throw new Error(`Volume not mounted at ${dataDir}`);
+  }
+  try {
+    fs.accessSync(dataDir, fs.constants.R_OK | fs.constants.W_OK);
+  } catch {
+    throw new Error(`Volume at ${dataDir} is not readable/writable`);
+  }
+  console.log(`Volume at ${dataDir} is accessible`);
+
   // Sync schema before starting any service (push is idempotent, migrate fails if tables exist)
-  await exec("bun run db:sqlite:push");
+  await exec("bun run db:sqlite:migrate");
 
   // If running the web server, prerender pages and optionally start background services
   if (command === "bun run start") {
