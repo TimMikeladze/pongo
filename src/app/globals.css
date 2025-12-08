@@ -5,93 +5,89 @@
 /* Dense mode variant for zen/dense styling */
 @custom-variant dense (&:is(.density-dense *));
 
-/* Added proper light mode theme with matching hacker aesthetic */
+/* Light mode - black/white monochrome */
 :root {
-  --background: oklch(0.98 0 0);
-  --foreground: oklch(0.15 0 0);
-  --card: oklch(0.96 0 0);
-  --card-foreground: oklch(0.15 0 0);
-  --popover: oklch(0.96 0 0);
-  --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.45 0.18 145);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.92 0 0);
-  --secondary-foreground: oklch(0.3 0 0);
-  --muted: oklch(0.92 0 0);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.1 0 0);
+  --card: oklch(0.98 0 0);
+  --card-foreground: oklch(0.1 0 0);
+  --popover: oklch(0.98 0 0);
+  --popover-foreground: oklch(0.1 0 0);
+  --primary: oklch(0.1 0 0);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.94 0 0);
+  --secondary-foreground: oklch(0.2 0 0);
+  --muted: oklch(0.94 0 0);
   --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.92 0.02 145);
-  --accent-foreground: oklch(0.35 0.15 145);
+  --accent: oklch(0.94 0 0);
+  --accent-foreground: oklch(0.1 0 0);
   --destructive: oklch(0.55 0.22 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.895 0 0); /* Slightly less bright than before */
-  --input: oklch(0.92 0 0);
-  --ring: oklch(
-    0.475 0.18 145
-  ); /* Slightly less bright ring than previous edit */
-  --chart-1: oklch(0.45 0.18 145);
-  --chart-2: oklch(0.55 0.15 200);
-  --chart-3: oklch(0.65 0.15 85);
-  --chart-4: oklch(0.5 0.2 280);
-  --chart-5: oklch(0.55 0.2 30);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.85 0 0);
+  --input: oklch(0.94 0 0);
+  --ring: oklch(0.3 0 0);
+  --chart-1: oklch(0.2 0 0);
+  --chart-2: oklch(0.35 0 0);
+  --chart-3: oklch(0.5 0 0);
+  --chart-4: oklch(0.65 0 0);
+  --chart-5: oklch(0.8 0 0);
   --radius: 0.375rem;
-  --sidebar: oklch(0.96 0 0);
-  --sidebar-foreground: oklch(0.3 0 0);
-  --sidebar-primary: oklch(0.45 0.18 145);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.94 0.01 145);
-  --sidebar-accent-foreground: oklch(0.35 0.15 145);
-  --sidebar-border: oklch(0.895 0 0); /* Slightly less bright than before */
-  --sidebar-ring: oklch(0.475 0.18 145); /* Slightly less bright than before */
+  --sidebar: oklch(0.98 0 0);
+  --sidebar-foreground: oklch(0.2 0 0);
+  --sidebar-primary: oklch(0.1 0 0);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.94 0 0);
+  --sidebar-accent-foreground: oklch(0.1 0 0);
+  --sidebar-border: oklch(0.85 0 0);
+  --sidebar-ring: oklch(0.3 0 0);
 
   /* Status colors - light mode */
   --status-up: oklch(0.45 0.18 145);
   --status-down: oklch(0.55 0.22 25);
   --status-degraded: oklch(0.65 0.15 85);
-  --status-pending: oklch(0.65 0 0);
+  --status-pending: oklch(0.6 0 0);
 }
 
+/* Dark mode - black/white monochrome */
 .dark {
-  --background: oklch(0.03 0 0);
-  --foreground: oklch(0.85 0 0);
-  --card: oklch(0.06 0 0);
-  --card-foreground: oklch(0.85 0 0);
-  --popover: oklch(0.06 0 0);
-  --popover-foreground: oklch(0.85 0 0);
-  --primary: oklch(0.72 0.19 145);
-  --primary-foreground: oklch(0.03 0 0);
-  --secondary: oklch(0.12 0 0);
-  --secondary-foreground: oklch(0.7 0 0);
-  --muted: oklch(0.12 0 0);
-  --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.12 0.02 145);
-  --accent-foreground: oklch(0.72 0.19 145);
+  --background: oklch(0.05 0 0);
+  --foreground: oklch(0.9 0 0);
+  --card: oklch(0.08 0 0);
+  --card-foreground: oklch(0.9 0 0);
+  --popover: oklch(0.08 0 0);
+  --popover-foreground: oklch(0.9 0 0);
+  --primary: oklch(0.95 0 0);
+  --primary-foreground: oklch(0.05 0 0);
+  --secondary: oklch(0.15 0 0);
+  --secondary-foreground: oklch(0.8 0 0);
+  --muted: oklch(0.15 0 0);
+  --muted-foreground: oklch(0.55 0 0);
+  --accent: oklch(0.15 0 0);
+  --accent-foreground: oklch(0.95 0 0);
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.95 0 0);
-  --border: oklch(0.21 0 0); /* Slightly less bright than previous edit */
-  --input: oklch(0.12 0 0);
-  --ring: oklch(0.77 0.19 145); /* Slightly less bright than previous edit */
-  --chart-1: oklch(0.72 0.19 145);
-  --chart-2: oklch(0.65 0.15 200);
-  --chart-3: oklch(0.75 0.15 85);
-  --chart-4: oklch(0.6 0.2 280);
-  --chart-5: oklch(0.65 0.2 30);
-  --sidebar: oklch(0.04 0 0);
-  --sidebar-foreground: oklch(0.7 0 0);
-  --sidebar-primary: oklch(0.72 0.19 145);
-  --sidebar-primary-foreground: oklch(0.03 0 0);
-  --sidebar-accent: oklch(0.1 0.01 145);
-  --sidebar-accent-foreground: oklch(0.72 0.19 145);
-  --sidebar-border: oklch(
-    0.21 0 0
-  ); /* Slightly less bright than previous edit */
-  --sidebar-ring: oklch(
-    0.77 0.19 145
-  ); /* Slightly less bright than previous edit */
+  --border: oklch(0.22 0 0);
+  --input: oklch(0.15 0 0);
+  --ring: oklch(0.7 0 0);
+  --chart-1: oklch(0.95 0 0);
+  --chart-2: oklch(0.75 0 0);
+  --chart-3: oklch(0.55 0 0);
+  --chart-4: oklch(0.4 0 0);
+  --chart-5: oklch(0.25 0 0);
+  --sidebar: oklch(0.06 0 0);
+  --sidebar-foreground: oklch(0.8 0 0);
+  --sidebar-primary: oklch(0.95 0 0);
+  --sidebar-primary-foreground: oklch(0.05 0 0);
+  --sidebar-accent: oklch(0.15 0 0);
+  --sidebar-accent-foreground: oklch(0.95 0 0);
+  --sidebar-border: oklch(0.22 0 0);
+  --sidebar-ring: oklch(0.7 0 0);
 
+  /* Status colors - dark mode (keeping colored for visibility) */
   --status-up: oklch(0.85 0.3 145);
   --status-down: oklch(0.75 0.32 25);
   --status-degraded: oklch(0.88 0.22 85);
-  --status-pending: oklch(0.35 0 0);
+  --status-pending: oklch(0.4 0 0);
 }
 
 @theme inline {
@@ -168,11 +164,11 @@
 
 /* Glow effect for status indicators */
 .glow-up {
-  box-shadow: 0 0 8px oklch(0.72 0.19 145 / 0.5);
+  box-shadow: 0 0 8px oklch(0.45 0.18 145 / 0.5);
 }
 
 .dark .glow-up {
-  box-shadow: 0 0 8px oklch(0.72 0.19 145 / 0.5);
+  box-shadow: 0 0 8px oklch(0.85 0.3 145 / 0.5);
 }
 
 .glow-down {
@@ -180,7 +176,7 @@
 }
 
 .glow-degraded {
-  box-shadow: 0 0 8px oklch(0.75 0.15 85 / 0.5);
+  box-shadow: 0 0 8px oklch(0.65 0.15 85 / 0.5);
 }
 
 /* Dense mode global styles */

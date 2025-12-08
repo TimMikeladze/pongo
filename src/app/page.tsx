@@ -1,31 +1,33 @@
+import { Activity, Github, Terminal } from "lucide-react";
 import Link from "next/link";
-import { Terminal, Activity, PawPrint, Github } from "lucide-react";
-import { MonitorCard } from "@/components/monitor-card";
-import { StatsCard } from "@/components/stats-card";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { ChartCard } from "@/components/chart-card";
-import { ResponseTimeChart } from "@/components/response-time-chart";
-import { UptimeChart } from "@/components/uptime-chart";
 import { ErrorRateChart } from "@/components/error-rate-chart";
 import { LatencyPercentilesChart } from "@/components/latency-percentiles-chart";
+import { MonitorCard } from "@/components/monitor-card";
+import { PongoLogo } from "@/components/pongo-logo";
+import { ResponseTimeChart } from "@/components/response-time-chart";
+import { StatsCard } from "@/components/stats-card";
 import { StatusDistributionChart } from "@/components/status-distribution-chart";
 import { ThroughputChart } from "@/components/throughput-chart";
+import { UptimeChart } from "@/components/uptime-chart";
 import {
-  getMonitors,
-  getLatestCheckResult,
-  getUptimePercentage,
+  getAggregatedErrorRateChartData,
+  getAggregatedLatencyPercentilesChartData,
+  getAggregatedResponseTimeChartData,
+  getAggregatedStatusDistributionData,
+  getAggregatedThroughputChartData,
+  getAggregatedUptimeChartData,
   getAverageResponseTime,
   getErrorRate,
+  getLatestCheckResult,
+  getMonitors,
   getP95ResponseTime,
   getP99ResponseTime,
   getTotalChecks,
-  getAggregatedResponseTimeChartData,
-  getAggregatedUptimeChartData,
-  getAggregatedErrorRateChartData,
-  getAggregatedLatencyPercentilesChartData,
-  getAggregatedThroughputChartData,
-  getAggregatedStatusDistributionData,
+  getUptimePercentage,
 } from "@/lib/data";
-import { timeRangeCache, getTimeRange } from "@/lib/time-range";
+import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -47,57 +49,57 @@ export default async function OverviewPage({ searchParams }: Props) {
     avgResponseTime,
     errorRate,
     p95Latency,
-    p99Latency,
+    _p99Latency,
     totalChecks,
   ] =
     monitors.length > 0
       ? await Promise.all([
-          (async () => {
-            const uptimes = await Promise.all(
-              monitors.map((m) => getUptimePercentage(m.id, timeRange)),
-            );
-            return uptimes.reduce((acc, v) => acc + v, 0) / uptimes.length;
-          })(),
-          (async () => {
-            const responseTimes = await Promise.all(
-              monitors.map((m) => getAverageResponseTime(m.id, timeRange)),
-            );
-            return Math.round(
-              responseTimes.reduce((acc, v) => acc + v, 0) /
-                responseTimes.length,
-            );
-          })(),
-          (async () => {
-            const errorRates = await Promise.all(
-              monitors.map((m) => getErrorRate(m.id, timeRange)),
-            );
-            return (
-              errorRates.reduce((acc, v) => acc + v, 0) / errorRates.length
-            );
-          })(),
-          (async () => {
-            const p95s = await Promise.all(
-              monitors.map((m) => getP95ResponseTime(m.id, timeRange)),
-            );
-            return Math.round(
-              p95s.reduce((acc, v) => acc + v, 0) / p95s.length,
-            );
-          })(),
-          (async () => {
-            const p99s = await Promise.all(
-              monitors.map((m) => getP99ResponseTime(m.id, timeRange)),
-            );
-            return Math.round(
-              p99s.reduce((acc, v) => acc + v, 0) / p99s.length,
-            );
-          })(),
-          (async () => {
-            const checks = await Promise.all(
-              monitors.map((m) => getTotalChecks(m.id, timeRange)),
-            );
-            return checks.reduce((acc, v) => acc + v, 0);
-          })(),
-        ])
+        (async () => {
+          const uptimes = await Promise.all(
+            monitors.map((m) => getUptimePercentage(m.id, timeRange)),
+          );
+          return uptimes.reduce((acc, v) => acc + v, 0) / uptimes.length;
+        })(),
+        (async () => {
+          const responseTimes = await Promise.all(
+            monitors.map((m) => getAverageResponseTime(m.id, timeRange)),
+          );
+          return Math.round(
+            responseTimes.reduce((acc, v) => acc + v, 0) /
+            responseTimes.length,
+          );
+        })(),
+        (async () => {
+          const errorRates = await Promise.all(
+            monitors.map((m) => getErrorRate(m.id, timeRange)),
+          );
+          return (
+            errorRates.reduce((acc, v) => acc + v, 0) / errorRates.length
+          );
+        })(),
+        (async () => {
+          const p95s = await Promise.all(
+            monitors.map((m) => getP95ResponseTime(m.id, timeRange)),
+          );
+          return Math.round(
+            p95s.reduce((acc, v) => acc + v, 0) / p95s.length,
+          );
+        })(),
+        (async () => {
+          const p99s = await Promise.all(
+            monitors.map((m) => getP99ResponseTime(m.id, timeRange)),
+          );
+          return Math.round(
+            p99s.reduce((acc, v) => acc + v, 0) / p99s.length,
+          );
+        })(),
+        (async () => {
+          const checks = await Promise.all(
+            monitors.map((m) => getTotalChecks(m.id, timeRange)),
+          );
+          return checks.reduce((acc, v) => acc + v, 0);
+        })(),
+      ])
       : [100, 0, 0, 0, 0, 0];
 
   // Get down count
@@ -105,6 +107,12 @@ export default async function OverviewPage({ searchParams }: Props) {
     monitors.map((m) => getLatestCheckResult(m.id)),
   );
   const downCount = latestResults.filter((r) => r?.status === "down").length;
+
+  // Calculate minimum refresh interval
+  const minRefreshInterval =
+    monitors.length > 0
+      ? Math.min(...monitors.map((m) => m.intervalSeconds))
+      : 0;
 
   // Get aggregated chart data server-side
   const [
@@ -117,29 +125,30 @@ export default async function OverviewPage({ searchParams }: Props) {
   ] =
     monitors.length > 0
       ? await Promise.all([
-          getAggregatedResponseTimeChartData(monitorIds, timeRange, interval),
-          getAggregatedUptimeChartData(monitorIds, timeRange, interval),
-          getAggregatedErrorRateChartData(monitorIds, timeRange, interval),
-          getAggregatedLatencyPercentilesChartData(
-            monitorIds,
-            timeRange,
-            interval,
-          ),
-          getAggregatedThroughputChartData(monitorIds, timeRange, interval),
-          getAggregatedStatusDistributionData(monitorIds, timeRange),
-        ])
+        getAggregatedResponseTimeChartData(monitorIds, timeRange, interval),
+        getAggregatedUptimeChartData(monitorIds, timeRange, interval),
+        getAggregatedErrorRateChartData(monitorIds, timeRange, interval),
+        getAggregatedLatencyPercentilesChartData(
+          monitorIds,
+          timeRange,
+          interval,
+        ),
+        getAggregatedThroughputChartData(monitorIds, timeRange, interval),
+        getAggregatedStatusDistributionData(monitorIds, timeRange),
+      ])
       : [[], [], [], [], [], { up: 0, degraded: 0, down: 0 }];
 
   return (
     <div>
+      <AutoRefresh intervalSeconds={minRefreshInterval} />
       {/* About Section */}
       {showAbout && (
         <div className="mb-10 pt-4">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
-              <PawPrint className="h-4 w-4 text-primary" />
+              <PongoLogo className="h-4 w-4" />
               <div>
-                <h1 className="text-sm">pongo</h1>
+                <h1 className="text-sm">pongo.sh</h1>
                 <p className="text-[10px] text-muted-foreground mt-0.5">
                   self-hosted, file-driven uptime monitoring
                 </p>
@@ -157,7 +166,7 @@ export default async function OverviewPage({ searchParams }: Props) {
           </div>
           <div className="border border-border rounded bg-card p-4">
             <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-              pongo is an open source uptime monitoring solution designed for
+              pongo.sh is an open source uptime monitoring solution designed for
               developers who prefer configuration as code. define your monitors
               as simple typescript files, commit them to your repository, and
               deploy anywhere that runs node. no complex setup wizards, no
@@ -171,7 +180,7 @@ export default async function OverviewPage({ searchParams }: Props) {
               webhooks when services degrade or go down.
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-              no database required — pongo reads monitor definitions directly
+              no database required — pongo.sh reads monitor definitions directly
               from your filesystem. results are stored locally in sqlite, making
               it lightweight, portable, and easy to backup. deploy on vercel,
               railway, docker, or any platform that supports node.js.
@@ -179,7 +188,7 @@ export default async function OverviewPage({ searchParams }: Props) {
             <p className="text-xs text-muted-foreground leading-relaxed">
               built with next.js, typescript, and tailwind css. fully
               customizable and extensible. check out the live demo below to see
-              pongo in action.
+              pongo.sh in action.
             </p>
           </div>
         </div>
@@ -199,7 +208,7 @@ export default async function OverviewPage({ searchParams }: Props) {
       </div>
 
       {/* Primary KPIs */}
-      <div className="grid grid-cols-4 md:grid-cols-7 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-6">
         <StatsCard
           title="uptime"
           value={`${overallUptime.toFixed(1)}%`}

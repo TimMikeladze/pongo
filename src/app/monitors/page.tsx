@@ -1,23 +1,52 @@
 import { Terminal, Zap } from "lucide-react";
+import { AutoRefresh } from "@/components/auto-refresh";
+import { ListFilter } from "@/components/list-filter";
 import { MonitorCard } from "@/components/monitor-card";
 import { getMonitors } from "@/lib/data";
-import { timeRangeCache, getTimeRange } from "@/lib/time-range";
+import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export default async function MonitorsPage({ searchParams }: Props) {
+  const params = await searchParams;
   const monitors = await getMonitors();
   const { preset, from, to } = await timeRangeCache.parse(searchParams);
   const timeRange = getTimeRange({ preset, from, to });
   const activeCount = monitors.filter((m) => m.isActive).length;
   const pausedCount = monitors.length - activeCount;
+  const minRefreshInterval =
+    monitors.length > 0
+      ? Math.min(...monitors.map((m) => m.intervalSeconds))
+      : 0;
+
+  // Filter logic
+  const filter = (params.filter as string) || "all";
+  const search = (params.q as string) || "";
+
+  const filteredMonitors = monitors.filter((monitor) => {
+    // Status filter
+    if (filter === "active" && !monitor.isActive) return false;
+    if (filter === "paused" && monitor.isActive) return false;
+
+    // Search filter
+    if (search) {
+      const searchLower = search.toLowerCase();
+      return (
+        monitor.name.toLowerCase().includes(searchLower) ||
+        monitor.id.toLowerCase().includes(searchLower)
+      );
+    }
+
+    return true;
+  });
 
   return (
     <div>
+      <AutoRefresh intervalSeconds={minRefreshInterval} />
       {/* Header */}
-      <div className="flex items-center justify-between mb-8 pt-4">
+      <div className="flex flex-col gap-4 mb-6 pt-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
           <Terminal className="h-4 w-4 text-primary" />
           <div>
@@ -28,6 +57,14 @@ export default async function MonitorsPage({ searchParams }: Props) {
             </p>
           </div>
         </div>
+        <ListFilter
+          filterOptions={[
+            { value: "all", label: "all", count: monitors.length },
+            { value: "active", label: "active", count: activeCount },
+            { value: "paused", label: "paused", count: pausedCount },
+          ]}
+          placeholder="Search monitors..."
+        />
       </div>
 
       {/* Monitors List */}
@@ -40,9 +77,15 @@ export default async function MonitorsPage({ searchParams }: Props) {
             no monitors configured
           </p>
         </div>
+      ) : filteredMonitors.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 border border-dashed border-border rounded bg-card/50">
+          <p className="text-xs text-muted-foreground">
+            no monitors match your filters
+          </p>
+        </div>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
-          {monitors.map((monitor) => (
+          {filteredMonitors.map((monitor) => (
             <MonitorCard
               key={monitor.id}
               monitor={monitor}
