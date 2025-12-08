@@ -64,6 +64,7 @@ COPY --from=pongo-config /app/pongo ./pongo
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
 COPY --from=build /app/package.json ./
+COPY --from=build /app/tsconfig.json ./
 COPY --from=build /app/src ./src
 COPY --from=build /app/drizzle ./drizzle
 COPY --from=build /app/drizzle.config.sqlite.ts ./
