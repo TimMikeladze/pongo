@@ -1,5 +1,11 @@
 import { sql } from "drizzle-orm";
-import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+  integer,
+  primaryKey,
+  real,
+  sqliteTable,
+  text,
+} from "drizzle-orm/sqlite-core";
 
 /**
  * Monitor status enum values
@@ -33,6 +39,9 @@ export const checkResults = sqliteTable("pongo_check_results", {
 
   /** Error or status message from the handler */
   message: text("message"),
+
+  /** Region where the check was executed */
+  region: text("region").notNull().default("default"),
 
   /** When the check was executed */
   checkedAt: integer("checked_at", { mode: "timestamp_ms" })
@@ -74,6 +83,12 @@ export const checkResultsIndexes = {
   /** Index for status filtering */
   statusIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_status ON pongo_check_results(status)`,
 
+  /** Index for region filtering */
+  regionIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_region ON pongo_check_results(region)`,
+
+  /** Composite index for monitor + region + time queries */
+  monitorRegionCheckedAtIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_monitor_region_checked_at ON pongo_check_results(monitor_id, region, checked_at DESC)`,
+
   /** Index for archival queries - finds rows eligible for archival */
   archivalIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_archival ON pongo_check_results(checked_at) WHERE archived_at IS NULL`,
 };
@@ -93,17 +108,24 @@ export type AlertEventTypeEnum = (typeof alertEventTypeEnum)[number];
 /**
  * Alert state table - current state of each alert
  */
-export const alertState = sqliteTable("pongo_alert_state", {
-  alertId: text("alert_id").primaryKey(),
-  monitorId: text("monitor_id").notNull(),
-  status: text("status", { enum: alertStatusEnum }).notNull().default("ok"),
-  lastFiredAt: integer("last_fired_at", { mode: "timestamp_ms" }),
-  lastResolvedAt: integer("last_resolved_at", { mode: "timestamp_ms" }),
-  currentEventId: text("current_event_id"),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
+export const alertState = sqliteTable(
+  "pongo_alert_state",
+  {
+    alertId: text("alert_id").notNull(),
+    monitorId: text("monitor_id").notNull(),
+    region: text("region").notNull().default("default"),
+    status: text("status", { enum: alertStatusEnum }).notNull().default("ok"),
+    lastFiredAt: integer("last_fired_at", { mode: "timestamp_ms" }),
+    lastResolvedAt: integer("last_resolved_at", { mode: "timestamp_ms" }),
+    currentEventId: text("current_event_id"),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.alertId, table.region] }),
+  }),
+);
 
 export type AlertState = typeof alertState.$inferSelect;
 export type NewAlertState = typeof alertState.$inferInsert;
@@ -117,6 +139,7 @@ export const alertEvents = sqliteTable("pongo_alert_events", {
     .$defaultFn(() => crypto.randomUUID()),
   alertId: text("alert_id").notNull(),
   monitorId: text("monitor_id").notNull(),
+  region: text("region").notNull().default("default"),
   eventType: text("event_type", { enum: alertEventTypeEnum }).notNull(),
   triggeredAt: integer("triggered_at", { mode: "timestamp_ms" })
     .notNull()
