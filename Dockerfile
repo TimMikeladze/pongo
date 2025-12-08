@@ -13,33 +13,62 @@ WORKDIR /app
 ENV NODE_ENV="production"
 
 
-# Throw-away build stage to reduce size of final image
-FROM base AS build
+# Install system dependencies
+FROM base AS deps-system
 
-# Install packages needed to build node modules
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential pkg-config python-is-python3
+    apt-get install --no-install-recommends -y build-essential pkg-config python-is-python3 && \
+    rm -rf /var/lib/apt/lists/*
+
 
 # Install node modules
-COPY bun.lock package-lock.json package.json ./
-RUN bun install
+FROM deps-system AS deps
 
-# Copy application code
-COPY . .
+COPY bun.lock package-lock.json package.json ./
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile
+
+
+# Copy pongo config (separate layer for config changes)
+FROM deps AS pongo-config
+
+COPY pongo ./pongo
+
 
 # Build application
-RUN bun next build
+FROM pongo-config AS build
 
-# Remove development dependencies
-RUN rm -rf node_modules && \
-    bun install --ci
+COPY . .
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    --mount=type=cache,target=/app/.next/cache \
+    bun next build
+
+
+# Production dependencies only
+FROM deps-system AS production-deps
+
+COPY bun.lock package-lock.json package.json ./
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile --production
 
 
 # Final stage for app image
 FROM base
 
+# Copy production dependencies
+COPY --from=production-deps /app/node_modules ./node_modules
+
+# Copy pongo config
+COPY --from=pongo-config /app/pongo ./pongo
+
 # Copy built application
-COPY --from=build /app /app
+COPY --from=build /app/.next ./.next
+COPY --from=build /app/public ./public
+COPY --from=build /app/package.json ./
+COPY --from=build /app/src ./src
+COPY --from=build /app/drizzle ./drizzle
+COPY --from=build /app/drizzle.config.sqlite.ts ./
+COPY --from=build /app/docker-entrypoint.js ./
 
 # Entrypoint sets up the container.
 ENTRYPOINT [ "/app/docker-entrypoint.js" ]

@@ -51,6 +51,23 @@ async function initDatabase(): Promise<Database> {
     const databasePath = process.env.DATABASE_URL ?? "file:./pongo/pongo.db";
     const client = createClient({ url: databasePath });
 
+    // Production SQLite performance pragmas
+    await client.executeMultiple(`
+      PRAGMA journal_mode = WAL;
+      PRAGMA synchronous = NORMAL;
+      PRAGMA cache_size = -64000;
+      PRAGMA busy_timeout = 5000;
+      PRAGMA temp_store = MEMORY;
+    `);
+
+    // Apply indexes (IF NOT EXISTS makes this safe to run on every init)
+    for (const idx of Object.values(sqliteSchema.checkResultsIndexes)) {
+      await client.execute(idx.queryChunks[0].value as string);
+    }
+    for (const idx of Object.values(sqliteSchema.alertIndexes)) {
+      await client.execute(idx.queryChunks[0].value as string);
+    }
+
     _db = drizzle(client, { schema: sqliteSchema });
     _closeDb = () => {
       client.close();

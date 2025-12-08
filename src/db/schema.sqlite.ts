@@ -91,6 +91,9 @@ export const checkResultsIndexes = {
 
   /** Index for archival queries - finds rows eligible for archival */
   archivalIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_archival ON pongo_check_results(checked_at) WHERE archived_at IS NULL`,
+
+  /** Covering index for dashboard/listing queries - avoids table lookups */
+  monitorCoveringIdx: sql`CREATE INDEX IF NOT EXISTS idx_pongo_check_results_monitor_covering ON pongo_check_results(monitor_id, checked_at DESC, status, response_time_ms, region)`,
 };
 
 /**
