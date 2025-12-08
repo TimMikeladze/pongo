@@ -1,13 +1,11 @@
 // src/scheduler/index.ts
+
+import { REGION } from "./region";
 import { Scheduler } from "./scheduler";
 import { createServer } from "./server";
 import type { SchedulerConfig } from "./types";
 
-/**
- * Region where this scheduler is running
- */
-export const REGION =
-  process.env.PONGO_REGION || process.env.FLY_REGION || "default";
+export { REGION };
 
 /**
  * Load config from environment

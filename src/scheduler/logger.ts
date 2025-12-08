@@ -2,7 +2,7 @@
 import { getDbAsync, getDbDriver } from "@/db";
 import { checkResults as pgCheckResults } from "@/db/schema.pg";
 import { checkResults as sqliteCheckResults } from "@/db/schema.sqlite";
-import { REGION } from "./index";
+import { REGION } from "./region";
 import type { ExecutionResult } from "./types";
 
 /**

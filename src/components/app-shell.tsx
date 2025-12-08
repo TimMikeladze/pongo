@@ -172,7 +172,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {isDense && (
         <div
-          role="group"
+          role="toolbar"
+          aria-label="Zen mode controls"
           className="fixed top-4 right-4 z-50"
           onMouseEnter={() => setShowZenControls(true)}
           onMouseLeave={() => setShowZenControls(false)}
