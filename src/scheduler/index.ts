@@ -5,8 +5,6 @@ import { Scheduler } from "./scheduler";
 import { createServer } from "./server";
 import type { SchedulerConfig } from "./types";
 
-export { REGION };
-
 /**
  * Load config from environment
  */

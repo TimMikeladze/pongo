@@ -11,7 +11,7 @@ import {
   alertState as sqliteAlertState,
   checkResults as sqliteCheckResults,
 } from "@/db/schema.sqlite";
-import { REGION } from "../index";
+import { REGION } from "../region";
 import { evaluateCondition } from "./conditions";
 import { type ChannelsConfig, dispatchToChannels } from "./dispatcher";
 import type {
