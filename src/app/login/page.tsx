@@ -1,8 +1,8 @@
 "use client";
 
-import { PawPrint } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { PongoLogo } from "@/components/pongo-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { login } from "./actions";
@@ -36,8 +36,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="w-full max-w-sm space-y-8 px-6">
         <div className="flex flex-col items-center gap-4">
-          <div className="flex items-center gap-2 text-primary">
-            <PawPrint className="h-6 w-6" />
+          <div className="flex items-center gap-2">
+            <PongoLogo className="h-6 w-6" />
             <span className="text-lg tracking-wider font-medium">pongo</span>
           </div>
           <p className="text-xs text-muted-foreground">

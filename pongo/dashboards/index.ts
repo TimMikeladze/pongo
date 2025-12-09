@@ -1,3 +1,5 @@
-import demo from "./demo";
+import type { DashboardConfig } from "@/lib/config-types";
 
-export default { demo };
+const dashboards: Record<string, DashboardConfig> = {};
+
+export default dashboards;

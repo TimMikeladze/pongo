@@ -97,8 +97,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [toggleDensity, density]);
 
-  const isPublicPage =
-    pathname.startsWith("/shared/") || pathname.startsWith("/public/");
+  const isPublicPage = pathname.startsWith("/shared/");
   const isLoginPage = pathname === "/login";
 
   if (isPublicPage || isLoginPage) {
@@ -443,19 +442,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             !fullWidth && "md:max-w-6xl",
           )}
         >
-          <div className="flex items-center gap-3">
-            <img
-              src="/logo.png"
-              alt="Pongo logo"
-              className="h-6 w-6 rounded-full"
-            />
-            <div className="flex flex-col">
-              <span className="font-medium">pongo.sh</span>
-              <span className="text-[10px] text-muted-foreground/60">
-                open-source uptime monitoring
-              </span>
-            </div>
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-3 cursor-default">
+                <img
+                  src="/logo.png"
+                  alt="Pongo logo"
+                  className="h-6 w-6 rounded-full"
+                />
+                <div className="flex flex-col">
+                  <span className="font-medium">pongo.sh</span>
+                  <span className="text-[10px] text-muted-foreground/60">
+                    open-source uptime monitoring
+                  </span>
+                </div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="flex flex-col gap-0.5">
+                <span>Local: {new Date().toLocaleTimeString()}</span>
+                <span>UTC: {new Date().toISOString().slice(11, 19)}</span>
+              </div>
+            </TooltipContent>
+          </Tooltip>
           <div className="flex items-center gap-3">
             <Tooltip>
               <TooltipTrigger asChild>

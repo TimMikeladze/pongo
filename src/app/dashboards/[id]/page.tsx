@@ -58,7 +58,7 @@ export default async function DashboardDetailPage({
           <h1 className="text-sm font-medium">{dashboard.name}</h1>
           {dashboard.isPublic && (
             <Link
-              href={`/public/${dashboard.slug}`}
+              href={`/shared/${dashboard.slug}`}
               target="_blank"
               className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mt-0.5"
             >

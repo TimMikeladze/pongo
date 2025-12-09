@@ -1,4 +1,3 @@
-import { Github } from "lucide-react";
 import type { Metadata } from "next";
 import { getDashboardBySlug } from "@/lib/data";
 
@@ -21,8 +20,7 @@ import { notFound } from "next/navigation";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { DashboardView } from "@/components/dashboard-view";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
-import { PongoLogo } from "@/components/pongo-logo";
-import { SupportDialog } from "@/components/support-dialog";
+import { SharedFooter } from "@/components/shared-footer";
 import { getActiveIncidents, getMonitors } from "@/lib/data";
 import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 
@@ -57,6 +55,8 @@ export default async function PublicDashboardPage({
     dashboardMonitors.length > 0
       ? Math.min(...dashboardMonitors.map((m) => m.intervalSeconds))
       : 0;
+
+  const renderedAt = new Date().toISOString();
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -111,33 +111,7 @@ export default async function PublicDashboardPage({
         </div>
       </main>
 
-      {/* Footer - Fixed */}
-      <footer className="flex-shrink-0 border-t border-border h-12">
-        <div className="max-w-6xl mx-auto h-full px-6 flex items-center justify-between text-xs text-muted-foreground font-mono">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 font-medium">
-              <PongoLogo className="h-5 w-5" />
-              <span>pongo.sh</span>
-            </div>
-            <span className="text-muted-foreground/60">
-              open-source uptime monitoring
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <a
-              href="https://github.com/timmikeladze/pongo"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
-              title="GitHub"
-            >
-              <Github className="h-3.5 w-3.5" />
-            </a>
-            <SupportDialog mode="support" showLabel={false} />
-            <SupportDialog mode="about" showLabel={false} />
-          </div>
-        </div>
-      </footer>
+      <SharedFooter renderedAt={renderedAt} />
     </div>
   );
 }

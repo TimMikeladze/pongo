@@ -1,4 +1,4 @@
-import { ArrowLeft, Github } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import { getDashboardBySlug } from "@/lib/data";
 
@@ -20,8 +20,7 @@ export async function generateMetadata({
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AnnouncementsList } from "@/components/announcements-list";
-import { PongoLogo } from "@/components/pongo-logo";
-import { SupportDialog } from "@/components/support-dialog";
+import { SharedFooter } from "@/components/shared-footer";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -34,6 +33,8 @@ export default async function PublicAnnouncementsPage({ params }: Props) {
   if (!dashboard || !dashboard.isPublic) {
     notFound();
   }
+
+  const renderedAt = new Date().toISOString();
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -68,33 +69,7 @@ export default async function PublicAnnouncementsPage({ params }: Props) {
         </div>
       </main>
 
-      {/* Footer - Fixed */}
-      <footer className="flex-shrink-0 border-t border-border h-12">
-        <div className="max-w-6xl mx-auto h-full px-6 flex items-center justify-between text-xs text-muted-foreground font-mono">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 font-medium">
-              <PongoLogo className="h-5 w-5" />
-              <span>pongo.sh</span>
-            </div>
-            <span className="text-muted-foreground/60">
-              open-source uptime monitoring
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <a
-              href="https://github.com/timmikeladze/pongo"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
-              title="GitHub"
-            >
-              <Github className="h-3.5 w-3.5" />
-            </a>
-            <SupportDialog mode="support" showLabel={false} />
-            <SupportDialog mode="about" showLabel={false} />
-          </div>
-        </div>
-      </footer>
+      <SharedFooter renderedAt={renderedAt} />
     </div>
   );
 }
