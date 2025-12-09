@@ -1,5 +1,3 @@
-import type { DashboardConfig } from "@/lib/config-types";
+import status from "./status";
 
-const dashboards: Record<string, DashboardConfig> = {};
-
-export default dashboards;
+export default { status };
