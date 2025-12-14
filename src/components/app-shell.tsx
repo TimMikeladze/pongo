@@ -97,10 +97,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [toggleDensity, density]);
 
-  const isPublicPage = pathname.startsWith("/shared/");
   const isLoginPage = pathname === "/login";
 
-  if (isPublicPage || isLoginPage) {
+  if (isLoginPage) {
     return <>{children}</>;
   }
 

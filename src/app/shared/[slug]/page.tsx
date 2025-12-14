@@ -20,7 +20,6 @@ import { notFound } from "next/navigation";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { DashboardView } from "@/components/dashboard-view";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
-import { SharedFooter } from "@/components/shared-footer";
 import { getActiveIncidents, getMonitors } from "@/lib/data";
 import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 
@@ -56,62 +55,46 @@ export default async function PublicDashboardPage({
       ? Math.min(...dashboardMonitors.map((m) => m.intervalSeconds))
       : 0;
 
-  const renderedAt = new Date().toISOString();
-
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <>
       <AutoRefresh intervalSeconds={minRefreshInterval} />
-      {/* Header - Fixed */}
-      <header className="flex-shrink-0 border-b border-border">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-sm font-medium font-mono">
-                {dashboard.name}
-              </h1>
-              <p className="text-[10px] text-muted-foreground">status page</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span
-                className={`h-2 w-2 rounded-full ${hasIssues ? "bg-amber-500 animate-pulse" : "bg-blue-500"}`}
-              />
-              <span className="text-[10px] text-muted-foreground font-mono">
-                {hasIssues ? "issues detected" : "all systems operational"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </header>
 
-      {/* Content - Scrollable */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto px-6 py-6">
-          <DashboardView
-            dashboardId={dashboard.id}
-            isPublic
-            timeRange={timeRange}
-            interval={interval}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-sm font-medium font-mono">{dashboard.name}</h1>
+          <p className="text-[10px] text-muted-foreground">status page</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span
+            className={`h-2 w-2 rounded-full ${hasIssues ? "bg-amber-500 animate-pulse" : "bg-blue-500"}`}
           />
-
-          {/* Past Incidents Section */}
-          <div className="mt-8 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                past incidents
-              </h3>
-              <a
-                href={`/shared/${slug}/incidents`}
-                className="text-[10px] text-muted-foreground hover:text-foreground"
-              >
-                view all
-              </a>
-            </div>
-            <IncidentsTimeline dashboardId={dashboard.id} limit={2} />
-          </div>
+          <span className="text-[10px] text-muted-foreground font-mono">
+            {hasIssues ? "issues detected" : "all systems operational"}
+          </span>
         </div>
-      </main>
+      </div>
 
-      <SharedFooter renderedAt={renderedAt} />
-    </div>
+      <DashboardView
+        dashboardId={dashboard.id}
+        isPublic
+        timeRange={timeRange}
+        interval={interval}
+      />
+
+      <div className="mt-8 space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            past incidents
+          </h3>
+          <a
+            href={`/shared/${slug}/incidents`}
+            className="text-[10px] text-muted-foreground hover:text-foreground"
+          >
+            view all
+          </a>
+        </div>
+        <IncidentsTimeline dashboardId={dashboard.id} limit={2} />
+      </div>
+    </>
   );
 }

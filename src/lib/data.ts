@@ -1,8 +1,15 @@
 // src/lib/data.ts
 
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { cache } from "react";
-import { alertEvents, alertState, checkResults, getDb } from "@/db";
+import {
+  alertEvents,
+  alertState,
+  checkResults,
+  dbHelpers,
+  getDb,
+  runQuery,
+} from "@/db";
 import {
   loadAnnouncements,
   loadDashboards,
@@ -547,10 +554,7 @@ export interface StatusDistributionData {
 
 // Helper to run raw SQL aggregation queries
 async function runAggregationQuery<T>(queryStr: string): Promise<T[]> {
-  const db = await getDb();
-  // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
-  const result = await (db as any).run(sql.raw(queryStr));
-  return result.rows as T[];
+  return runQuery<T>(queryStr);
 }
 
 export async function getResponseTimeChartData(
@@ -561,16 +565,17 @@ export async function getResponseTimeChartData(
   const intervalMs = getIntervalMs(interval);
   const fromMs = timeRange.from.getTime();
   const toMs = timeRange.to.getTime();
+  const ts = dbHelpers.timestampToMs("checked_at");
 
   const query = `
     SELECT
-      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
-      ROUND(AVG(response_time_ms)) as avg_response_time,
+      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
+      ${dbHelpers.round("AVG(response_time_ms)")} as avg_response_time,
       COUNT(*) as cnt
     FROM pongo_check_results
     WHERE monitor_id = '${monitorId}'
-      AND checked_at >= ${fromMs}
-      AND checked_at <= ${toMs}
+      AND ${ts} >= ${fromMs}
+      AND ${ts} <= ${toMs}
       AND status != 'down'
     GROUP BY bucket
     ORDER BY bucket ASC
@@ -596,16 +601,17 @@ export async function getErrorRateChartData(
   const intervalMs = getIntervalMs(interval);
   const fromMs = timeRange.from.getTime();
   const toMs = timeRange.to.getTime();
+  const ts = dbHelpers.timestampToMs("checked_at");
 
   const query = `
     SELECT
-      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
       SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as errors,
       COUNT(*) as total
     FROM pongo_check_results
     WHERE monitor_id = '${monitorId}'
-      AND checked_at >= ${fromMs}
-      AND checked_at <= ${toMs}
+      AND ${ts} >= ${fromMs}
+      AND ${ts} <= ${toMs}
     GROUP BY bucket
     ORDER BY bucket ASC
   `;
@@ -619,7 +625,7 @@ export async function getErrorRateChartData(
   return rows.map((row) => ({
     time: formatBucketLabel(row.bucket, interval),
     errorRate: row.total > 0 ? Math.round((row.errors / row.total) * 100) : 0,
-    errors: row.errors,
+    errors: Number(row.errors),
   }));
 }
 
@@ -631,16 +637,17 @@ export async function getUptimeChartData(
   const intervalMs = getIntervalMs(interval);
   const fromMs = timeRange.from.getTime();
   const toMs = timeRange.to.getTime();
+  const ts = dbHelpers.timestampToMs("checked_at");
 
   const query = `
     SELECT
-      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
       SUM(CASE WHEN status IN ('up', 'degraded') THEN 1 ELSE 0 END) as up_count,
       COUNT(*) as total
     FROM pongo_check_results
     WHERE monitor_id = '${monitorId}'
-      AND checked_at >= ${fromMs}
-      AND checked_at <= ${toMs}
+      AND ${ts} >= ${fromMs}
+      AND ${ts} <= ${toMs}
     GROUP BY bucket
     ORDER BY bucket ASC
   `;
@@ -653,7 +660,7 @@ export async function getUptimeChartData(
 
   return rows.map((row) => ({
     time: formatBucketLabel(row.bucket, interval),
-    uptime: Math.round((row.up_count / row.total) * 100),
+    uptime: Math.round((Number(row.up_count) / Number(row.total)) * 100),
   }));
 }
 
@@ -662,20 +669,21 @@ export async function getLatencyPercentilesChartData(
   timeRange: TimeRange,
   interval: IntervalOption,
 ): Promise<LatencyPercentilesDataPoint[]> {
-  // SQLite doesn't have built-in percentile functions, so we need to fetch
-  // bucketed data and compute percentiles in JS
+  // Neither SQLite nor PostgreSQL have built-in percentile functions that work
+  // universally, so we fetch bucketed data and compute percentiles in JS
   const intervalMs = getIntervalMs(interval);
   const fromMs = timeRange.from.getTime();
   const toMs = timeRange.to.getTime();
+  const ts = dbHelpers.timestampToMs("checked_at");
 
   const query = `
     SELECT
-      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
       response_time_ms
     FROM pongo_check_results
     WHERE monitor_id = '${monitorId}'
-      AND checked_at >= ${fromMs}
-      AND checked_at <= ${toMs}
+      AND ${ts} >= ${fromMs}
+      AND ${ts} <= ${toMs}
       AND status != 'down'
     ORDER BY bucket ASC, response_time_ms ASC
   `;
@@ -723,15 +731,16 @@ export async function getThroughputChartData(
   const intervalMs = getIntervalMs(interval);
   const fromMs = timeRange.from.getTime();
   const toMs = timeRange.to.getTime();
+  const ts = dbHelpers.timestampToMs("checked_at");
 
   const query = `
     SELECT
-      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
       COUNT(*) as checks
     FROM pongo_check_results
     WHERE monitor_id = '${monitorId}'
-      AND checked_at >= ${fromMs}
-      AND checked_at <= ${toMs}
+      AND ${ts} >= ${fromMs}
+      AND ${ts} <= ${toMs}
     GROUP BY bucket
     ORDER BY bucket ASC
   `;
@@ -743,7 +752,7 @@ export async function getThroughputChartData(
 
   return rows.map((row) => ({
     time: formatBucketLabel(row.bucket, interval),
-    checks: row.checks,
+    checks: Number(row.checks),
   }));
 }
 
@@ -756,19 +765,20 @@ export async function getStatusTimelineData(
   const intervalMs = getIntervalMs(interval);
   const fromMs = timeRange.from.getTime();
   const toMs = timeRange.to.getTime();
+  const ts = dbHelpers.timestampToMs("checked_at");
 
   const query = `
     SELECT
-      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
       SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) as up_count,
       SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as down_count,
       SUM(CASE WHEN status = 'degraded' THEN 1 ELSE 0 END) as degraded_count,
       COUNT(*) as total,
-      ROUND(AVG(response_time_ms)) as avg_response_time
+      ${dbHelpers.round("AVG(response_time_ms)")} as avg_response_time
     FROM pongo_check_results
     WHERE monitor_id = '${monitorId}'
-      AND checked_at >= ${fromMs}
-      AND checked_at <= ${toMs}
+      AND ${ts} >= ${fromMs}
+      AND ${ts} <= ${toMs}
     GROUP BY bucket
     ORDER BY bucket DESC
     LIMIT ${limit}
@@ -786,18 +796,18 @@ export async function getStatusTimelineData(
   // Reverse to get chronological order (we fetched DESC for LIMIT)
   return rows.reverse().map((row) => {
     let status: MonitorStatus = "up";
-    if (row.down_count > 0) status = "down";
-    else if (row.degraded_count > 0) status = "degraded";
-    else if (row.up_count === 0) status = "pending";
+    if (Number(row.down_count) > 0) status = "down";
+    else if (Number(row.degraded_count) > 0) status = "degraded";
+    else if (Number(row.up_count) === 0) status = "pending";
 
     return {
       time: formatBucketLabel(row.bucket, interval),
       timestamp: row.bucket,
       status,
-      up: row.up_count,
-      down: row.down_count,
-      degraded: row.degraded_count,
-      total: row.total,
+      up: Number(row.up_count),
+      down: Number(row.down_count),
+      degraded: Number(row.degraded_count),
+      total: Number(row.total),
       avgResponseTime: Math.round(row.avg_response_time),
     };
   });
@@ -809,6 +819,7 @@ export async function getStatusDistributionData(
 ): Promise<StatusDistributionData> {
   const fromMs = timeRange.from.getTime();
   const toMs = timeRange.to.getTime();
+  const ts = dbHelpers.timestampToMs("checked_at");
 
   const query = `
     SELECT
@@ -817,8 +828,8 @@ export async function getStatusDistributionData(
       SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as down_count
     FROM pongo_check_results
     WHERE monitor_id = '${monitorId}'
-      AND checked_at >= ${fromMs}
-      AND checked_at <= ${toMs}
+      AND ${ts} >= ${fromMs}
+      AND ${ts} <= ${toMs}
   `;
 
   const rows = await runAggregationQuery<{
@@ -829,9 +840,9 @@ export async function getStatusDistributionData(
 
   const row = rows[0] || { up_count: 0, degraded_count: 0, down_count: 0 };
   return {
-    up: row.up_count || 0,
-    degraded: row.degraded_count || 0,
-    down: row.down_count || 0,
+    up: Number(row.up_count) || 0,
+    degraded: Number(row.degraded_count) || 0,
+    down: Number(row.down_count) || 0,
   };
 }
 
@@ -847,15 +858,16 @@ export async function getAggregatedResponseTimeChartData(
   const fromMs = timeRange.from.getTime();
   const toMs = timeRange.to.getTime();
   const idList = monitorIds.map((id) => `'${id}'`).join(",");
+  const ts = dbHelpers.timestampToMs("checked_at");
 
   const query = `
     SELECT
-      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
-      ROUND(AVG(response_time_ms)) as avg_response_time
+      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
+      ${dbHelpers.round("AVG(response_time_ms)")} as avg_response_time
     FROM pongo_check_results
     WHERE monitor_id IN (${idList})
-      AND checked_at >= ${fromMs}
-      AND checked_at <= ${toMs}
+      AND ${ts} >= ${fromMs}
+      AND ${ts} <= ${toMs}
       AND status != 'down'
     GROUP BY bucket
     ORDER BY bucket ASC
@@ -883,16 +895,17 @@ export async function getAggregatedErrorRateChartData(
   const fromMs = timeRange.from.getTime();
   const toMs = timeRange.to.getTime();
   const idList = monitorIds.map((id) => `'${id}'`).join(",");
+  const ts = dbHelpers.timestampToMs("checked_at");
 
   const query = `
     SELECT
-      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
       SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as errors,
       COUNT(*) as total
     FROM pongo_check_results
     WHERE monitor_id IN (${idList})
-      AND checked_at >= ${fromMs}
-      AND checked_at <= ${toMs}
+      AND ${ts} >= ${fromMs}
+      AND ${ts} <= ${toMs}
     GROUP BY bucket
     ORDER BY bucket ASC
   `;
@@ -905,8 +918,11 @@ export async function getAggregatedErrorRateChartData(
 
   return rows.map((row) => ({
     time: formatBucketLabel(row.bucket, interval),
-    errorRate: row.total > 0 ? Math.round((row.errors / row.total) * 100) : 0,
-    errors: row.errors,
+    errorRate:
+      Number(row.total) > 0
+        ? Math.round((Number(row.errors) / Number(row.total)) * 100)
+        : 0,
+    errors: Number(row.errors),
   }));
 }
 
@@ -921,16 +937,17 @@ export async function getAggregatedUptimeChartData(
   const fromMs = timeRange.from.getTime();
   const toMs = timeRange.to.getTime();
   const idList = monitorIds.map((id) => `'${id}'`).join(",");
+  const ts = dbHelpers.timestampToMs("checked_at");
 
   const query = `
     SELECT
-      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
       SUM(CASE WHEN status IN ('up', 'degraded') THEN 1 ELSE 0 END) as up_count,
       COUNT(*) as total
     FROM pongo_check_results
     WHERE monitor_id IN (${idList})
-      AND checked_at >= ${fromMs}
-      AND checked_at <= ${toMs}
+      AND ${ts} >= ${fromMs}
+      AND ${ts} <= ${toMs}
     GROUP BY bucket
     ORDER BY bucket ASC
   `;
@@ -943,7 +960,7 @@ export async function getAggregatedUptimeChartData(
 
   return rows.map((row) => ({
     time: formatBucketLabel(row.bucket, interval),
-    uptime: Math.round((row.up_count / row.total) * 100),
+    uptime: Math.round((Number(row.up_count) / Number(row.total)) * 100),
   }));
 }
 
@@ -958,15 +975,16 @@ export async function getAggregatedLatencyPercentilesChartData(
   const fromMs = timeRange.from.getTime();
   const toMs = timeRange.to.getTime();
   const idList = monitorIds.map((id) => `'${id}'`).join(",");
+  const ts = dbHelpers.timestampToMs("checked_at");
 
   const query = `
     SELECT
-      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
       response_time_ms
     FROM pongo_check_results
     WHERE monitor_id IN (${idList})
-      AND checked_at >= ${fromMs}
-      AND checked_at <= ${toMs}
+      AND ${ts} >= ${fromMs}
+      AND ${ts} <= ${toMs}
       AND status != 'down'
     ORDER BY bucket ASC, response_time_ms ASC
   `;
@@ -1016,15 +1034,16 @@ export async function getAggregatedThroughputChartData(
   const fromMs = timeRange.from.getTime();
   const toMs = timeRange.to.getTime();
   const idList = monitorIds.map((id) => `'${id}'`).join(",");
+  const ts = dbHelpers.timestampToMs("checked_at");
 
   const query = `
     SELECT
-      (checked_at / ${intervalMs}) * ${intervalMs} as bucket,
+      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
       COUNT(*) as checks
     FROM pongo_check_results
     WHERE monitor_id IN (${idList})
-      AND checked_at >= ${fromMs}
-      AND checked_at <= ${toMs}
+      AND ${ts} >= ${fromMs}
+      AND ${ts} <= ${toMs}
     GROUP BY bucket
     ORDER BY bucket ASC
   `;
@@ -1036,7 +1055,7 @@ export async function getAggregatedThroughputChartData(
 
   return rows.map((row) => ({
     time: formatBucketLabel(row.bucket, interval),
-    checks: row.checks,
+    checks: Number(row.checks),
   }));
 }
 
@@ -1049,6 +1068,7 @@ export async function getAggregatedStatusDistributionData(
   const fromMs = timeRange.from.getTime();
   const toMs = timeRange.to.getTime();
   const idList = monitorIds.map((id) => `'${id}'`).join(",");
+  const ts = dbHelpers.timestampToMs("checked_at");
 
   const query = `
     SELECT
@@ -1057,8 +1077,8 @@ export async function getAggregatedStatusDistributionData(
       SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as down_count
     FROM pongo_check_results
     WHERE monitor_id IN (${idList})
-      AND checked_at >= ${fromMs}
-      AND checked_at <= ${toMs}
+      AND ${ts} >= ${fromMs}
+      AND ${ts} <= ${toMs}
   `;
 
   const rows = await runAggregationQuery<{
@@ -1069,9 +1089,9 @@ export async function getAggregatedStatusDistributionData(
 
   const row = rows[0] || { up_count: 0, degraded_count: 0, down_count: 0 };
   return {
-    up: row.up_count || 0,
-    degraded: row.degraded_count || 0,
-    down: row.down_count || 0,
+    up: Number(row.up_count) || 0,
+    degraded: Number(row.degraded_count) || 0,
+    down: Number(row.down_count) || 0,
   };
 }
 

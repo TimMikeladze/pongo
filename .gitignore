@@ -43,3 +43,5 @@ next-env.d.ts
 *.db*
 
 .claude
+
+!.env.example

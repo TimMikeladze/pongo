@@ -1,6 +1,7 @@
 // src/db/index.ts
 // Unified database module that abstracts away pg vs sqlite
 
+import { sql } from "drizzle-orm";
 import * as pgSchema from "./schema.pg";
 import * as sqliteSchema from "./schema.sqlite";
 
@@ -38,8 +39,6 @@ let _closeDb: (() => void | Promise<void>) | null = null;
 async function initDatabase() {
   if (_db) return _db;
 
-  console.log(`\n🗄️  Database: ${DB_DRIVER.toUpperCase()}`);
-
   if (DB_DRIVER === "pg") {
     // PostgreSQL with postgres-js
     const postgres = (await import("postgres")).default;
@@ -49,10 +48,6 @@ async function initDatabase() {
     if (!connectionString) {
       throw new Error("DATABASE_URL is required for PostgreSQL");
     }
-
-    console.log(
-      `   Connection: ${connectionString.replace(/:[^:@]+@/, ":****@")}`,
-    );
 
     const client = postgres(connectionString);
     _db = drizzle(client, { schema: pgSchema });
@@ -68,8 +63,6 @@ async function initDatabase() {
     if (!databasePath.includes("://") && !databasePath.startsWith("file:")) {
       databasePath = `file:${databasePath}`;
     }
-
-    console.log(`   Connection: ${databasePath}`);
 
     const client = createClient({
       url: databasePath,
@@ -131,6 +124,42 @@ export async function closeDatabase(): Promise<void> {
     dbPromise = null;
   }
 }
+
+/**
+ * Execute a raw SQL query and return typed results
+ * Use sql.raw() for the query string
+ */
+export async function runQuery<T>(queryStr: string): Promise<T[]> {
+  const db = await getDb();
+  const result = await db.execute(sql.raw(queryStr));
+
+  if (DB_DRIVER === "pg") {
+    // postgres-js returns array directly
+    return result as T[];
+  }
+  // libsql returns { rows: [...] }
+  return (result as { rows: T[] }).rows;
+}
+
+/**
+ * SQL helpers for cross-database compatibility
+ */
+export const dbHelpers = {
+  /**
+   * Convert timestamp column to milliseconds for bucketing
+   * SQLite stores as integer ms, PostgreSQL needs EXTRACT
+   */
+  timestampToMs: (column: string) =>
+    DB_DRIVER === "pg"
+      ? `(EXTRACT(EPOCH FROM ${column}) * 1000)::bigint`
+      : column,
+
+  /**
+   * Round a number (PostgreSQL uses different syntax)
+   */
+  round: (expr: string) =>
+    DB_DRIVER === "pg" ? `ROUND(${expr})::integer` : `ROUND(${expr})`,
+} as const;
 
 // ============================================
 // Table exports - import these directly
