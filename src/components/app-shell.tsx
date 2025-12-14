@@ -25,6 +25,7 @@ import { usePathname } from "next/navigation";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useFullscreen } from "@/components/fullscreen-provider";
+import { usePublicHeader } from "@/components/public-header-provider";
 import { SupportDialog } from "@/components/support-dialog";
 import { useTheme } from "@/components/theme-provider";
 import { TimeRangePicker } from "@/components/time-range-picker";
@@ -75,6 +76,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     toggleFullWidth,
   } = useTheme();
   const { isFullscreen: isChartFullscreen } = useFullscreen();
+  const { headerInfo: publicHeaderInfo } = usePublicHeader();
   const [mounted, setMounted] = useState(false);
   const [showZenControls, setShowZenControls] = useState(false);
   const [zenSupportOpen, setZenSupportOpen] = useState(false);
@@ -98,6 +100,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [toggleDensity, density]);
 
   const isLoginPage = pathname === "/login";
+  const isSharedPage = pathname.startsWith("/shared");
 
   if (isLoginPage) {
     return <>{children}</>;
@@ -133,36 +136,63 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             !fullWidth && "md:max-w-6xl",
           )}
         >
-          <div className="flex items-center">
-            <nav className="flex items-center gap-1">
-              {navigation.map((item) => {
-                const isActive =
-                  item.href === "/"
-                    ? pathname === "/"
-                    : pathname.startsWith(item.href);
+          {isSharedPage && publicHeaderInfo ? (
+            <>
+              <div>
+                <h1 className="text-sm font-medium font-mono">
+                  {publicHeaderInfo.name}
+                </h1>
+                {publicHeaderInfo.description && (
+                  <p className="text-[10px] text-muted-foreground">
+                    {publicHeaderInfo.description}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`h-2 w-2 rounded-full ${publicHeaderInfo.hasIssues ? "bg-amber-500 animate-pulse" : "bg-blue-500"}`}
+                />
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  {publicHeaderInfo.hasIssues
+                    ? "issues detected"
+                    : "all systems operational"}
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center">
+                <nav className="flex items-center gap-1">
+                  {navigation.map((item) => {
+                    const isActive =
+                      item.href === "/"
+                        ? pathname === "/"
+                        : pathname.startsWith(item.href);
 
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-1.5 text-xs transition-colors rounded",
-                      isActive
-                        ? "text-primary bg-accent"
-                        : "text-muted-foreground hover:text-foreground hover:bg-secondary",
-                    )}
-                  >
-                    <item.icon className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">{item.name}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={cn(
+                          "flex items-center gap-2 px-3 py-1.5 text-xs transition-colors rounded",
+                          isActive
+                            ? "text-primary bg-accent"
+                            : "text-muted-foreground hover:text-foreground hover:bg-secondary",
+                        )}
+                      >
+                        <item.icon className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">{item.name}</span>
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
 
-          <div className="flex items-center gap-2">
-            <TimeRangePicker disabled={disableTimeRangePicker} />
-          </div>
+              <div className="flex items-center gap-2">
+                <TimeRangePicker disabled={disableTimeRangePicker} />
+              </div>
+            </>
+          )}
         </div>
       </header>
 

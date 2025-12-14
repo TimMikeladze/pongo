@@ -4,6 +4,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type React from "react";
 import "./globals.css";
 import { AppShell } from "@/components/app-shell";
+import { PublicHeaderProvider } from "@/components/public-header-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const jetbrainsMono = JetBrains_Mono({
@@ -58,7 +59,9 @@ export default function RootLayout({
       <body className={`${jetbrainsMono.className} antialiased`}>
         <NuqsAdapter defaultOptions={{ shallow: false }}>
           <ThemeProvider defaultTheme="dark" storageKey="pongo-theme">
-            <AppShell>{children}</AppShell>
+            <PublicHeaderProvider>
+              <AppShell>{children}</AppShell>
+            </PublicHeaderProvider>
           </ThemeProvider>
         </NuqsAdapter>
       </body>

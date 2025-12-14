@@ -10,6 +10,20 @@ import * as sqliteSchema from "./schema.sqlite";
  */
 export type DbDriver = "sqlite" | "pg";
 
+type DbCloseFn = () => void | Promise<void>;
+
+type DbGlobalCache = {
+  // biome-ignore lint/suspicious/noExplicitAny: Runtime db type depends on driver
+  __pongoDb?: any;
+  __pongoDbClose?: DbCloseFn | null;
+  __pongoDbPromise?: Promise<unknown> | null;
+  __pongoDbDriver?: DbDriver | null;
+  // biome-ignore lint/suspicious/noExplicitAny: postgres-js client type
+  __pongoPgClient?: any | null;
+};
+
+const globalCache = globalThis as unknown as DbGlobalCache;
+
 // Auto-detect driver from DATABASE_URL
 function detectDriver(): DbDriver {
   if (process.env.DB_DRIVER) {
@@ -30,14 +44,25 @@ export const DB_DRIVER = detectDriver();
 
 // biome-ignore lint/suspicious/noExplicitAny: Runtime db type depends on driver
 let _db: any = null;
-// biome-ignore lint/suspicious/noExplicitAny: Cleanup function type varies
-let _closeDb: (() => void | Promise<void>) | null = null;
+let _closeDb: DbCloseFn | null = null;
+
+// If we already initialized in this Node process (e.g. Next.js HMR),
+// reuse the same db/client rather than creating new connections.
+if (globalCache.__pongoDb && globalCache.__pongoDbDriver === DB_DRIVER) {
+  _db = globalCache.__pongoDb;
+  _closeDb = globalCache.__pongoDbClose ?? null;
+}
 
 /**
  * Initialize the database connection based on detected driver
  */
 async function initDatabase() {
   if (_db) return _db;
+  if (globalCache.__pongoDb && globalCache.__pongoDbDriver === DB_DRIVER) {
+    _db = globalCache.__pongoDb;
+    _closeDb = globalCache.__pongoDbClose ?? null;
+    return _db;
+  }
 
   if (DB_DRIVER === "pg") {
     // PostgreSQL with postgres-js
@@ -49,7 +74,14 @@ async function initDatabase() {
       throw new Error("DATABASE_URL is required for PostgreSQL");
     }
 
-    const client = postgres(connectionString);
+    const client =
+      globalCache.__pongoDbDriver === "pg" && globalCache.__pongoPgClient
+        ? globalCache.__pongoPgClient
+        : postgres(connectionString);
+
+    globalCache.__pongoDbDriver = "pg";
+    globalCache.__pongoPgClient = client;
+
     _db = drizzle(client, { schema: pgSchema });
     _closeDb = async () => {
       await client.end();
@@ -92,6 +124,10 @@ async function initDatabase() {
     };
   }
 
+  globalCache.__pongoDbDriver = DB_DRIVER;
+  globalCache.__pongoDb = _db;
+  globalCache.__pongoDbClose = _closeDb;
+
   return _db;
 }
 
@@ -100,7 +136,16 @@ let dbPromise: Promise<typeof _db> | null = null;
 
 function getDbPromise() {
   if (!dbPromise) {
-    dbPromise = initDatabase();
+    if (
+      globalCache.__pongoDbPromise &&
+      globalCache.__pongoDbDriver === DB_DRIVER
+    ) {
+      dbPromise = globalCache.__pongoDbPromise;
+    } else {
+      dbPromise = initDatabase();
+      globalCache.__pongoDbPromise = dbPromise;
+      globalCache.__pongoDbDriver = DB_DRIVER;
+    }
   }
   return dbPromise;
 }
@@ -122,6 +167,15 @@ export async function closeDatabase(): Promise<void> {
     await _closeDb();
     _db = null;
     dbPromise = null;
+    if (globalCache.__pongoDbDriver === DB_DRIVER) {
+      globalCache.__pongoDb = null;
+      globalCache.__pongoDbClose = null;
+      globalCache.__pongoDbPromise = null;
+      if (DB_DRIVER === "pg") {
+        globalCache.__pongoPgClient = null;
+      }
+      globalCache.__pongoDbDriver = null;
+    }
   }
 }
 

@@ -20,6 +20,7 @@ import { notFound } from "next/navigation";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { DashboardView } from "@/components/dashboard-view";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
+import { SetPublicHeader } from "@/components/set-public-header";
 import { getActiveIncidents, getMonitors } from "@/lib/data";
 import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 
@@ -58,21 +59,11 @@ export default async function PublicDashboardPage({
   return (
     <>
       <AutoRefresh intervalSeconds={minRefreshInterval} />
-
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-sm font-medium font-mono">{dashboard.name}</h1>
-          <p className="text-[10px] text-muted-foreground">status page</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span
-            className={`h-2 w-2 rounded-full ${hasIssues ? "bg-amber-500 animate-pulse" : "bg-blue-500"}`}
-          />
-          <span className="text-[10px] text-muted-foreground font-mono">
-            {hasIssues ? "issues detected" : "all systems operational"}
-          </span>
-        </div>
-      </div>
+      <SetPublicHeader
+        name={dashboard.name}
+        description="status page"
+        hasIssues={hasIssues}
+      />
 
       <DashboardView
         dashboardId={dashboard.id}
