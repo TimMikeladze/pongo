@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "d9760cc2-9afb-4b0e-9434-b97f9cc293fe",
+  "id": "ad46a5e4-c087-430e-9a62-475dc1706a42",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "pongo_alert_events": {
