@@ -3,7 +3,7 @@
 import { join } from "node:path";
 import { Cron } from "croner";
 import { and, inArray, isNull, lt } from "drizzle-orm";
-import { getDbAsync, getDbDriver, pgSchema, sqliteSchema } from "@/db";
+import { checkResults, getDb } from "@/db";
 import { writeParquetFile } from "./parquet";
 import { deleteLocalFile, uploadToS3 } from "./s3";
 import {
@@ -83,13 +83,10 @@ export class Archiver {
   }
 
   private async archiveBatch(cutoffDate: Date): Promise<number> {
-    const db = await getDbAsync();
-    const driver = getDbDriver();
-    const checkResults =
-      driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
+    const db = await getDb();
 
     // Select rows eligible for archival
-    // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
+    // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
     const rows = await (db as any)
       .select()
       .from(checkResults)
@@ -114,7 +111,7 @@ export class Archiver {
     );
 
     // Mark rows as archiving
-    // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
+    // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
     await (db as any)
       .update(checkResults)
       .set({ archivedAt: now })
@@ -188,7 +185,7 @@ export class Archiver {
 
     // Delete successfully archived rows from DB
     if (successfulRowIds.length > 0) {
-      // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
+      // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
       await (db as any)
         .delete(checkResults)
         .where(inArray(checkResults.id, successfulRowIds));
@@ -203,7 +200,7 @@ export class Archiver {
       (id: string) => !successfulRowIds.includes(id),
     );
     if (failedRowIds.length > 0) {
-      // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
+      // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
       await (db as any)
         .update(checkResults)
         .set({ archivedAt: null })

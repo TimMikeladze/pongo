@@ -1,6 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { getDbAsync, getDbDriver, pgSchema, sqliteSchema } from "@/db";
+import { checkResults, getDb } from "@/db";
 import { type MonitorConfig, parseDuration } from "@/lib/config-types";
 import { loadChannels } from "@/lib/loader";
 import monitorConfigs from "@/pongo/monitors";
@@ -13,12 +13,9 @@ import type { ScheduledMonitor, SchedulerConfig } from "@/scheduler/types";
  * Get the last check time for a monitor from the database
  */
 async function getLastCheckTime(monitorId: string): Promise<Date | null> {
-  const db = await getDbAsync();
-  const driver = getDbDriver();
-  const checkResults =
-    driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
+  const db = await getDb();
 
-  // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union issue
+  // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
   const results = await (db as any)
     .select({ checkedAt: checkResults.checkedAt })
     .from(checkResults)

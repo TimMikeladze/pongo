@@ -1,34 +1,46 @@
-import type { LibSQLDatabase } from "drizzle-orm/libsql";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+// src/db/index.ts
+// Unified database module that abstracts away pg vs sqlite
+
 import * as pgSchema from "./schema.pg";
 import * as sqliteSchema from "./schema.sqlite";
 
 /**
- * Database driver type
- * Set via DB_DRIVER environment variable
- * Defaults to 'sqlite' for backwards compatibility
+ * Database driver type - detected automatically from DATABASE_URL
  */
 export type DbDriver = "sqlite" | "pg";
 
-const dbDriver: DbDriver = (process.env.DB_DRIVER as DbDriver) ?? "sqlite";
+// Auto-detect driver from DATABASE_URL
+function detectDriver(): DbDriver {
+  if (process.env.DB_DRIVER) {
+    return process.env.DB_DRIVER as DbDriver;
+  }
+
+  const dbUrl = process.env.DATABASE_URL;
+  if (dbUrl) {
+    if (dbUrl.startsWith("postgres://") || dbUrl.startsWith("postgresql://")) {
+      return "pg";
+    }
+  }
+
+  return "sqlite";
+}
+
+export const DB_DRIVER = detectDriver();
+
+// biome-ignore lint/suspicious/noExplicitAny: Runtime db type depends on driver
+let _db: any = null;
+// biome-ignore lint/suspicious/noExplicitAny: Cleanup function type varies
+let _closeDb: (() => void | Promise<void>) | null = null;
 
 /**
- * Database instance type based on driver
+ * Initialize the database connection based on detected driver
  */
-export type Database =
-  | LibSQLDatabase<typeof sqliteSchema>
-  | PostgresJsDatabase<typeof pgSchema>;
-
-let _db: Database;
-let _closeDb: (() => void) | (() => Promise<void>);
-
-/**
- * Initialize the database connection based on DB_DRIVER
- */
-async function initDatabase(): Promise<Database> {
+async function initDatabase() {
   if (_db) return _db;
 
-  if (dbDriver === "pg") {
+  console.log(`\n🗄️  Database: ${DB_DRIVER.toUpperCase()}`);
+
+  if (DB_DRIVER === "pg") {
     // PostgreSQL with postgres-js
     const postgres = (await import("postgres")).default;
     const { drizzle } = await import("drizzle-orm/postgres-js");
@@ -38,22 +50,31 @@ async function initDatabase(): Promise<Database> {
       throw new Error("DATABASE_URL is required for PostgreSQL");
     }
 
+    console.log(
+      `   Connection: ${connectionString.replace(/:[^:@]+@/, ":****@")}`,
+    );
+
     const client = postgres(connectionString);
     _db = drizzle(client, { schema: pgSchema });
     _closeDb = async () => {
       await client.end();
     };
   } else {
-    // SQLite with libsql (works in Bun)
+    // SQLite with libsql
     const { createClient } = await import("@libsql/client");
     const { drizzle } = await import("drizzle-orm/libsql");
 
     let databasePath = process.env.DATABASE_URL ?? "file:./pongo/pongo.db";
-    // Ensure file: prefix for local paths (required by libsql)
     if (!databasePath.includes("://") && !databasePath.startsWith("file:")) {
       databasePath = `file:${databasePath}`;
     }
-    const client = createClient({ url: databasePath });
+
+    console.log(`   Connection: ${databasePath}`);
+
+    const client = createClient({
+      url: databasePath,
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    });
 
     // Production SQLite performance pragmas
     await client.executeMultiple(`
@@ -64,7 +85,7 @@ async function initDatabase(): Promise<Database> {
       PRAGMA temp_store = MEMORY;
     `);
 
-    // Apply indexes (IF NOT EXISTS makes this safe to run on every init)
+    // Apply indexes
     for (const sql of sqliteSchema.checkResultsIndexes) {
       await client.execute(sql);
     }
@@ -81,67 +102,76 @@ async function initDatabase(): Promise<Database> {
   return _db;
 }
 
-// Initialize on module load for synchronous access
-// This works because Next.js server components run in Node.js
-let dbPromise: Promise<Database> | null = null;
+// Promise for async initialization
+let dbPromise: Promise<typeof _db> | null = null;
 
-function getDbPromise(): Promise<Database> {
+function getDbPromise() {
   if (!dbPromise) {
     dbPromise = initDatabase();
   }
   return dbPromise;
 }
 
-// For synchronous SQLite access (backwards compatible)
-// Will throw if using PostgreSQL and db not initialized
-export function getDb(): Database {
-  if (!_db) {
-    throw new Error(
-      "Database not initialized. Use getDbAsync() to initialize first.",
-    );
-  }
-  return _db;
-}
-
 /**
- * Get database instance asynchronously (works for both SQLite and PostgreSQL)
+ * Get database instance asynchronously
+ * This is the primary way to access the database
  */
-export async function getDbAsync(): Promise<Database> {
+// biome-ignore lint/suspicious/noExplicitAny: Runtime db type depends on driver
+export async function getDb(): Promise<any> {
   return getDbPromise();
 }
 
 /**
- * Get the current database driver
- */
-export function getDbDriver(): DbDriver {
-  return dbDriver;
-}
-
-/**
- * Get the appropriate schema based on the driver
- */
-export function getSchema() {
-  return dbDriver === "pg" ? pgSchema : sqliteSchema;
-}
-
-/**
  * Close the database connection
- * Call this when shutting down the application
  */
 export async function closeDatabase(): Promise<void> {
   if (_closeDb) {
     await _closeDb();
+    _db = null;
+    dbPromise = null;
   }
 }
 
-// Export the synchronous db getter as default for backwards compatibility
-export const db = new Proxy({} as Database, {
-  get(_, prop) {
-    const database = getDb();
-    return (database as unknown as Record<string | symbol, unknown>)[prop];
-  },
-});
+// ============================================
+// Table exports - import these directly
+// ============================================
 
-// Re-export schemas
-export * from "./schema";
-export { sqliteSchema, pgSchema };
+// Export tables that work for both drivers
+// The actual table used depends on DB_DRIVER at runtime
+export const checkResults =
+  DB_DRIVER === "sqlite" ? sqliteSchema.checkResults : pgSchema.checkResults;
+
+export const alertState =
+  DB_DRIVER === "sqlite" ? sqliteSchema.alertState : pgSchema.alertState;
+
+export const alertEvents =
+  DB_DRIVER === "sqlite" ? sqliteSchema.alertEvents : pgSchema.alertEvents;
+
+// ============================================
+// Schema modules for migrations/advanced use
+// ============================================
+
+export { pgSchema, sqliteSchema };
+
+// ============================================
+// Types - compatible across both drivers
+// ============================================
+
+export type {
+  AlertEvent,
+  AlertState,
+  CheckResult,
+  NewAlertEvent,
+  NewAlertState,
+  NewCheckResult,
+} from "./schema.sqlite";
+
+// Enum values (same for both)
+export const monitorStatusEnum = ["up", "down", "degraded", "pending"] as const;
+export type MonitorStatusEnum = (typeof monitorStatusEnum)[number];
+
+export const alertStatusEnum = ["ok", "firing"] as const;
+export type AlertStatusEnum = (typeof alertStatusEnum)[number];
+
+export const alertEventTypeEnum = ["fired", "resolved"] as const;
+export type AlertEventTypeEnum = (typeof alertEventTypeEnum)[number];

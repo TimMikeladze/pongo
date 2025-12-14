@@ -1,16 +1,6 @@
 // src/scheduler/alerts/evaluator.ts
 import { and, desc, eq, gt } from "drizzle-orm";
-import { getDbAsync, getDbDriver } from "@/db";
-import {
-  alertEvents as pgAlertEvents,
-  alertState as pgAlertState,
-  checkResults as pgCheckResults,
-} from "@/db/schema.pg";
-import {
-  alertEvents as sqliteAlertEvents,
-  alertState as sqliteAlertState,
-  checkResults as sqliteCheckResults,
-} from "@/db/schema.sqlite";
+import { alertEvents, alertState, checkResults, getDb } from "@/db";
 import { REGION } from "../region";
 import { evaluateCondition } from "./conditions";
 import { type ChannelsConfig, dispatchToChannels } from "./dispatcher";
@@ -27,20 +17,17 @@ const HISTORY_LIMIT = 20;
 /**
  * Get regions that have reported check results in the last hour
  */
-async function getActiveRegions(
-  db: any,
-  checkResultsTable: any,
-  monitorId: string,
-): Promise<string[]> {
+// biome-ignore lint/suspicious/noExplicitAny: Runtime db type
+async function getActiveRegions(db: any, monitorId: string): Promise<string[]> {
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
 
   const results = await db
-    .selectDistinct({ region: checkResultsTable.region })
-    .from(checkResultsTable)
+    .selectDistinct({ region: checkResults.region })
+    .from(checkResults)
     .where(
       and(
-        eq(checkResultsTable.monitorId, monitorId),
-        gt(checkResultsTable.checkedAt, oneHourAgo),
+        eq(checkResults.monitorId, monitorId),
+        gt(checkResults.checkedAt, oneHourAgo),
       ),
     );
 
@@ -51,19 +38,19 @@ async function getActiveRegions(
  * Get regions where an alert is currently firing
  */
 async function getFiringRegions(
+  // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
   db: any,
-  alertStateTable: any,
   monitorId: string,
   alertId: string,
 ): Promise<string[]> {
   const results = await db
-    .select({ region: alertStateTable.region })
-    .from(alertStateTable)
+    .select({ region: alertState.region })
+    .from(alertState)
     .where(
       and(
-        eq(alertStateTable.monitorId, monitorId),
-        eq(alertStateTable.alertId, alertId),
-        eq(alertStateTable.status, "firing"),
+        eq(alertState.monitorId, monitorId),
+        eq(alertState.alertId, alertId),
+        eq(alertState.status, "firing"),
       ),
     );
 
@@ -133,27 +120,20 @@ export async function evaluateAlerts(
 ): Promise<void> {
   if (alerts.length === 0) return;
 
-  const db = await getDbAsync();
-  const driver = getDbDriver();
-
-  // Select correct schema based on driver
-  const alertStateTable = driver === "pg" ? pgAlertState : sqliteAlertState;
-  const alertEventsTable = driver === "pg" ? pgAlertEvents : sqliteAlertEvents;
-  const checkResultsTable =
-    driver === "pg" ? pgCheckResults : sqliteCheckResults;
+  const db = await getDb();
 
   // Fetch recent check history
-  // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
+  // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
   const history = (await (db as any)
     .select()
-    .from(checkResultsTable)
+    .from(checkResults)
     .where(
       and(
-        eq(checkResultsTable.monitorId, monitorId),
-        eq(checkResultsTable.region, REGION),
+        eq(checkResults.monitorId, monitorId),
+        eq(checkResults.region, REGION),
       ),
     )
-    .orderBy(desc(checkResultsTable.checkedAt))
+    .orderBy(desc(checkResults.checkedAt))
     .limit(HISTORY_LIMIT)) as CheckResultWithId[];
 
   if (history.length === 0) return;
@@ -167,15 +147,12 @@ export async function evaluateAlerts(
 
   for (const alert of alerts) {
     // Get current alert state
-    // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
+    // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
     const [currentState] = (await (db as any)
       .select()
-      .from(alertStateTable)
+      .from(alertState)
       .where(
-        and(
-          eq(alertStateTable.alertId, alert.id),
-          eq(alertStateTable.region, REGION),
-        ),
+        and(eq(alertState.alertId, alert.id), eq(alertState.region, REGION)),
       )) as Array<{
       alertId: string;
       status: "ok" | "firing";
@@ -199,8 +176,8 @@ export async function evaluateAlerts(
 
       // Create alert event
       const eventId = crypto.randomUUID();
-      // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
-      await (db as any).insert(alertEventsTable).values({
+      // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
+      await (db as any).insert(alertEvents).values({
         id: eventId,
         alertId: alert.id,
         monitorId,
@@ -213,9 +190,9 @@ export async function evaluateAlerts(
 
       // Update or create alert state
       if (currentState) {
-        // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
+        // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
         await (db as any)
-          .update(alertStateTable)
+          .update(alertState)
           .set({
             status: "firing",
             lastFiredAt: new Date(),
@@ -224,13 +201,13 @@ export async function evaluateAlerts(
           })
           .where(
             and(
-              eq(alertStateTable.alertId, alert.id),
-              eq(alertStateTable.region, REGION),
+              eq(alertState.alertId, alert.id),
+              eq(alertState.region, REGION),
             ),
           );
       } else {
-        // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
-        await (db as any).insert(alertStateTable).values({
+        // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
+        await (db as any).insert(alertState).values({
           alertId: alert.id,
           monitorId,
           region: REGION,
@@ -242,17 +219,8 @@ export async function evaluateAlerts(
 
       // Check if we should dispatch globally
       const threshold = alert.regionThreshold ?? "any";
-      const activeRegions = await getActiveRegions(
-        db as any,
-        checkResultsTable,
-        monitorId,
-      );
-      const firingRegions = await getFiringRegions(
-        db as any,
-        alertStateTable,
-        monitorId,
-        alert.id,
-      );
+      const activeRegions = await getActiveRegions(db, monitorId);
+      const firingRegions = await getFiringRegions(db, monitorId, alert.id);
       const healthyRegions = activeRegions.filter(
         (r) => !firingRegions.includes(r),
       );
@@ -305,20 +273,20 @@ export async function evaluateAlerts(
 
       // Update the existing event with resolution
       if (currentState?.currentEventId) {
-        // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
+        // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
         await (db as any)
-          .update(alertEventsTable)
+          .update(alertEvents)
           .set({
             resolvedAt: new Date(),
             resolveCheckId: latestCheckId,
           })
-          .where(eq(alertEventsTable.id, currentState.currentEventId));
+          .where(eq(alertEvents.id, currentState.currentEventId));
       }
 
       // Update alert state
-      // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
+      // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
       await (db as any)
-        .update(alertStateTable)
+        .update(alertState)
         .set({
           status: "ok",
           lastResolvedAt: new Date(),
@@ -326,25 +294,13 @@ export async function evaluateAlerts(
           updatedAt: new Date(),
         })
         .where(
-          and(
-            eq(alertStateTable.alertId, alert.id),
-            eq(alertStateTable.region, REGION),
-          ),
+          and(eq(alertState.alertId, alert.id), eq(alertState.region, REGION)),
         );
 
       // Check if we should dispatch resolution globally
       const threshold = alert.regionThreshold ?? "any";
-      const activeRegions = await getActiveRegions(
-        db as any,
-        checkResultsTable,
-        monitorId,
-      );
-      const firingRegions = await getFiringRegions(
-        db as any,
-        alertStateTable,
-        monitorId,
-        alert.id,
-      );
+      const activeRegions = await getActiveRegions(db, monitorId);
+      const firingRegions = await getFiringRegions(db, monitorId, alert.id);
       const healthyRegions = activeRegions.filter(
         (r) => !firingRegions.includes(r),
       );

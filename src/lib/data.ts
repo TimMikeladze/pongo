@@ -1,16 +1,8 @@
 // src/lib/data.ts
 
-import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { cache } from "react";
-import { getDbAsync, getDbDriver, pgSchema, sqliteSchema } from "@/db";
-import {
-  alertEvents as pgAlertEvents,
-  alertState as pgAlertState,
-} from "@/db/schema.pg";
-import {
-  alertEvents as sqliteAlertEvents,
-  alertState as sqliteAlertState,
-} from "@/db/schema.sqlite";
+import { alertEvents, alertState, checkResults, getDb } from "@/db";
 import {
   loadAnnouncements,
   loadDashboards,
@@ -121,10 +113,7 @@ export const getCheckResults = cache(
     monitorId: string,
     options?: { limit?: number; timeRange?: TimeRange },
   ): Promise<CheckResult[]> => {
-    const db = await getDbAsync();
-    const driver = getDbDriver();
-    const checkResults =
-      driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
+    const db = await getDb();
 
     const conditions = [eq(checkResults.monitorId, monitorId)];
 
@@ -133,7 +122,7 @@ export const getCheckResults = cache(
       conditions.push(lte(checkResults.checkedAt, options.timeRange.to));
     }
 
-    // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union issue
+    // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
     let query = (db as any)
       .select()
       .from(checkResults)
@@ -147,7 +136,7 @@ export const getCheckResults = cache(
     const dbResults = await query;
 
     // Map database results to CheckResult type
-    // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union issue
+    // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
     return dbResults.map((r: any) => ({
       id: r.id,
       monitorId: r.monitorId,
@@ -165,10 +154,7 @@ export const getCheckResults = cache(
 
 export const getLatestCheckResult = cache(
   async (monitorId: string): Promise<CheckResult | null> => {
-    const db = await getDbAsync();
-    const driver = getDbDriver();
-    const checkResults =
-      driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
+    const db = await getDb();
 
     // Get active regions
     const regions = await getActiveRegions();
@@ -191,7 +177,7 @@ export const getLatestCheckResult = cache(
     }> = [];
 
     for (const region of regions) {
-      // biome-ignore lint/suspicious/noExplicitAny: dual-schema
+      // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
       const [result] = await (db as any)
         .select()
         .from(checkResults)
@@ -436,20 +422,18 @@ export async function getUpcomingMaintenance(
 }
 
 export const getFiringAlerts = cache(async (): Promise<FiringAlert[]> => {
-  const db = await getDbAsync();
-  const driver = getDbDriver();
-  const alertStateTable = driver === "pg" ? pgAlertState : sqliteAlertState;
+  const db = await getDb();
 
-  // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
+  // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
   const rows = await (db as any)
     .select()
-    .from(alertStateTable)
-    .where(eq(alertStateTable.status, "firing"));
+    .from(alertState)
+    .where(eq(alertState.status, "firing"));
 
   const monitors = await getMonitors();
   const monitorMap = new Map(monitors.map((m) => [m.id, m.name]));
 
-  // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
+  // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
   return rows.map((row: any) => ({
     alertId: row.alertId,
     monitorId: row.monitorId,
@@ -465,27 +449,24 @@ export const getFiringAlerts = cache(async (): Promise<FiringAlert[]> => {
 
 export const getAlertEvents = cache(
   async (timeRange: TimeRange): Promise<AlertEventWithMonitor[]> => {
-    const db = await getDbAsync();
-    const driver = getDbDriver();
-    const alertEventsTable =
-      driver === "pg" ? pgAlertEvents : sqliteAlertEvents;
+    const db = await getDb();
 
-    // biome-ignore lint/suspicious/noExplicitAny: dual-schema type union
+    // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
     const rows = await (db as any)
       .select()
-      .from(alertEventsTable)
+      .from(alertEvents)
       .where(
         and(
-          gte(alertEventsTable.triggeredAt, timeRange.from),
-          lte(alertEventsTable.triggeredAt, timeRange.to),
+          gte(alertEvents.triggeredAt, timeRange.from),
+          lte(alertEvents.triggeredAt, timeRange.to),
         ),
       )
-      .orderBy(desc(alertEventsTable.triggeredAt));
+      .orderBy(desc(alertEvents.triggeredAt));
 
     const monitors = await getMonitors();
     const monitorMap = new Map(monitors.map((m) => [m.id, m.name]));
 
-    // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
+    // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
     return rows.map((row: any) => {
       const triggeredAt =
         row.triggeredAt instanceof Date
@@ -518,8 +499,6 @@ export const getAlertEvents = cache(
 // ============================================
 // Server-side aggregation for charts (SQL-based)
 // ============================================
-
-import { sql } from "drizzle-orm";
 
 export interface ResponseTimeDataPoint {
   time: string;
@@ -567,20 +546,9 @@ export interface StatusDistributionData {
 }
 
 // Helper to run raw SQL aggregation queries
-async function runAggregationQuery<T>(
-  queryStr: string,
-  // biome-ignore lint/suspicious/noExplicitAny: raw SQL result types
-): Promise<T[]> {
-  const db = await getDbAsync();
-  const driver = getDbDriver();
-
-  if (driver === "pg") {
-    // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
-    const result = await (db as any).execute(sql.raw(queryStr));
-    return result.rows as T[];
-  }
-  // SQLite via libsql
-  // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
+async function runAggregationQuery<T>(queryStr: string): Promise<T[]> {
+  const db = await getDb();
+  // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
   const result = await (db as any).run(sql.raw(queryStr));
   return result.rows as T[];
 }
@@ -1118,12 +1086,12 @@ export async function getFeedItems(
 
   // Get alert events for dashboard monitors (last 30 days)
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-  const alertEvents = await getAlertEvents({
+  const alertEventsData = await getAlertEvents({
     from: thirtyDaysAgo,
     to: new Date(),
   });
 
-  for (const event of alertEvents) {
+  for (const event of alertEventsData) {
     if (!monitorIds.includes(event.monitorId)) continue;
 
     const eventType = event.eventType === "fired" ? "fired" : "resolved";
@@ -1199,14 +1167,10 @@ export function aggregateStatus(statuses: MonitorStatus[]): MonitorStatus {
  * Get all regions that have reported results in the last hour
  */
 export const getActiveRegions = cache(async (): Promise<string[]> => {
-  const db = await getDbAsync();
-  const driver = getDbDriver();
-  const checkResults =
-    driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
-
+  const db = await getDb();
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
 
-  // biome-ignore lint/suspicious/noExplicitAny: dual-schema
+  // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
   const results = await (db as any)
     .selectDistinct({ region: checkResults.region })
     .from(checkResults)
@@ -1220,16 +1184,12 @@ export const getActiveRegions = cache(async (): Promise<string[]> => {
  */
 export const getLatestCheckResultByRegion = cache(
   async (monitorId: string): Promise<Record<string, CheckResult | null>> => {
-    const db = await getDbAsync();
-    const driver = getDbDriver();
-    const checkResults =
-      driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
-
+    const db = await getDb();
     const regions = await getActiveRegions();
     const result: Record<string, CheckResult | null> = {};
 
     for (const region of regions) {
-      // biome-ignore lint/suspicious/noExplicitAny: dual-schema
+      // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
       const [latest] = await (db as any)
         .select()
         .from(checkResults)
@@ -1277,16 +1237,12 @@ export interface RegionStats {
  */
 export const getMonitorStatsByRegion = cache(
   async (monitorId: string, timeRange: TimeRange): Promise<RegionStats[]> => {
-    const db = await getDbAsync();
-    const driver = getDbDriver();
-    const checkResults =
-      driver === "pg" ? pgSchema.checkResults : sqliteSchema.checkResults;
-
+    const db = await getDb();
     const regions = await getActiveRegions();
     const stats: RegionStats[] = [];
 
     for (const region of regions) {
-      // biome-ignore lint/suspicious/noExplicitAny: dual-schema
+      // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
       const results = await (db as any)
         .select()
         .from(checkResults)
@@ -1302,13 +1258,13 @@ export const getMonitorStatsByRegion = cache(
 
       if (results.length === 0) continue;
 
-      // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
+      // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
       const upCount = results.filter((r: any) => r.status === "up").length;
       const uptime =
         results.length > 0 ? (upCount / results.length) * 100 : 100;
       const avgResponseTime =
         results.length > 0
-          ? // biome-ignore lint/suspicious/noExplicitAny: dual-schema type
+          ? // biome-ignore lint/suspicious/noExplicitAny: Runtime db type
             results.reduce((sum: number, r: any) => sum + r.responseTimeMs, 0) /
             results.length
           : 0;
