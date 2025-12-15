@@ -123,10 +123,11 @@ export function getIntervalMs(interval: IntervalOption): number {
  * Format a bucket timestamp for display on charts.
  */
 export function formatBucketLabel(
-  timestamp: number,
+  timestamp: number | bigint | string,
   interval: IntervalOption,
 ): string {
-  const date = new Date(timestamp);
+  // Ensure timestamp is a number (handles bigint/string from database)
+  const date = new Date(Number(timestamp));
   switch (interval) {
     case "5m":
     case "15m":

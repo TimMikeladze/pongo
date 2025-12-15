@@ -27,9 +27,10 @@ export async function triggerMonitor(monitorId: string) {
       responseTime: data.responseTime,
     };
   } catch (error) {
+    const message = error instanceof Error ? error.message : "";
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Scheduler unavailable",
+      error: message.includes("fetch failed") ? "Scheduler unavailable" : message || "Scheduler unavailable",
     };
   }
 }
