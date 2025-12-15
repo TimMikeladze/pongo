@@ -101,7 +101,12 @@ function TimeRangePickerInner() {
     const newInterval = isIntervalAllowed(interval, newDurationMs)
       ? interval
       : getBestIntervalForDuration(newDurationMs);
-    setParams({ preset: newPreset, from: null, to: null, interval: newInterval });
+    setParams({
+      preset: newPreset,
+      from: null,
+      to: null,
+      interval: newInterval,
+    });
     setCustomRange(undefined);
     setOpen(false);
   };

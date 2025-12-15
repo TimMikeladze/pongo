@@ -34,7 +34,9 @@ export async function triggerAllMonitors(
     const message = error instanceof Error ? error.message : "";
     return {
       success: false,
-      error: message.includes("fetch failed") ? "Scheduler unavailable" : message || "Scheduler unavailable",
+      error: message.includes("fetch failed")
+        ? "Scheduler unavailable"
+        : message || "Scheduler unavailable",
     };
   }
 }

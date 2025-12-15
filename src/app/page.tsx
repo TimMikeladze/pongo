@@ -10,16 +10,19 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { ChartCard } from "@/components/chart-card";
 import { ErrorRateChart } from "@/components/error-rate-chart";
 import { LatencyPercentilesChart } from "@/components/latency-percentiles-chart";
 import { MonitorCard } from "@/components/monitor-card";
+import { PublicDashboardsList } from "@/components/public-dashboards-list";
 import { ResponseTimeChart } from "@/components/response-time-chart";
 import { StatsCard } from "@/components/stats-card";
 import { StatusDistributionChart } from "@/components/status-distribution-chart";
 import { ThroughputChart } from "@/components/throughput-chart";
 import { UptimeChart } from "@/components/uptime-chart";
+import { isAuthEnabled, isAuthenticated } from "@/lib/auth";
 import {
   getAggregatedErrorRateChartData,
   getAggregatedLatencyPercentilesChartData,
@@ -28,6 +31,7 @@ import {
   getAggregatedThroughputChartData,
   getAggregatedUptimeChartData,
   getAverageResponseTime,
+  getDashboards,
   getErrorRate,
   getLatestCheckResult,
   getMonitors,
@@ -43,6 +47,20 @@ interface Props {
 }
 
 export default async function OverviewPage({ searchParams }: Props) {
+  // When ACCESS_CODE is set and user is not authenticated, show public dashboards
+  if (isAuthEnabled() && !(await isAuthenticated())) {
+    const dashboards = await getDashboards();
+    const publicDashboards = dashboards.filter((d) => d.isPublic);
+
+    // If only one public dashboard, redirect directly to it
+    if (publicDashboards.length === 1) {
+      redirect(`/shared/${publicDashboards[0].slug}`);
+    }
+
+    // Show list of public dashboards
+    return <PublicDashboardsList dashboards={publicDashboards} />;
+  }
+
   const showAbout = process.env.SHOW_ABOUT === "true";
   const monitors = await getMonitors();
   const activeMonitors = monitors.filter((m) => m.isActive);
@@ -63,52 +81,52 @@ export default async function OverviewPage({ searchParams }: Props) {
   ] =
     monitors.length > 0
       ? await Promise.all([
-        (async () => {
-          const uptimes = await Promise.all(
-            monitors.map((m) => getUptimePercentage(m.id, timeRange)),
-          );
-          return uptimes.reduce((acc, v) => acc + v, 0) / uptimes.length;
-        })(),
-        (async () => {
-          const responseTimes = await Promise.all(
-            monitors.map((m) => getAverageResponseTime(m.id, timeRange)),
-          );
-          return Math.round(
-            responseTimes.reduce((acc, v) => acc + v, 0) /
-            responseTimes.length,
-          );
-        })(),
-        (async () => {
-          const errorRates = await Promise.all(
-            monitors.map((m) => getErrorRate(m.id, timeRange)),
-          );
-          return (
-            errorRates.reduce((acc, v) => acc + v, 0) / errorRates.length
-          );
-        })(),
-        (async () => {
-          const p95s = await Promise.all(
-            monitors.map((m) => getP95ResponseTime(m.id, timeRange)),
-          );
-          return Math.round(
-            p95s.reduce((acc, v) => acc + v, 0) / p95s.length,
-          );
-        })(),
-        (async () => {
-          const p99s = await Promise.all(
-            monitors.map((m) => getP99ResponseTime(m.id, timeRange)),
-          );
-          return Math.round(
-            p99s.reduce((acc, v) => acc + v, 0) / p99s.length,
-          );
-        })(),
-        (async () => {
-          const checks = await Promise.all(
-            monitors.map((m) => getTotalChecks(m.id, timeRange)),
-          );
-          return checks.reduce((acc, v) => acc + v, 0);
-        })(),
-      ])
+          (async () => {
+            const uptimes = await Promise.all(
+              monitors.map((m) => getUptimePercentage(m.id, timeRange)),
+            );
+            return uptimes.reduce((acc, v) => acc + v, 0) / uptimes.length;
+          })(),
+          (async () => {
+            const responseTimes = await Promise.all(
+              monitors.map((m) => getAverageResponseTime(m.id, timeRange)),
+            );
+            return Math.round(
+              responseTimes.reduce((acc, v) => acc + v, 0) /
+                responseTimes.length,
+            );
+          })(),
+          (async () => {
+            const errorRates = await Promise.all(
+              monitors.map((m) => getErrorRate(m.id, timeRange)),
+            );
+            return (
+              errorRates.reduce((acc, v) => acc + v, 0) / errorRates.length
+            );
+          })(),
+          (async () => {
+            const p95s = await Promise.all(
+              monitors.map((m) => getP95ResponseTime(m.id, timeRange)),
+            );
+            return Math.round(
+              p95s.reduce((acc, v) => acc + v, 0) / p95s.length,
+            );
+          })(),
+          (async () => {
+            const p99s = await Promise.all(
+              monitors.map((m) => getP99ResponseTime(m.id, timeRange)),
+            );
+            return Math.round(
+              p99s.reduce((acc, v) => acc + v, 0) / p99s.length,
+            );
+          })(),
+          (async () => {
+            const checks = await Promise.all(
+              monitors.map((m) => getTotalChecks(m.id, timeRange)),
+            );
+            return checks.reduce((acc, v) => acc + v, 0);
+          })(),
+        ])
       : [100, 0, 0, 0, 0, 0];
 
   // Get down count
@@ -134,17 +152,17 @@ export default async function OverviewPage({ searchParams }: Props) {
   ] =
     monitors.length > 0
       ? await Promise.all([
-        getAggregatedResponseTimeChartData(monitorIds, timeRange, interval),
-        getAggregatedUptimeChartData(monitorIds, timeRange, interval),
-        getAggregatedErrorRateChartData(monitorIds, timeRange, interval),
-        getAggregatedLatencyPercentilesChartData(
-          monitorIds,
-          timeRange,
-          interval,
-        ),
-        getAggregatedThroughputChartData(monitorIds, timeRange, interval),
-        getAggregatedStatusDistributionData(monitorIds, timeRange),
-      ])
+          getAggregatedResponseTimeChartData(monitorIds, timeRange, interval),
+          getAggregatedUptimeChartData(monitorIds, timeRange, interval),
+          getAggregatedErrorRateChartData(monitorIds, timeRange, interval),
+          getAggregatedLatencyPercentilesChartData(
+            monitorIds,
+            timeRange,
+            interval,
+          ),
+          getAggregatedThroughputChartData(monitorIds, timeRange, interval),
+          getAggregatedStatusDistributionData(monitorIds, timeRange),
+        ])
       : [[], [], [], [], [], { up: 0, degraded: 0, down: 0 }];
 
   return (

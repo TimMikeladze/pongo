@@ -96,9 +96,7 @@ export function isIntervalAllowed(
  * Get the best default interval for a time range duration.
  * Returns the smallest allowed interval for maximum granularity.
  */
-export function getBestIntervalForDuration(
-  durationMs: number,
-): IntervalOption {
+export function getBestIntervalForDuration(durationMs: number): IntervalOption {
   const allowed = getAllowedIntervals(durationMs);
   // Return smallest allowed interval (first in array since INTERVAL_OPTIONS is sorted small to large)
   return allowed[0] || "30d";

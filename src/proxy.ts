@@ -31,6 +31,7 @@ export async function proxy(request: NextRequest) {
 
   // Public routes that don't require authentication
   const isPublicRoute =
+    pathname === "/" ||
     pathname.startsWith("/shared/") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/_next") ||
