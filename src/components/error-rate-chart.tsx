@@ -44,7 +44,7 @@ export function ErrorRateChart({
       bar: isDark ? "#ef4444" : "#dc2626",
       barLight: isDark ? "#ef444440" : "#dc262640",
       grid: isDark ? "#1a1a1a" : "#e5e5e5",
-      text: isDark ? "#666" : "#999",
+      text: isDark ? "#a3a3a3" : "#666",
     };
   }, [isDark]);
 
@@ -81,6 +81,8 @@ export function ErrorRateChart({
             fontSize: "10px",
             fontFamily: "monospace",
           }}
+          labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           formatter={(value: number, name: string) => [
             name === "errorRate" ? `${value}%` : value,
             name === "errorRate" ? "error rate" : "errors",
@@ -128,6 +130,8 @@ export function ErrorRateChart({
             fontSize: "10px",
             fontFamily: "monospace",
           }}
+          labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           formatter={(value: number, name: string) => [
             name === "errorRate" ? `${value}%` : value,
             name === "errorRate" ? "error rate" : "errors",

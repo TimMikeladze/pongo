@@ -3,6 +3,7 @@
 import {
   Activity,
   Bell,
+  Book,
   Coffee,
   Github,
   Heart,
@@ -63,9 +64,16 @@ const navigation = [
   { name: "monitors", href: "/monitors", icon: Activity },
   { name: "dashboards", href: "/dashboards", icon: LayoutDashboard },
   { name: "alerts", href: "/alerts", icon: Bell },
+  { name: "documentation", href: "/docs", icon: Book },
 ];
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+interface AppShellProps {
+  children: React.ReactNode;
+  /** Optional path to header logo in /public (e.g., "/logo.png") */
+  headerLogo?: string;
+}
+
+export function AppShell({ children, headerLogo }: AppShellProps) {
   const pathname = usePathname();
   const {
     density,
@@ -112,7 +120,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const disableTimeRangePicker =
     pathname === "/monitors" ||
     pathname === "/dashboards" ||
-    pathname.startsWith("/settings");
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/docs");
 
   return (
     <div className="h-dvh bg-background flex flex-col overflow-hidden relative">

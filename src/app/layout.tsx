@@ -54,13 +54,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Optional header logo from env (path to file in /public, e.g., "/logo.png")
+  const headerLogo = process.env.HEADER_LOGO || undefined;
+
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${jetbrainsMono.className} antialiased`}>
         <NuqsAdapter defaultOptions={{ shallow: false }}>
           <ThemeProvider defaultTheme="dark" storageKey="pongo-theme">
             <PublicHeaderProvider>
-              <AppShell>{children}</AppShell>
+              <AppShell headerLogo={headerLogo}>{children}</AppShell>
             </PublicHeaderProvider>
           </ThemeProvider>
         </NuqsAdapter>

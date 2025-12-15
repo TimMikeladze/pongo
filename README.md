@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="public/banner.png" alt="Pongo" width="50" height="50" style="vertical-align: middle; border-radius: 50%;" />
+  <img src="/banner.png" alt="Pongo" width="50" height="50" style="vertical-align: middle; border-radius: 50%;" />
   Pongo.sh
 </h1>
 <p align="center">

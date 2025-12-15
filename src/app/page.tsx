@@ -63,52 +63,52 @@ export default async function OverviewPage({ searchParams }: Props) {
   ] =
     monitors.length > 0
       ? await Promise.all([
-          (async () => {
-            const uptimes = await Promise.all(
-              monitors.map((m) => getUptimePercentage(m.id, timeRange)),
-            );
-            return uptimes.reduce((acc, v) => acc + v, 0) / uptimes.length;
-          })(),
-          (async () => {
-            const responseTimes = await Promise.all(
-              monitors.map((m) => getAverageResponseTime(m.id, timeRange)),
-            );
-            return Math.round(
-              responseTimes.reduce((acc, v) => acc + v, 0) /
-                responseTimes.length,
-            );
-          })(),
-          (async () => {
-            const errorRates = await Promise.all(
-              monitors.map((m) => getErrorRate(m.id, timeRange)),
-            );
-            return (
-              errorRates.reduce((acc, v) => acc + v, 0) / errorRates.length
-            );
-          })(),
-          (async () => {
-            const p95s = await Promise.all(
-              monitors.map((m) => getP95ResponseTime(m.id, timeRange)),
-            );
-            return Math.round(
-              p95s.reduce((acc, v) => acc + v, 0) / p95s.length,
-            );
-          })(),
-          (async () => {
-            const p99s = await Promise.all(
-              monitors.map((m) => getP99ResponseTime(m.id, timeRange)),
-            );
-            return Math.round(
-              p99s.reduce((acc, v) => acc + v, 0) / p99s.length,
-            );
-          })(),
-          (async () => {
-            const checks = await Promise.all(
-              monitors.map((m) => getTotalChecks(m.id, timeRange)),
-            );
-            return checks.reduce((acc, v) => acc + v, 0);
-          })(),
-        ])
+        (async () => {
+          const uptimes = await Promise.all(
+            monitors.map((m) => getUptimePercentage(m.id, timeRange)),
+          );
+          return uptimes.reduce((acc, v) => acc + v, 0) / uptimes.length;
+        })(),
+        (async () => {
+          const responseTimes = await Promise.all(
+            monitors.map((m) => getAverageResponseTime(m.id, timeRange)),
+          );
+          return Math.round(
+            responseTimes.reduce((acc, v) => acc + v, 0) /
+            responseTimes.length,
+          );
+        })(),
+        (async () => {
+          const errorRates = await Promise.all(
+            monitors.map((m) => getErrorRate(m.id, timeRange)),
+          );
+          return (
+            errorRates.reduce((acc, v) => acc + v, 0) / errorRates.length
+          );
+        })(),
+        (async () => {
+          const p95s = await Promise.all(
+            monitors.map((m) => getP95ResponseTime(m.id, timeRange)),
+          );
+          return Math.round(
+            p95s.reduce((acc, v) => acc + v, 0) / p95s.length,
+          );
+        })(),
+        (async () => {
+          const p99s = await Promise.all(
+            monitors.map((m) => getP99ResponseTime(m.id, timeRange)),
+          );
+          return Math.round(
+            p99s.reduce((acc, v) => acc + v, 0) / p99s.length,
+          );
+        })(),
+        (async () => {
+          const checks = await Promise.all(
+            monitors.map((m) => getTotalChecks(m.id, timeRange)),
+          );
+          return checks.reduce((acc, v) => acc + v, 0);
+        })(),
+      ])
       : [100, 0, 0, 0, 0, 0];
 
   // Get down count
@@ -134,17 +134,17 @@ export default async function OverviewPage({ searchParams }: Props) {
   ] =
     monitors.length > 0
       ? await Promise.all([
-          getAggregatedResponseTimeChartData(monitorIds, timeRange, interval),
-          getAggregatedUptimeChartData(monitorIds, timeRange, interval),
-          getAggregatedErrorRateChartData(monitorIds, timeRange, interval),
-          getAggregatedLatencyPercentilesChartData(
-            monitorIds,
-            timeRange,
-            interval,
-          ),
-          getAggregatedThroughputChartData(monitorIds, timeRange, interval),
-          getAggregatedStatusDistributionData(monitorIds, timeRange),
-        ])
+        getAggregatedResponseTimeChartData(monitorIds, timeRange, interval),
+        getAggregatedUptimeChartData(monitorIds, timeRange, interval),
+        getAggregatedErrorRateChartData(monitorIds, timeRange, interval),
+        getAggregatedLatencyPercentilesChartData(
+          monitorIds,
+          timeRange,
+          interval,
+        ),
+        getAggregatedThroughputChartData(monitorIds, timeRange, interval),
+        getAggregatedStatusDistributionData(monitorIds, timeRange),
+      ])
       : [[], [], [], [], [], { up: 0, degraded: 0, down: 0 }];
 
   return (
@@ -268,31 +268,7 @@ export default async function OverviewPage({ searchParams }: Props) {
             </div>
           </div>
 
-          <div className="flex items-center justify-between px-1">
-            <p className="text-[10px] text-muted-foreground">
-              Licensed under Apache 2.0 • Free and Open Source
-            </p>
-            <div className="flex gap-4">
-              <a
-                href="https://github.com/TimMikeladze/pongo#getting-started"
-                className="text-[10px] text-muted-foreground hover:text-primary transition-colors"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Documentation →
-              </a>
-              <a
-                href="https://github.com/TimMikeladze/pongo/deployments"
-                className="text-[10px] text-muted-foreground hover:text-primary transition-colors"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Deploy Now →
-              </a>
-            </div>
-          </div>
-
-          <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent my-10" />
+          <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-10" />
         </div>
       )}
 

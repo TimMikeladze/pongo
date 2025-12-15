@@ -43,7 +43,7 @@ export function ResponseTimeChart({
       stroke: isDark ? "#4ade80" : "#16a34a",
       fill: isDark ? "#4ade8020" : "#16a34a20",
       grid: isDark ? "#1a1a1a" : "#e5e5e5",
-      text: isDark ? "#666" : "#999",
+      text: isDark ? "#a3a3a3" : "#666",
     };
   }, [isDark]);
 
@@ -88,7 +88,8 @@ export function ResponseTimeChart({
             fontSize: "10px",
             fontFamily: "monospace",
           }}
-          labelStyle={{ color: colors.text }}
+          labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           formatter={(value: number) => [`${value}ms`, "latency"]}
         />
         <Area
@@ -125,7 +126,8 @@ export function ResponseTimeChart({
             fontSize: "10px",
             fontFamily: "monospace",
           }}
-          labelStyle={{ color: colors.text }}
+          labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           formatter={(value: number) => [`${value}ms`, "latency"]}
         />
         <Bar

@@ -43,7 +43,7 @@ export function ThroughputChart({
       stroke: isDark ? "#8b5cf6" : "#7c3aed",
       fill: isDark ? "#8b5cf620" : "#7c3aed20",
       grid: isDark ? "#1a1a1a" : "#e5e5e5",
-      text: isDark ? "#666" : "#999",
+      text: isDark ? "#a3a3a3" : "#666",
     };
   }, [isDark]);
 
@@ -87,6 +87,8 @@ export function ThroughputChart({
             fontSize: "10px",
             fontFamily: "monospace",
           }}
+          labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           formatter={(value: number) => [`${value}`, "checks"]}
         />
         <Area
@@ -121,6 +123,8 @@ export function ThroughputChart({
             fontSize: "10px",
             fontFamily: "monospace",
           }}
+          labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           formatter={(value: number) => [`${value}`, "checks"]}
         />
         <Bar dataKey="checks" fill={colors.stroke} radius={[2, 2, 0, 0]} />

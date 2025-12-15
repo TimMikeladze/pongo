@@ -36,7 +36,7 @@ export function StatusDistributionChart({
       degraded: isDark ? "#facc15" : "#ca8a04",
       down: isDark ? "#ef4444" : "#dc2626",
       grid: isDark ? "#1a1a1a" : "#e5e5e5",
-      text: isDark ? "#666" : "#999",
+      text: isDark ? "#a3a3a3" : "#666",
     };
   }, [isDark]);
 
@@ -82,6 +82,8 @@ export function StatusDistributionChart({
               fontSize: "10px",
               fontFamily: "monospace",
             }}
+            labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+            itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
             formatter={(value: number, name: string) => [
               `${value} (${((value / total) * 100).toFixed(1)}%)`,
               name,

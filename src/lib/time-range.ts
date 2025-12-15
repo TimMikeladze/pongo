@@ -31,6 +31,79 @@ export type IntervalOption = (typeof INTERVAL_OPTIONS)[number];
 export const DEFAULT_PRESET: TimeRangePreset = "24h";
 export const DEFAULT_INTERVAL: IntervalOption = "1h";
 
+/**
+ * Maximum number of data points to allow for chart queries.
+ * This prevents excessive data loading for large time ranges with small intervals.
+ */
+export const MAX_DATA_POINTS = 500;
+
+/**
+ * Get the duration in milliseconds for a time range preset.
+ */
+export function getPresetDurationMs(preset: TimeRangePreset): number {
+  switch (preset) {
+    case "1h":
+      return 60 * 60 * 1000;
+    case "24h":
+      return 24 * 60 * 60 * 1000;
+    case "7d":
+      return 7 * 24 * 60 * 60 * 1000;
+    case "30d":
+      return 30 * 24 * 60 * 60 * 1000;
+    case "90d":
+      return 90 * 24 * 60 * 60 * 1000;
+    case "180d":
+      return 180 * 24 * 60 * 60 * 1000;
+    case "360d":
+      return 360 * 24 * 60 * 60 * 1000;
+  }
+}
+
+/**
+ * Get allowed intervals for a given time range duration.
+ * Intervals are allowed if they would produce <= MAX_DATA_POINTS data points.
+ */
+export function getAllowedIntervals(durationMs: number): IntervalOption[] {
+  return INTERVAL_OPTIONS.filter((interval) => {
+    const intervalMs = getIntervalMs(interval);
+    const dataPoints = Math.ceil(durationMs / intervalMs);
+    return dataPoints <= MAX_DATA_POINTS;
+  });
+}
+
+/**
+ * Get allowed intervals for a preset time range.
+ */
+export function getAllowedIntervalsForPreset(
+  preset: TimeRangePreset,
+): IntervalOption[] {
+  return getAllowedIntervals(getPresetDurationMs(preset));
+}
+
+/**
+ * Check if an interval is allowed for a given time range duration.
+ */
+export function isIntervalAllowed(
+  interval: IntervalOption,
+  durationMs: number,
+): boolean {
+  const intervalMs = getIntervalMs(interval);
+  const dataPoints = Math.ceil(durationMs / intervalMs);
+  return dataPoints <= MAX_DATA_POINTS;
+}
+
+/**
+ * Get the best default interval for a time range duration.
+ * Returns the smallest allowed interval for maximum granularity.
+ */
+export function getBestIntervalForDuration(
+  durationMs: number,
+): IntervalOption {
+  const allowed = getAllowedIntervals(durationMs);
+  // Return smallest allowed interval (first in array since INTERVAL_OPTIONS is sorted small to large)
+  return allowed[0] || "30d";
+}
+
 export const timeRangeSearchParams = {
   preset: parseAsStringLiteral(TIME_RANGE_PRESETS).withDefault(DEFAULT_PRESET),
   from: parseAsTimestamp,
@@ -121,13 +194,19 @@ export function getIntervalMs(interval: IntervalOption): number {
 
 /**
  * Format a bucket timestamp for display on charts.
+ * Uses UTC to ensure consistent display across different server timezones.
+ * Floors timestamp to interval boundary for clean display (e.g., 3:38 -> 3:35 for 5m interval).
  */
 export function formatBucketLabel(
   timestamp: number | bigint | string,
   interval: IntervalOption,
 ): string {
   // Ensure timestamp is a number (handles bigint/string from database)
-  const date = new Date(Number(timestamp));
+  // Floor to interval boundary to ensure clean display times
+  const intervalMs = getIntervalMs(interval);
+  const flooredTimestamp =
+    Math.floor(Number(timestamp) / intervalMs) * intervalMs;
+  const date = new Date(flooredTimestamp);
   switch (interval) {
     case "5m":
     case "15m":
@@ -136,18 +215,32 @@ export function formatBucketLabel(
       return date.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
+        timeZone: "UTC",
       });
     case "24h":
       return date.toLocaleDateString([], {
         month: "short",
         day: "numeric",
         hour: "2-digit",
+        timeZone: "UTC",
       });
     case "3d":
-      return date.toLocaleDateString([], { month: "short", day: "numeric" });
+      return date.toLocaleDateString([], {
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC",
+      });
     case "7d":
-      return date.toLocaleDateString([], { month: "short", day: "numeric" });
+      return date.toLocaleDateString([], {
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC",
+      });
     case "30d":
-      return date.toLocaleDateString([], { month: "short", day: "numeric" });
+      return date.toLocaleDateString([], {
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC",
+      });
   }
 }

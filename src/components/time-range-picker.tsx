@@ -20,8 +20,11 @@ import {
 import {
   formatIntervalLabel,
   formatPresetLabel,
+  getBestIntervalForDuration,
+  getPresetDurationMs,
   INTERVAL_OPTIONS,
   type IntervalOption,
+  isIntervalAllowed,
   TIME_RANGE_PRESETS,
   type TimeRangePreset,
   timeRangeSearchParams,
@@ -87,8 +90,18 @@ function TimeRangePickerInner() {
 
   const isCustom = from && to;
 
+  // Calculate current duration for interval restrictions
+  const currentDurationMs = isCustom
+    ? to.getTime() - from.getTime()
+    : getPresetDurationMs(preset);
+
   const handlePresetClick = (newPreset: TimeRangePreset) => {
-    setParams({ preset: newPreset, from: null, to: null });
+    const newDurationMs = getPresetDurationMs(newPreset);
+    // Auto-select best interval if current one isn't allowed
+    const newInterval = isIntervalAllowed(interval, newDurationMs)
+      ? interval
+      : getBestIntervalForDuration(newDurationMs);
+    setParams({ preset: newPreset, from: null, to: null, interval: newInterval });
     setCustomRange(undefined);
     setOpen(false);
   };
@@ -100,10 +113,17 @@ function TimeRangePickerInner() {
 
   const handleCustomApply = () => {
     if (customRange?.from && customRange?.to) {
+      const customDurationMs =
+        customRange.to.getTime() - customRange.from.getTime();
+      // Auto-select best interval if current one isn't allowed
+      const newInterval = isIntervalAllowed(interval, customDurationMs)
+        ? interval
+        : getBestIntervalForDuration(customDurationMs);
       setParams({
         preset: "24h", // Reset preset but it won't matter since custom range takes precedence
         from: customRange.from,
         to: customRange.to,
+        interval: newInterval,
       });
       setOpen(false);
     }
@@ -157,18 +177,40 @@ function TimeRangePickerInner() {
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
             Interval
           </div>
-          <div className="flex gap-1">
-            {INTERVAL_OPTIONS.map((i) => (
-              <Button
-                key={i}
-                variant={interval === i ? "default" : "outline"}
-                size="sm"
-                className="text-xs h-7 px-2"
-                onClick={() => handleIntervalClick(i)}
-              >
-                {formatIntervalLabel(i)}
-              </Button>
-            ))}
+          <div className="flex gap-1 flex-wrap">
+            {INTERVAL_OPTIONS.map((i) => {
+              const allowed = isIntervalAllowed(i, currentDurationMs);
+              const button = (
+                <Button
+                  key={i}
+                  variant={interval === i ? "default" : "outline"}
+                  size="sm"
+                  className={cn(
+                    "text-xs h-7 px-2",
+                    !allowed && "opacity-40 cursor-not-allowed",
+                  )}
+                  onClick={() => allowed && handleIntervalClick(i)}
+                  disabled={!allowed}
+                >
+                  {formatIntervalLabel(i)}
+                </Button>
+              );
+
+              if (!allowed) {
+                return (
+                  <Tooltip key={i}>
+                    <TooltipTrigger asChild>
+                      <span>{button}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Too many data points for this time range
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+
+              return button;
+            })}
           </div>
 
           {/* Divider */}
