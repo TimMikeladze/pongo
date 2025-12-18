@@ -1,5 +1,6 @@
 // src/lib/data.ts
 
+import { unstable_cache } from "next/cache";
 import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { cache } from "react";
 import {
@@ -32,6 +33,16 @@ import type {
 export interface TimeRange {
   from: Date;
   to: Date;
+}
+
+// Cache key helper for time-range based queries
+function timeRangeKey(timeRange: TimeRange): string {
+  return `${timeRange.from.getTime()}-${timeRange.to.getTime()}`;
+}
+
+// Cache key helper for multi-monitor queries
+function monitorIdsKey(monitorIds: string[]): string {
+  return [...monitorIds].sort().join(",");
 }
 
 export interface AlertEventWithMonitor {
@@ -224,31 +235,47 @@ export const getLatestCheckResult = cache(
   },
 );
 
-// Stats helpers
-export async function getUptimePercentage(
-  monitorId: string,
-  timeRange: TimeRange,
-): Promise<number> {
-  const results = await getCheckResults(monitorId, { timeRange });
+// Stats helpers - wrapped with unstable_cache for cross-request caching
+export const getUptimePercentage = cache(
+  async (monitorId: string, timeRange: TimeRange): Promise<number> => {
+    return unstable_cache(
+      async () => {
+        const results = await getCheckResults(monitorId, { timeRange });
 
-  if (results.length === 0) return 100;
-  const upCount = results.filter(
-    (r) => r.status === "up" || r.status === "degraded",
-  ).length;
-  return Math.round((upCount / results.length) * 10000) / 100;
-}
+        if (results.length === 0) return 100;
+        const upCount = results.filter(
+          (r) => r.status === "up" || r.status === "degraded",
+        ).length;
+        return Math.round((upCount / results.length) * 10000) / 100;
+      },
+      [`uptime-${monitorId}-${timeRangeKey(timeRange)}`],
+      {
+        tags: [`monitor-${monitorId}`, "check-results"],
+        revalidate: 60,
+      },
+    )();
+  },
+);
 
-export async function getAverageResponseTime(
-  monitorId: string,
-  timeRange: TimeRange,
-): Promise<number> {
-  const results = await getCheckResults(monitorId, { timeRange });
-  const filtered = results.filter((c) => c.status !== "down");
+export const getAverageResponseTime = cache(
+  async (monitorId: string, timeRange: TimeRange): Promise<number> => {
+    return unstable_cache(
+      async () => {
+        const results = await getCheckResults(monitorId, { timeRange });
+        const filtered = results.filter((c) => c.status !== "down");
 
-  if (filtered.length === 0) return 0;
-  const sum = filtered.reduce((acc, r) => acc + r.responseTimeMs, 0);
-  return Math.round(sum / filtered.length);
-}
+        if (filtered.length === 0) return 0;
+        const sum = filtered.reduce((acc, r) => acc + r.responseTimeMs, 0);
+        return Math.round(sum / filtered.length);
+      },
+      [`avg-response-${monitorId}-${timeRangeKey(timeRange)}`],
+      {
+        tags: [`monitor-${monitorId}`, "check-results"],
+        revalidate: 60,
+      },
+    )();
+  },
+);
 
 export async function getMonitorStats(monitorId: string, timeRange: TimeRange) {
   const [uptime, avgResponseTime] = await Promise.all([
@@ -258,54 +285,86 @@ export async function getMonitorStats(monitorId: string, timeRange: TimeRange) {
   return { uptime, avgResponseTime };
 }
 
-export async function getErrorRate(
-  monitorId: string,
-  timeRange: TimeRange,
-): Promise<number> {
-  const results = await getCheckResults(monitorId, { timeRange });
+export const getErrorRate = cache(
+  async (monitorId: string, timeRange: TimeRange): Promise<number> => {
+    return unstable_cache(
+      async () => {
+        const results = await getCheckResults(monitorId, { timeRange });
 
-  if (results.length === 0) return 0;
-  const errorCount = results.filter((r) => r.status === "down").length;
-  return Math.round((errorCount / results.length) * 10000) / 100;
-}
+        if (results.length === 0) return 0;
+        const errorCount = results.filter((r) => r.status === "down").length;
+        return Math.round((errorCount / results.length) * 10000) / 100;
+      },
+      [`error-rate-${monitorId}-${timeRangeKey(timeRange)}`],
+      {
+        tags: [`monitor-${monitorId}`, "check-results"],
+        revalidate: 60,
+      },
+    )();
+  },
+);
 
-export async function getP95ResponseTime(
-  monitorId: string,
-  timeRange: TimeRange,
-): Promise<number> {
-  const results = await getCheckResults(monitorId, { timeRange });
-  const responseTimes = results
-    .filter((c) => c.status !== "down")
-    .map((r) => r.responseTimeMs)
-    .sort((a, b) => a - b);
+export const getP95ResponseTime = cache(
+  async (monitorId: string, timeRange: TimeRange): Promise<number> => {
+    return unstable_cache(
+      async () => {
+        const results = await getCheckResults(monitorId, { timeRange });
+        const responseTimes = results
+          .filter((c) => c.status !== "down")
+          .map((r) => r.responseTimeMs)
+          .sort((a, b) => a - b);
 
-  if (responseTimes.length === 0) return 0;
-  const index = Math.floor(responseTimes.length * 0.95);
-  return responseTimes[index] || responseTimes[responseTimes.length - 1];
-}
+        if (responseTimes.length === 0) return 0;
+        const index = Math.floor(responseTimes.length * 0.95);
+        return responseTimes[index] || responseTimes[responseTimes.length - 1];
+      },
+      [`p95-${monitorId}-${timeRangeKey(timeRange)}`],
+      {
+        tags: [`monitor-${monitorId}`, "check-results"],
+        revalidate: 60,
+      },
+    )();
+  },
+);
 
-export async function getP99ResponseTime(
-  monitorId: string,
-  timeRange: TimeRange,
-): Promise<number> {
-  const results = await getCheckResults(monitorId, { timeRange });
-  const responseTimes = results
-    .filter((c) => c.status !== "down")
-    .map((r) => r.responseTimeMs)
-    .sort((a, b) => a - b);
+export const getP99ResponseTime = cache(
+  async (monitorId: string, timeRange: TimeRange): Promise<number> => {
+    return unstable_cache(
+      async () => {
+        const results = await getCheckResults(monitorId, { timeRange });
+        const responseTimes = results
+          .filter((c) => c.status !== "down")
+          .map((r) => r.responseTimeMs)
+          .sort((a, b) => a - b);
 
-  if (responseTimes.length === 0) return 0;
-  const index = Math.floor(responseTimes.length * 0.99);
-  return responseTimes[index] || responseTimes[responseTimes.length - 1];
-}
+        if (responseTimes.length === 0) return 0;
+        const index = Math.floor(responseTimes.length * 0.99);
+        return responseTimes[index] || responseTimes[responseTimes.length - 1];
+      },
+      [`p99-${monitorId}-${timeRangeKey(timeRange)}`],
+      {
+        tags: [`monitor-${monitorId}`, "check-results"],
+        revalidate: 60,
+      },
+    )();
+  },
+);
 
-export async function getTotalChecks(
-  monitorId: string,
-  timeRange: TimeRange,
-): Promise<number> {
-  const results = await getCheckResults(monitorId, { timeRange });
-  return results.length;
-}
+export const getTotalChecks = cache(
+  async (monitorId: string, timeRange: TimeRange): Promise<number> => {
+    return unstable_cache(
+      async () => {
+        const results = await getCheckResults(monitorId, { timeRange });
+        return results.length;
+      },
+      [`total-checks-${monitorId}-${timeRangeKey(timeRange)}`],
+      {
+        tags: [`monitor-${monitorId}`, "check-results"],
+        revalidate: 60,
+      },
+    )();
+  },
+);
 
 export interface StatusBucket {
   label: string;
@@ -315,105 +374,130 @@ export interface StatusBucket {
   timestamp: number;
 }
 
-export async function getStatusBuckets(
-  monitorId: string,
-  timeRange: TimeRange,
-  interval: IntervalOption,
-): Promise<StatusBucket[]> {
-  const results = await getCheckResults(monitorId, { timeRange });
-  const intervalMs = getIntervalMs(interval);
-  const fromMs = timeRange.from.getTime();
-  const toMs = timeRange.to.getTime();
+export const getStatusBuckets = cache(
+  async (
+    monitorId: string,
+    timeRange: TimeRange,
+    interval: IntervalOption,
+  ): Promise<StatusBucket[]> => {
+    return unstable_cache(
+      async () => {
+        const results = await getCheckResults(monitorId, { timeRange });
+        const intervalMs = getIntervalMs(interval);
+        const fromMs = timeRange.from.getTime();
+        const toMs = timeRange.to.getTime();
 
-  // Calculate number of buckets based on time range and interval
-  const bucketCount = Math.ceil((toMs - fromMs) / intervalMs);
+        // Calculate number of buckets based on time range and interval
+        const bucketCount = Math.ceil((toMs - fromMs) / intervalMs);
 
-  // Create buckets spanning the full time range
-  const buckets: Map<number, CheckResult[]> = new Map();
-  const bucketTimestamps: number[] = [];
+        // Create buckets spanning the full time range
+        const buckets: Map<number, CheckResult[]> = new Map();
+        const bucketTimestamps: number[] = [];
 
-  for (let i = 0; i < bucketCount; i++) {
-    const bucketStart = fromMs + i * intervalMs;
-    buckets.set(bucketStart, []);
-    bucketTimestamps.push(bucketStart);
-  }
+        for (let i = 0; i < bucketCount; i++) {
+          const bucketStart = fromMs + i * intervalMs;
+          buckets.set(bucketStart, []);
+          bucketTimestamps.push(bucketStart);
+        }
 
-  // Assign results to buckets based on which bucket they fall into
-  for (const r of results) {
-    const checkTime = new Date(r.checkedAt).getTime();
-    const bucketIndex = Math.min(
-      Math.floor((checkTime - fromMs) / intervalMs),
-      bucketCount - 1,
-    );
-    if (bucketIndex >= 0) {
-      const bucketStart = bucketTimestamps[bucketIndex];
-      const bucket = buckets.get(bucketStart);
-      if (bucket) {
-        bucket.push(r);
-      }
-    }
-  }
+        // Assign results to buckets based on which bucket they fall into
+        for (const r of results) {
+          const checkTime = new Date(r.checkedAt).getTime();
+          const bucketIndex = Math.min(
+            Math.floor((checkTime - fromMs) / intervalMs),
+            bucketCount - 1,
+          );
+          if (bucketIndex >= 0) {
+            const bucketStart = bucketTimestamps[bucketIndex];
+            const bucket = buckets.get(bucketStart);
+            if (bucket) {
+              bucket.push(r);
+            }
+          }
+        }
 
-  // Calculate status for each bucket
-  return bucketTimestamps.map((timestamp) => {
-    const bucketChecks = buckets.get(timestamp) || [];
+        // Calculate status for each bucket
+        return bucketTimestamps.map((timestamp) => {
+          const bucketChecks = buckets.get(timestamp) || [];
 
-    if (bucketChecks.length === 0) {
-      return {
-        label: formatBucketLabel(timestamp, interval),
-        status: "pending" as const,
-        uptime: 100,
-        checks: 0,
-        timestamp,
-      };
-    }
+          if (bucketChecks.length === 0) {
+            return {
+              label: formatBucketLabel(timestamp, interval),
+              status: "pending" as const,
+              uptime: 100,
+              checks: 0,
+              timestamp,
+            };
+          }
 
-    const upCount = bucketChecks.filter((c) => c.status === "up").length;
-    const degradedCount = bucketChecks.filter(
-      (c) => c.status === "degraded",
-    ).length;
-    const downCount = bucketChecks.filter((c) => c.status === "down").length;
-    const uptime =
-      Math.round(((upCount + degradedCount) / bucketChecks.length) * 10000) /
-      100;
+          const upCount = bucketChecks.filter((c) => c.status === "up").length;
+          const degradedCount = bucketChecks.filter(
+            (c) => c.status === "degraded",
+          ).length;
+          const downCount = bucketChecks.filter(
+            (c) => c.status === "down",
+          ).length;
+          const uptime =
+            Math.round(
+              ((upCount + degradedCount) / bucketChecks.length) * 10000,
+            ) / 100;
 
-    let status: MonitorStatus = "up";
-    if (downCount > 0) status = "down";
-    else if (degradedCount > 0) status = "degraded";
+          let status: MonitorStatus = "up";
+          if (downCount > 0) status = "down";
+          else if (degradedCount > 0) status = "degraded";
 
-    return {
-      label: formatBucketLabel(timestamp, interval),
-      status,
-      uptime,
-      checks: bucketChecks.length,
-      timestamp,
-    };
-  });
-}
+          return {
+            label: formatBucketLabel(timestamp, interval),
+            status,
+            uptime,
+            checks: bucketChecks.length,
+            timestamp,
+          };
+        });
+      },
+      [`status-buckets-${monitorId}-${timeRangeKey(timeRange)}-${interval}`],
+      {
+        tags: [`monitor-${monitorId}`, "check-results"],
+        revalidate: 60,
+      },
+    )();
+  },
+);
 
-export async function getSLAStatus(dashboardId: string, timeRange: TimeRange) {
-  const dashboard = await getDashboard(dashboardId);
-  if (!dashboard) return null;
+export const getSLAStatus = cache(
+  async (dashboardId: string, timeRange: TimeRange) => {
+    return unstable_cache(
+      async () => {
+        const dashboard = await getDashboard(dashboardId);
+        if (!dashboard) return null;
 
-  const monitors = await getMonitors();
-  const dashboardMonitors = monitors.filter((m) =>
-    dashboard.monitorIds.includes(m.id),
-  );
-  if (dashboardMonitors.length === 0) return null;
+        const monitors = await getMonitors();
+        const dashboardMonitors = monitors.filter((m) =>
+          dashboard.monitorIds.includes(m.id),
+        );
+        if (dashboardMonitors.length === 0) return null;
 
-  const uptimes = await Promise.all(
-    dashboardMonitors.map((m) => getUptimePercentage(m.id, timeRange)),
-  );
-  const totalUptime = uptimes.reduce((a, b) => a + b, 0) / uptimes.length;
-  const target = dashboard.slaTarget || 99.9;
+        const uptimes = await Promise.all(
+          dashboardMonitors.map((m) => getUptimePercentage(m.id, timeRange)),
+        );
+        const totalUptime = uptimes.reduce((a, b) => a + b, 0) / uptimes.length;
+        const target = dashboard.slaTarget || 99.9;
 
-  return {
-    target,
-    actual: Math.round(totalUptime * 100) / 100,
-    met: totalUptime >= target,
-    remaining: Math.max(0, target - totalUptime),
-  };
-}
+        return {
+          target,
+          actual: Math.round(totalUptime * 100) / 100,
+          met: totalUptime >= target,
+          remaining: Math.max(0, target - totalUptime),
+        };
+      },
+      [`sla-status-${dashboardId}-${timeRangeKey(timeRange)}`],
+      {
+        tags: [`dashboard-${dashboardId}`, "check-results"],
+        revalidate: 60,
+      },
+    )();
+  },
+);
 
 // Maintenance windows - empty for now (to be added with orchestration)
 export async function getMaintenanceWindows(
@@ -847,253 +931,330 @@ export async function getStatusDistributionData(
 }
 
 // Aggregated data for multiple monitors (for overview page)
-export async function getAggregatedResponseTimeChartData(
-  monitorIds: string[],
-  timeRange: TimeRange,
-  interval: IntervalOption,
-): Promise<ResponseTimeDataPoint[]> {
-  if (monitorIds.length === 0) return [];
+// Wrapped with unstable_cache for cross-request caching
+export const getAggregatedResponseTimeChartData = cache(
+  async (
+    monitorIds: string[],
+    timeRange: TimeRange,
+    interval: IntervalOption,
+  ): Promise<ResponseTimeDataPoint[]> => {
+    if (monitorIds.length === 0) return [];
 
-  const intervalMs = getIntervalMs(interval);
-  const fromMs = timeRange.from.getTime();
-  const toMs = timeRange.to.getTime();
-  const idList = monitorIds.map((id) => `'${id}'`).join(",");
-  const ts = dbHelpers.timestampToMs("checked_at");
+    return unstable_cache(
+      async () => {
+        const intervalMs = getIntervalMs(interval);
+        const fromMs = timeRange.from.getTime();
+        const toMs = timeRange.to.getTime();
+        const idList = monitorIds.map((id) => `'${id}'`).join(",");
+        const ts = dbHelpers.timestampToMs("checked_at");
 
-  const query = `
-    SELECT
-      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
-      ${dbHelpers.round("AVG(response_time_ms)")} as avg_response_time
-    FROM pongo_check_results
-    WHERE monitor_id IN (${idList})
-      AND ${ts} >= ${fromMs}
-      AND ${ts} <= ${toMs}
-      AND status != 'down'
-    GROUP BY bucket
-    ORDER BY bucket ASC
-  `;
+        const query = `
+          SELECT
+            (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
+            ${dbHelpers.round("AVG(response_time_ms)")} as avg_response_time
+          FROM pongo_check_results
+          WHERE monitor_id IN (${idList})
+            AND ${ts} >= ${fromMs}
+            AND ${ts} <= ${toMs}
+            AND status != 'down'
+          GROUP BY bucket
+          ORDER BY bucket ASC
+        `;
 
-  const rows = await runAggregationQuery<{
-    bucket: number;
-    avg_response_time: number;
-  }>(query);
+        const rows = await runAggregationQuery<{
+          bucket: number;
+          avg_response_time: number;
+        }>(query);
 
-  return rows.map((row) => ({
-    time: formatBucketLabel(row.bucket, interval),
-    responseTime: Math.round(row.avg_response_time),
-  }));
-}
+        return rows.map((row) => ({
+          time: formatBucketLabel(row.bucket, interval),
+          responseTime: Math.round(row.avg_response_time),
+        }));
+      },
+      [
+        `agg-response-time-${monitorIdsKey(monitorIds)}-${timeRangeKey(timeRange)}-${interval}`,
+      ],
+      {
+        tags: ["check-results"],
+        revalidate: 60,
+      },
+    )();
+  },
+);
 
-export async function getAggregatedErrorRateChartData(
-  monitorIds: string[],
-  timeRange: TimeRange,
-  interval: IntervalOption,
-): Promise<ErrorRateDataPoint[]> {
-  if (monitorIds.length === 0) return [];
+export const getAggregatedErrorRateChartData = cache(
+  async (
+    monitorIds: string[],
+    timeRange: TimeRange,
+    interval: IntervalOption,
+  ): Promise<ErrorRateDataPoint[]> => {
+    if (monitorIds.length === 0) return [];
 
-  const intervalMs = getIntervalMs(interval);
-  const fromMs = timeRange.from.getTime();
-  const toMs = timeRange.to.getTime();
-  const idList = monitorIds.map((id) => `'${id}'`).join(",");
-  const ts = dbHelpers.timestampToMs("checked_at");
+    return unstable_cache(
+      async () => {
+        const intervalMs = getIntervalMs(interval);
+        const fromMs = timeRange.from.getTime();
+        const toMs = timeRange.to.getTime();
+        const idList = monitorIds.map((id) => `'${id}'`).join(",");
+        const ts = dbHelpers.timestampToMs("checked_at");
 
-  const query = `
-    SELECT
-      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
-      SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as errors,
-      COUNT(*) as total
-    FROM pongo_check_results
-    WHERE monitor_id IN (${idList})
-      AND ${ts} >= ${fromMs}
-      AND ${ts} <= ${toMs}
-    GROUP BY bucket
-    ORDER BY bucket ASC
-  `;
+        const query = `
+          SELECT
+            (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
+            SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as errors,
+            COUNT(*) as total
+          FROM pongo_check_results
+          WHERE monitor_id IN (${idList})
+            AND ${ts} >= ${fromMs}
+            AND ${ts} <= ${toMs}
+          GROUP BY bucket
+          ORDER BY bucket ASC
+        `;
 
-  const rows = await runAggregationQuery<{
-    bucket: number;
-    errors: number;
-    total: number;
-  }>(query);
+        const rows = await runAggregationQuery<{
+          bucket: number;
+          errors: number;
+          total: number;
+        }>(query);
 
-  return rows.map((row) => ({
-    time: formatBucketLabel(row.bucket, interval),
-    errorRate:
-      Number(row.total) > 0
-        ? Math.round((Number(row.errors) / Number(row.total)) * 100)
-        : 0,
-    errors: Number(row.errors),
-  }));
-}
+        return rows.map((row) => ({
+          time: formatBucketLabel(row.bucket, interval),
+          errorRate:
+            Number(row.total) > 0
+              ? Math.round((Number(row.errors) / Number(row.total)) * 100)
+              : 0,
+          errors: Number(row.errors),
+        }));
+      },
+      [
+        `agg-error-rate-${monitorIdsKey(monitorIds)}-${timeRangeKey(timeRange)}-${interval}`,
+      ],
+      {
+        tags: ["check-results"],
+        revalidate: 60,
+      },
+    )();
+  },
+);
 
-export async function getAggregatedUptimeChartData(
-  monitorIds: string[],
-  timeRange: TimeRange,
-  interval: IntervalOption,
-): Promise<UptimeDataPoint[]> {
-  if (monitorIds.length === 0) return [];
+export const getAggregatedUptimeChartData = cache(
+  async (
+    monitorIds: string[],
+    timeRange: TimeRange,
+    interval: IntervalOption,
+  ): Promise<UptimeDataPoint[]> => {
+    if (monitorIds.length === 0) return [];
 
-  const intervalMs = getIntervalMs(interval);
-  const fromMs = timeRange.from.getTime();
-  const toMs = timeRange.to.getTime();
-  const idList = monitorIds.map((id) => `'${id}'`).join(",");
-  const ts = dbHelpers.timestampToMs("checked_at");
+    return unstable_cache(
+      async () => {
+        const intervalMs = getIntervalMs(interval);
+        const fromMs = timeRange.from.getTime();
+        const toMs = timeRange.to.getTime();
+        const idList = monitorIds.map((id) => `'${id}'`).join(",");
+        const ts = dbHelpers.timestampToMs("checked_at");
 
-  const query = `
-    SELECT
-      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
-      SUM(CASE WHEN status IN ('up', 'degraded') THEN 1 ELSE 0 END) as up_count,
-      COUNT(*) as total
-    FROM pongo_check_results
-    WHERE monitor_id IN (${idList})
-      AND ${ts} >= ${fromMs}
-      AND ${ts} <= ${toMs}
-    GROUP BY bucket
-    ORDER BY bucket ASC
-  `;
+        const query = `
+          SELECT
+            (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
+            SUM(CASE WHEN status IN ('up', 'degraded') THEN 1 ELSE 0 END) as up_count,
+            COUNT(*) as total
+          FROM pongo_check_results
+          WHERE monitor_id IN (${idList})
+            AND ${ts} >= ${fromMs}
+            AND ${ts} <= ${toMs}
+          GROUP BY bucket
+          ORDER BY bucket ASC
+        `;
 
-  const rows = await runAggregationQuery<{
-    bucket: number;
-    up_count: number;
-    total: number;
-  }>(query);
+        const rows = await runAggregationQuery<{
+          bucket: number;
+          up_count: number;
+          total: number;
+        }>(query);
 
-  return rows.map((row) => ({
-    time: formatBucketLabel(row.bucket, interval),
-    uptime: Math.round((Number(row.up_count) / Number(row.total)) * 100),
-  }));
-}
+        return rows.map((row) => ({
+          time: formatBucketLabel(row.bucket, interval),
+          uptime: Math.round((Number(row.up_count) / Number(row.total)) * 100),
+        }));
+      },
+      [
+        `agg-uptime-${monitorIdsKey(monitorIds)}-${timeRangeKey(timeRange)}-${interval}`,
+      ],
+      {
+        tags: ["check-results"],
+        revalidate: 60,
+      },
+    )();
+  },
+);
 
-export async function getAggregatedLatencyPercentilesChartData(
-  monitorIds: string[],
-  timeRange: TimeRange,
-  interval: IntervalOption,
-): Promise<LatencyPercentilesDataPoint[]> {
-  if (monitorIds.length === 0) return [];
+export const getAggregatedLatencyPercentilesChartData = cache(
+  async (
+    monitorIds: string[],
+    timeRange: TimeRange,
+    interval: IntervalOption,
+  ): Promise<LatencyPercentilesDataPoint[]> => {
+    if (monitorIds.length === 0) return [];
 
-  const intervalMs = getIntervalMs(interval);
-  const fromMs = timeRange.from.getTime();
-  const toMs = timeRange.to.getTime();
-  const idList = monitorIds.map((id) => `'${id}'`).join(",");
-  const ts = dbHelpers.timestampToMs("checked_at");
+    return unstable_cache(
+      async () => {
+        const intervalMs = getIntervalMs(interval);
+        const fromMs = timeRange.from.getTime();
+        const toMs = timeRange.to.getTime();
+        const idList = monitorIds.map((id) => `'${id}'`).join(",");
+        const ts = dbHelpers.timestampToMs("checked_at");
 
-  const query = `
-    SELECT
-      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
-      response_time_ms
-    FROM pongo_check_results
-    WHERE monitor_id IN (${idList})
-      AND ${ts} >= ${fromMs}
-      AND ${ts} <= ${toMs}
-      AND status != 'down'
-    ORDER BY bucket ASC, response_time_ms ASC
-  `;
+        const query = `
+          SELECT
+            (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
+            response_time_ms
+          FROM pongo_check_results
+          WHERE monitor_id IN (${idList})
+            AND ${ts} >= ${fromMs}
+            AND ${ts} <= ${toMs}
+            AND status != 'down'
+          ORDER BY bucket ASC, response_time_ms ASC
+        `;
 
-  const rows = await runAggregationQuery<{
-    bucket: number;
-    response_time_ms: number;
-  }>(query);
+        const rows = await runAggregationQuery<{
+          bucket: number;
+          response_time_ms: number;
+        }>(query);
 
-  const buckets: Map<number, number[]> = new Map();
-  for (const row of rows) {
-    const existing = buckets.get(row.bucket);
-    if (existing) {
-      existing.push(row.response_time_ms);
-    } else {
-      buckets.set(row.bucket, [row.response_time_ms]);
-    }
-  }
+        const buckets: Map<number, number[]> = new Map();
+        for (const row of rows) {
+          const existing = buckets.get(row.bucket);
+          if (existing) {
+            existing.push(row.response_time_ms);
+          } else {
+            buckets.set(row.bucket, [row.response_time_ms]);
+          }
+        }
 
-  return Array.from(buckets.entries())
-    .sort((a, b) => a[0] - b[0])
-    .map(([bucket, times]) => {
-      const sorted = times.sort((a, b) => a - b);
-      const p50 = sorted[Math.floor(sorted.length * 0.5)] || 0;
-      const p95 = sorted[Math.floor(sorted.length * 0.95)] || 0;
-      const p99 =
-        sorted[Math.floor(sorted.length * 0.99)] ||
-        sorted[sorted.length - 1] ||
-        0;
-      return {
-        time: formatBucketLabel(bucket, interval),
-        p50,
-        p95,
-        p99,
-      };
-    });
-}
+        return Array.from(buckets.entries())
+          .sort((a, b) => a[0] - b[0])
+          .map(([bucket, times]) => {
+            const sorted = times.sort((a, b) => a - b);
+            const p50 = sorted[Math.floor(sorted.length * 0.5)] || 0;
+            const p95 = sorted[Math.floor(sorted.length * 0.95)] || 0;
+            const p99 =
+              sorted[Math.floor(sorted.length * 0.99)] ||
+              sorted[sorted.length - 1] ||
+              0;
+            return {
+              time: formatBucketLabel(bucket, interval),
+              p50,
+              p95,
+              p99,
+            };
+          });
+      },
+      [
+        `agg-latency-percentiles-${monitorIdsKey(monitorIds)}-${timeRangeKey(timeRange)}-${interval}`,
+      ],
+      {
+        tags: ["check-results"],
+        revalidate: 60,
+      },
+    )();
+  },
+);
 
-export async function getAggregatedThroughputChartData(
-  monitorIds: string[],
-  timeRange: TimeRange,
-  interval: IntervalOption,
-): Promise<ThroughputDataPoint[]> {
-  if (monitorIds.length === 0) return [];
+export const getAggregatedThroughputChartData = cache(
+  async (
+    monitorIds: string[],
+    timeRange: TimeRange,
+    interval: IntervalOption,
+  ): Promise<ThroughputDataPoint[]> => {
+    if (monitorIds.length === 0) return [];
 
-  const intervalMs = getIntervalMs(interval);
-  const fromMs = timeRange.from.getTime();
-  const toMs = timeRange.to.getTime();
-  const idList = monitorIds.map((id) => `'${id}'`).join(",");
-  const ts = dbHelpers.timestampToMs("checked_at");
+    return unstable_cache(
+      async () => {
+        const intervalMs = getIntervalMs(interval);
+        const fromMs = timeRange.from.getTime();
+        const toMs = timeRange.to.getTime();
+        const idList = monitorIds.map((id) => `'${id}'`).join(",");
+        const ts = dbHelpers.timestampToMs("checked_at");
 
-  const query = `
-    SELECT
-      (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
-      COUNT(*) as checks
-    FROM pongo_check_results
-    WHERE monitor_id IN (${idList})
-      AND ${ts} >= ${fromMs}
-      AND ${ts} <= ${toMs}
-    GROUP BY bucket
-    ORDER BY bucket ASC
-  `;
+        const query = `
+          SELECT
+            (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
+            COUNT(*) as checks
+          FROM pongo_check_results
+          WHERE monitor_id IN (${idList})
+            AND ${ts} >= ${fromMs}
+            AND ${ts} <= ${toMs}
+          GROUP BY bucket
+          ORDER BY bucket ASC
+        `;
 
-  const rows = await runAggregationQuery<{
-    bucket: number;
-    checks: number;
-  }>(query);
+        const rows = await runAggregationQuery<{
+          bucket: number;
+          checks: number;
+        }>(query);
 
-  return rows.map((row) => ({
-    time: formatBucketLabel(row.bucket, interval),
-    checks: Number(row.checks),
-  }));
-}
+        return rows.map((row) => ({
+          time: formatBucketLabel(row.bucket, interval),
+          checks: Number(row.checks),
+        }));
+      },
+      [
+        `agg-throughput-${monitorIdsKey(monitorIds)}-${timeRangeKey(timeRange)}-${interval}`,
+      ],
+      {
+        tags: ["check-results"],
+        revalidate: 60,
+      },
+    )();
+  },
+);
 
-export async function getAggregatedStatusDistributionData(
-  monitorIds: string[],
-  timeRange: TimeRange,
-): Promise<StatusDistributionData> {
-  if (monitorIds.length === 0) return { up: 0, degraded: 0, down: 0 };
+export const getAggregatedStatusDistributionData = cache(
+  async (
+    monitorIds: string[],
+    timeRange: TimeRange,
+  ): Promise<StatusDistributionData> => {
+    if (monitorIds.length === 0) return { up: 0, degraded: 0, down: 0 };
 
-  const fromMs = timeRange.from.getTime();
-  const toMs = timeRange.to.getTime();
-  const idList = monitorIds.map((id) => `'${id}'`).join(",");
-  const ts = dbHelpers.timestampToMs("checked_at");
+    return unstable_cache(
+      async () => {
+        const fromMs = timeRange.from.getTime();
+        const toMs = timeRange.to.getTime();
+        const idList = monitorIds.map((id) => `'${id}'`).join(",");
+        const ts = dbHelpers.timestampToMs("checked_at");
 
-  const query = `
-    SELECT
-      SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) as up_count,
-      SUM(CASE WHEN status = 'degraded' THEN 1 ELSE 0 END) as degraded_count,
-      SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as down_count
-    FROM pongo_check_results
-    WHERE monitor_id IN (${idList})
-      AND ${ts} >= ${fromMs}
-      AND ${ts} <= ${toMs}
-  `;
+        const query = `
+          SELECT
+            SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) as up_count,
+            SUM(CASE WHEN status = 'degraded' THEN 1 ELSE 0 END) as degraded_count,
+            SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as down_count
+          FROM pongo_check_results
+          WHERE monitor_id IN (${idList})
+            AND ${ts} >= ${fromMs}
+            AND ${ts} <= ${toMs}
+        `;
 
-  const rows = await runAggregationQuery<{
-    up_count: number;
-    degraded_count: number;
-    down_count: number;
-  }>(query);
+        const rows = await runAggregationQuery<{
+          up_count: number;
+          degraded_count: number;
+          down_count: number;
+        }>(query);
 
-  const row = rows[0] || { up_count: 0, degraded_count: 0, down_count: 0 };
-  return {
-    up: Number(row.up_count) || 0,
-    degraded: Number(row.degraded_count) || 0,
-    down: Number(row.down_count) || 0,
-  };
-}
+        const row = rows[0] || { up_count: 0, degraded_count: 0, down_count: 0 };
+        return {
+          up: Number(row.up_count) || 0,
+          degraded: Number(row.degraded_count) || 0,
+          down: Number(row.down_count) || 0,
+        };
+      },
+      [`agg-status-dist-${monitorIdsKey(monitorIds)}-${timeRangeKey(timeRange)}`],
+      {
+        tags: ["check-results"],
+        revalidate: 60,
+      },
+    )();
+  },
+);
 
 export async function getFeedItems(
   dashboardId: string,

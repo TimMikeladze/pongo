@@ -2,6 +2,7 @@
 
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getDashboard } from "@/lib/data";
 
 export async function generateMetadata({
@@ -22,6 +23,7 @@ export async function generateMetadata({
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DashboardView } from "@/components/dashboard-view";
+import { DashboardDetailSkeleton } from "@/components/skeletons";
 import { TriggerAllButton } from "@/components/trigger-all-button";
 import { Button } from "@/components/ui/button";
 import { getTimeRange, timeRangeCache } from "@/lib/time-range";
@@ -75,11 +77,14 @@ export default async function DashboardDetailPage({
         />
       </div>
 
-      <DashboardView
-        dashboardId={dashboard.id}
-        timeRange={timeRange}
-        interval={interval}
-      />
+      {/* Dashboard content - streams when ready */}
+      <Suspense fallback={<DashboardDetailSkeleton />}>
+        <DashboardView
+          dashboardId={dashboard.id}
+          timeRange={timeRange}
+          interval={interval}
+        />
+      </Suspense>
     </div>
   );
 }

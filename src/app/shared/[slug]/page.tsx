@@ -1,5 +1,21 @@
 import type { Metadata } from "next";
-import { getDashboardBySlug } from "@/lib/data";
+import { getDashboardBySlug, getDashboards } from "@/lib/data";
+
+// ISR: Revalidate public status pages every 30 seconds
+export const revalidate = 30;
+
+// Allow new dashboard slugs to work without rebuild
+export const dynamicParams = true;
+
+/**
+ * Pre-generate public dashboard pages at build time
+ */
+export async function generateStaticParams() {
+  const dashboards = await getDashboards();
+  return dashboards
+    .filter((d) => d.isPublic)
+    .map((d) => ({ slug: d.slug }));
+}
 
 export async function generateMetadata({
   params,

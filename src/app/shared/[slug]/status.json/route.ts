@@ -7,7 +7,8 @@ import {
 } from "@/lib/data";
 import type { IncidentSeverity, MonitorStatus } from "@/lib/types";
 
-export const dynamic = "force-dynamic";
+// ISR: Revalidate every 30 seconds
+export const revalidate = 30;
 
 type StatusIndicator = "none" | "minor" | "major" | "critical";
 
@@ -137,5 +138,9 @@ export async function GET(request: Request, { params }: Props) {
     },
   };
 
-  return NextResponse.json(response);
+  return NextResponse.json(response, {
+    headers: {
+      "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+    },
+  });
 }

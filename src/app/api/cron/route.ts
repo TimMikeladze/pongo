@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { checkResults, getDb } from "@/db";
 import { type MonitorConfig, parseDuration } from "@/lib/config-types";
 import { loadChannels } from "@/lib/loader";
+import { revalidateCheckResults } from "@/lib/revalidate";
 import monitorConfigs from "@/pongo/monitors";
 import { evaluateAlerts } from "@/scheduler/alerts/evaluator";
 import { logResult } from "@/scheduler/logger";
@@ -176,6 +177,11 @@ export async function GET(request: Request) {
       } else if (!("skipped" in result)) {
         results.push(result);
       }
+    }
+
+    // Invalidate caches if any monitors ran (new check results written)
+    if (results.length > 0) {
+      await revalidateCheckResults();
     }
 
     const duration = Date.now() - startTime;

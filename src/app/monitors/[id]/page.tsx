@@ -2,7 +2,8 @@
 
 import { formatDistanceToNow } from "date-fns";
 import type { Metadata } from "next";
-import { getMonitor } from "@/lib/data";
+import { Suspense } from "react";
+import { getLatestCheckResult, getMonitor } from "@/lib/data";
 
 export async function generateMetadata({
   params,
@@ -34,24 +35,33 @@ import { IncidentCard } from "@/components/incident-card";
 import { RegionBreakdown } from "@/components/region-breakdown";
 import { ResponseTimeChart } from "@/components/response-time-chart";
 import { SectionWithTooltip } from "@/components/section-with-tooltip";
+import {
+  ChartGridSkeleton,
+  ListSkeleton,
+  RecentChecksSkeleton,
+  RegionBreakdownSkeleton,
+  StatsGridSkeleton,
+  UptimeBarsSkeleton,
+} from "@/components/skeletons";
 import { StatsCard } from "@/components/stats-card";
 import { StatusBadge } from "@/components/status-badge";
 import { TriggerButton } from "@/components/trigger-button";
 import { Button } from "@/components/ui/button";
 import { UptimeBars } from "@/components/uptime-bars";
+import type { TimeRange as TRType } from "@/lib/data";
 import {
   getAnnouncements,
   getCheckResults,
   getDashboards,
   getErrorRateChartData,
   getIncidents,
-  getLatestCheckResult,
   getMonitorStats,
   getMonitorStatsByRegion,
   getMonitors,
   getResponseTimeChartData,
   getStatusTimelineData,
 } from "@/lib/data";
+import type { IntervalOption } from "@/lib/time-range";
 import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 import { cn } from "@/lib/utils";
 
@@ -75,66 +85,9 @@ export default async function MonitorDetailPage({
     await timeRangeCache.parse(searchParams);
   const timeRange = getTimeRange({ preset, from, to });
 
-  const [
-    latestResult,
-    results,
-    stats,
-    regionStats,
-    dashboards,
-    allMonitors,
-    responseTimeData,
-    errorRateData,
-    statusTimelineData,
-  ] = await Promise.all([
-    getLatestCheckResult(id),
-    getCheckResults(id, { timeRange, limit: 10 }), // Only fetch what we need for recent checks list
-    getMonitorStats(id, timeRange),
-    getMonitorStatsByRegion(id, timeRange),
-    getDashboards(),
-    getMonitors(),
-    getResponseTimeChartData(id, timeRange, interval),
-    getErrorRateChartData(id, timeRange, interval),
-    getStatusTimelineData(id, timeRange, interval, 50),
-  ]);
-
+  // Fetch only what's needed for immediate header render
+  const latestResult = await getLatestCheckResult(id);
   const status = latestResult?.status ?? "pending";
-
-  // Get dashboards that include this monitor
-  const relevantDashboards = dashboards.filter((d) =>
-    d.monitorIds.includes(id),
-  );
-
-  // Get announcements from relevant dashboards
-  const allAnnouncements = await Promise.all(
-    relevantDashboards.map((d) => getAnnouncements(d.id)),
-  );
-  const monitorAnnouncements = allAnnouncements.flat().slice(0, 5);
-
-  // Get incidents that affect this monitor
-  const allIncidents = await Promise.all(
-    relevantDashboards.map((d) => getIncidents(d.id)),
-  );
-  const monitorIncidents = allIncidents
-    .flat()
-    .filter((incident) => incident.affectedMonitorIds.includes(id))
-    .slice(0, 5);
-
-  const announcementTypeIcons = {
-    info: Info,
-    warning: AlertTriangle,
-    success: CheckCircle,
-    maintenance: Wrench,
-  };
-
-  const announcementTypeStyles = {
-    info: "border-blue-500/30 bg-blue-500/5 text-blue-400",
-    warning: "border-amber-500/30 bg-amber-500/5 text-amber-400",
-    success: "border-emerald-500/30 bg-emerald-500/5 text-emerald-400",
-    maintenance: "border-purple-500/30 bg-purple-500/5 text-purple-400",
-  };
-
-  // Calculate total checks from timeline data for stats
-  const totalChecks = statusTimelineData.reduce((acc, d) => acc + d.total, 0);
 
   return (
     <div>
@@ -166,38 +119,20 @@ export default async function MonitorDetailPage({
       </div>
 
       <div className="space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatsCard
-            title="uptime"
-            value={`${stats.uptime}%`}
-            trend={
-              stats.uptime >= 99.9
-                ? "up"
-                : stats.uptime >= 99
-                  ? "neutral"
-                  : "down"
-            }
+        {/* Stats - streams when ready */}
+        <Suspense fallback={<StatsGridSkeleton />}>
+          <MonitorStats
+            monitorId={id}
+            timeRange={timeRange}
+            interval={interval}
+            latestResult={latestResult}
           />
-          <StatsCard title="avg latency" value={`${stats.avgResponseTime}ms`} />
-          <StatsCard title="checks" value={`${totalChecks}`} />
-          <StatsCard
-            title="last check"
-            value={
-              latestResult
-                ? formatDistanceToNow(new Date(latestResult.checkedAt), {
-                    addSuffix: true,
-                  })
-                : "never"
-            }
-            description={
-              latestResult ? `${latestResult.responseTimeMs}ms` : undefined
-            }
-          />
-        </div>
+        </Suspense>
 
-        {/* Region breakdown */}
-        {regionStats.length > 1 && <RegionBreakdown stats={regionStats} />}
+        {/* Region breakdown - streams when ready */}
+        <Suspense fallback={<RegionBreakdownSkeleton />}>
+          <MonitorRegionBreakdown monitorId={id} timeRange={timeRange} />
+        </Suspense>
 
         {/* Uptime bars */}
         <div className="border border-border rounded bg-card p-4">
@@ -210,141 +145,28 @@ export default async function MonitorDetailPage({
           />
         </div>
 
-        {/* Response time and error rate charts */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <ChartCard
-            title="response time"
-            icon="activity"
-            iconClassName="text-primary"
-            defaultChartType="line"
-          >
-            <ResponseTimeChart data={responseTimeData} height={140} />
-          </ChartCard>
-          <ChartCard
-            title="error rate"
-            icon="alert-triangle"
-            iconClassName="text-status-down"
-            defaultChartType="bar"
-          >
-            <ErrorRateChart data={errorRateData} height={140} />
-          </ChartCard>
-        </div>
-
-        {/* Recent Checks */}
-        <div className="border border-border rounded bg-card p-4">
-          <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground mb-4">
-            recent checks
-          </h3>
-          <div className="space-y-1">
-            {results.slice(0, 10).map((result) => (
-              <div
-                key={result.id}
-                className="flex items-center justify-between py-2 border-b border-border last:border-0"
-              >
-                <div className="flex items-center gap-3">
-                  <StatusBadge status={result.status} size="sm" />
-                  <span
-                    className={cn(
-                      "text-xs",
-                      result.status === "up" && "text-primary",
-                      result.status === "down" && "text-destructive",
-                      result.status === "degraded" && "text-yellow-500",
-                    )}
-                  >
-                    {result.statusCode || "err"}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">
-                    {result.errorMessage || "ok"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
-                  <span>{result.responseTimeMs}ms</span>
-                  <span>
-                    {formatDistanceToNow(new Date(result.checkedAt), {
-                      addSuffix: true,
-                    })}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Announcements */}
-        <div className="space-y-2">
-          <SectionWithTooltip
-            title="announcements"
-            tooltip="To add announcements, create a markdown file in data/announcements/ with frontmatter specifying the dashboard and announcement details (title, type, expiresAt)."
+        {/* Charts - streams when ready */}
+        <Suspense fallback={<ChartGridSkeleton />}>
+          <MonitorCharts
+            monitorId={id}
+            timeRange={timeRange}
+            interval={interval}
           />
-          <div className="border border-border rounded bg-card p-4">
-            {monitorAnnouncements.length === 0 ? (
-              <div className="text-center py-8 text-[11px] text-muted-foreground">
-                No announcements
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {monitorAnnouncements.map((announcement) => {
-                  const Icon = announcementTypeIcons[announcement.type];
-                  return (
-                    <div
-                      key={announcement.id}
-                      className={`flex items-start gap-3 p-4 rounded-lg border ${announcementTypeStyles[announcement.type]}`}
-                    >
-                      <Icon className="h-4 w-4 mt-0.5 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-xs font-medium">
-                            {announcement.title}
-                          </p>
-                          <span className="text-[10px] opacity-60">
-                            {formatDistanceToNow(
-                              new Date(announcement.createdAt),
-                              {
-                                addSuffix: true,
-                              },
-                            )}
-                          </span>
-                        </div>
-                        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: rendering markdown */}
-                        <div
-                          className="text-[11px] opacity-80 mt-1 prose prose-sm prose-invert max-w-none"
-                          dangerouslySetInnerHTML={{
-                            __html: announcement.message,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
+        </Suspense>
 
-        {/* Incident History */}
-        <div className="space-y-2">
-          <SectionWithTooltip
-            title="incident history"
-            tooltip="To add incidents, create a markdown file in data/incidents/ with frontmatter specifying the dashboard, affectedMonitorIds (including this monitor), severity, and status."
-          />
-          <div className="border border-border rounded bg-card p-4">
-            {monitorIncidents.length === 0 ? (
-              <div className="text-center py-8 text-[11px] text-muted-foreground">
-                No incidents reported
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {monitorIncidents.map((incident) => (
-                  <IncidentCard
-                    key={incident.id}
-                    incident={incident}
-                    monitors={allMonitors}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Recent Checks - streams when ready */}
+        <Suspense fallback={<RecentChecksSkeleton />}>
+          <MonitorRecentChecks monitorId={id} timeRange={timeRange} />
+        </Suspense>
+
+        {/* Announcements & Incidents - streams when ready */}
+        <Suspense fallback={<ListSkeleton rows={3} />}>
+          <MonitorAnnouncements monitorId={id} />
+        </Suspense>
+
+        <Suspense fallback={<ListSkeleton rows={3} />}>
+          <MonitorIncidents monitorId={id} />
+        </Suspense>
 
         {/* Config display */}
         <div className="border border-border rounded bg-card p-4">
@@ -366,6 +188,275 @@ export default async function MonitorDetailPage({
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Async component for stats section
+async function MonitorStats({
+  monitorId,
+  timeRange,
+  interval,
+  latestResult,
+}: {
+  monitorId: string;
+  timeRange: TRType;
+  interval: IntervalOption;
+  latestResult: Awaited<ReturnType<typeof getLatestCheckResult>>;
+}) {
+  const [stats, statusTimelineData] = await Promise.all([
+    getMonitorStats(monitorId, timeRange),
+    getStatusTimelineData(monitorId, timeRange, interval, 50),
+  ]);
+
+  const totalChecks = statusTimelineData.reduce((acc, d) => acc + d.total, 0);
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <StatsCard
+        title="uptime"
+        value={`${stats.uptime}%`}
+        trend={
+          stats.uptime >= 99.9 ? "up" : stats.uptime >= 99 ? "neutral" : "down"
+        }
+      />
+      <StatsCard title="avg latency" value={`${stats.avgResponseTime}ms`} />
+      <StatsCard title="checks" value={`${totalChecks}`} />
+      <StatsCard
+        title="last check"
+        value={
+          latestResult
+            ? formatDistanceToNow(new Date(latestResult.checkedAt), {
+                addSuffix: true,
+              })
+            : "never"
+        }
+        description={
+          latestResult ? `${latestResult.responseTimeMs}ms` : undefined
+        }
+      />
+    </div>
+  );
+}
+
+// Async component for region breakdown
+async function MonitorRegionBreakdown({
+  monitorId,
+  timeRange,
+}: {
+  monitorId: string;
+  timeRange: TRType;
+}) {
+  const regionStats = await getMonitorStatsByRegion(monitorId, timeRange);
+
+  if (regionStats.length <= 1) {
+    return null;
+  }
+
+  return <RegionBreakdown stats={regionStats} />;
+}
+
+// Async component for charts
+async function MonitorCharts({
+  monitorId,
+  timeRange,
+  interval,
+}: {
+  monitorId: string;
+  timeRange: TRType;
+  interval: IntervalOption;
+}) {
+  const [responseTimeData, errorRateData] = await Promise.all([
+    getResponseTimeChartData(monitorId, timeRange, interval),
+    getErrorRateChartData(monitorId, timeRange, interval),
+  ]);
+
+  return (
+    <div className="grid md:grid-cols-2 gap-4">
+      <ChartCard
+        title="response time"
+        icon="activity"
+        iconClassName="text-primary"
+        defaultChartType="line"
+      >
+        <ResponseTimeChart data={responseTimeData} height={140} />
+      </ChartCard>
+      <ChartCard
+        title="error rate"
+        icon="alert-triangle"
+        iconClassName="text-status-down"
+        defaultChartType="bar"
+      >
+        <ErrorRateChart data={errorRateData} height={140} />
+      </ChartCard>
+    </div>
+  );
+}
+
+// Async component for recent checks
+async function MonitorRecentChecks({
+  monitorId,
+  timeRange,
+}: {
+  monitorId: string;
+  timeRange: TRType;
+}) {
+  const results = await getCheckResults(monitorId, { timeRange, limit: 10 });
+
+  return (
+    <div className="border border-border rounded bg-card p-4">
+      <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground mb-4">
+        recent checks
+      </h3>
+      <div className="space-y-1">
+        {results.slice(0, 10).map((result) => (
+          <div
+            key={result.id}
+            className="flex items-center justify-between py-2 border-b border-border last:border-0"
+          >
+            <div className="flex items-center gap-3">
+              <StatusBadge status={result.status} size="sm" />
+              <span
+                className={cn(
+                  "text-xs",
+                  result.status === "up" && "text-primary",
+                  result.status === "down" && "text-destructive",
+                  result.status === "degraded" && "text-yellow-500",
+                )}
+              >
+                {result.statusCode || "err"}
+              </span>
+              <span className="text-[10px] text-muted-foreground">
+                {result.errorMessage || "ok"}
+              </span>
+            </div>
+            <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
+              <span>{result.responseTimeMs}ms</span>
+              <span>
+                {formatDistanceToNow(new Date(result.checkedAt), {
+                  addSuffix: true,
+                })}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const announcementTypeIcons = {
+  info: Info,
+  warning: AlertTriangle,
+  success: CheckCircle,
+  maintenance: Wrench,
+};
+
+const announcementTypeStyles = {
+  info: "border-blue-500/30 bg-blue-500/5 text-blue-400",
+  warning: "border-amber-500/30 bg-amber-500/5 text-amber-400",
+  success: "border-emerald-500/30 bg-emerald-500/5 text-emerald-400",
+  maintenance: "border-purple-500/30 bg-purple-500/5 text-purple-400",
+};
+
+// Async component for announcements
+async function MonitorAnnouncements({ monitorId }: { monitorId: string }) {
+  const dashboards = await getDashboards();
+  const relevantDashboards = dashboards.filter((d) =>
+    d.monitorIds.includes(monitorId),
+  );
+
+  const allAnnouncements = await Promise.all(
+    relevantDashboards.map((d) => getAnnouncements(d.id)),
+  );
+  const monitorAnnouncements = allAnnouncements.flat().slice(0, 5);
+
+  return (
+    <div className="space-y-2">
+      <SectionWithTooltip
+        title="announcements"
+        tooltip="To add announcements, create a markdown file in data/announcements/ with frontmatter specifying the dashboard and announcement details (title, type, expiresAt)."
+      />
+      <div className="border border-border rounded bg-card p-4">
+        {monitorAnnouncements.length === 0 ? (
+          <div className="text-center py-8 text-[11px] text-muted-foreground">
+            No announcements
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {monitorAnnouncements.map((announcement) => {
+              const Icon = announcementTypeIcons[announcement.type];
+              return (
+                <div
+                  key={announcement.id}
+                  className={`flex items-start gap-3 p-4 rounded-lg border ${announcementTypeStyles[announcement.type]}`}
+                >
+                  <Icon className="h-4 w-4 mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-medium">{announcement.title}</p>
+                      <span className="text-[10px] opacity-60">
+                        {formatDistanceToNow(new Date(announcement.createdAt), {
+                          addSuffix: true,
+                        })}
+                      </span>
+                    </div>
+                    <p className="text-[11px] opacity-80 mt-1 line-clamp-2">
+                      {announcement.message.replace(/<[^>]*>/g, "")}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Async component for incidents
+async function MonitorIncidents({ monitorId }: { monitorId: string }) {
+  const [dashboards, allMonitors] = await Promise.all([
+    getDashboards(),
+    getMonitors(),
+  ]);
+
+  const relevantDashboards = dashboards.filter((d) =>
+    d.monitorIds.includes(monitorId),
+  );
+
+  const allIncidents = await Promise.all(
+    relevantDashboards.map((d) => getIncidents(d.id)),
+  );
+  const monitorIncidents = allIncidents
+    .flat()
+    .filter((incident) => incident.affectedMonitorIds.includes(monitorId))
+    .slice(0, 5);
+
+  return (
+    <div className="space-y-2">
+      <SectionWithTooltip
+        title="incident history"
+        tooltip="To add incidents, create a markdown file in data/incidents/ with frontmatter specifying the dashboard, affectedMonitorIds (including this monitor), severity, and status."
+      />
+      <div className="border border-border rounded bg-card p-4">
+        {monitorIncidents.length === 0 ? (
+          <div className="text-center py-8 text-[11px] text-muted-foreground">
+            No incidents reported
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {monitorIncidents.map((incident) => (
+              <IncidentCard
+                key={incident.id}
+                incident={incident}
+                monitors={allMonitors}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
