@@ -12,9 +12,7 @@ export const dynamicParams = true;
  */
 export async function generateStaticParams() {
   const dashboards = await getDashboards();
-  return dashboards
-    .filter((d) => d.isPublic)
-    .map((d) => ({ slug: d.slug }));
+  return dashboards.filter((d) => d.isPublic).map((d) => ({ slug: d.slug }));
 }
 
 export async function generateMetadata({

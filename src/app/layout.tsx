@@ -6,6 +6,7 @@ import "./globals.css";
 import { AppShell } from "@/components/app-shell";
 import { PublicHeaderProvider } from "@/components/public-header-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { isAuthEnabled, isAuthenticated } from "@/lib/auth";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -49,7 +50,7 @@ export const viewport: Viewport = {
   themeColor: "#080808",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -57,13 +58,23 @@ export default function RootLayout({
   // Optional header logo from env (path to file in /public, e.g., "/logo.png")
   const headerLogo = process.env.HEADER_LOGO || undefined;
 
+  // Auth state for AppShell
+  const authEnabled = isAuthEnabled();
+  const authenticated = await isAuthenticated();
+
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${jetbrainsMono.className} antialiased`}>
         <NuqsAdapter defaultOptions={{ shallow: false }}>
           <ThemeProvider defaultTheme="dark" storageKey="pongo-theme">
             <PublicHeaderProvider>
-              <AppShell headerLogo={headerLogo}>{children}</AppShell>
+              <AppShell
+                headerLogo={headerLogo}
+                authEnabled={authEnabled}
+                isAuthenticated={authenticated}
+              >
+                {children}
+              </AppShell>
             </PublicHeaderProvider>
           </ThemeProvider>
         </NuqsAdapter>

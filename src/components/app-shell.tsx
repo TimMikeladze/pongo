@@ -10,6 +10,8 @@ import {
   Info,
   LayoutDashboard,
   Linkedin,
+  LogIn,
+  LogOut,
   Maximize,
   Maximize2,
   Minimize,
@@ -25,6 +27,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type React from "react";
 import { useEffect, useState } from "react";
+import { logout } from "@/app/login/actions";
 import { useFullscreen } from "@/components/fullscreen-provider";
 import { usePublicHeader } from "@/components/public-header-provider";
 import { SupportDialog } from "@/components/support-dialog";
@@ -71,9 +74,18 @@ interface AppShellProps {
   children: React.ReactNode;
   /** Optional path to header logo in /public (e.g., "/logo.png") */
   headerLogo?: string;
+  /** Whether auth is enabled (ACCESS_CODE env var is set) */
+  authEnabled?: boolean;
+  /** Whether the current user is authenticated */
+  isAuthenticated?: boolean;
 }
 
-export function AppShell({ children, headerLogo }: AppShellProps) {
+export function AppShell({
+  children,
+  headerLogo,
+  authEnabled = false,
+  isAuthenticated = false,
+}: AppShellProps) {
   const pathname = usePathname();
   const {
     density,
@@ -145,30 +157,39 @@ export function AppShell({ children, headerLogo }: AppShellProps) {
             !fullWidth && "md:max-w-6xl",
           )}
         >
-          {isSharedPage && publicHeaderInfo ? (
-            <>
-              <div>
-                <h1 className="text-sm font-medium font-mono">
-                  {publicHeaderInfo.name}
-                </h1>
-                {publicHeaderInfo.description && (
-                  <p className="text-[10px] text-muted-foreground">
-                    {publicHeaderInfo.description}
-                  </p>
-                )}
-              </div>
+          {isSharedPage ? (
+            // Public/shared pages: show public header or loading state
+            publicHeaderInfo ? (
+              <>
+                <div>
+                  <h1 className="text-sm font-medium font-mono">
+                    {publicHeaderInfo.name}
+                  </h1>
+                  {publicHeaderInfo.description && (
+                    <p className="text-[10px] text-muted-foreground">
+                      {publicHeaderInfo.description}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`h-2 w-2 rounded-full ${publicHeaderInfo.hasIssues ? "bg-amber-500 animate-pulse" : "bg-blue-500"}`}
+                  />
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    {publicHeaderInfo.hasIssues
+                      ? "issues detected"
+                      : "all systems operational"}
+                  </span>
+                </div>
+              </>
+            ) : (
+              // Loading state for shared pages - prevents flash of authenticated nav
               <div className="flex items-center gap-2">
-                <span
-                  className={`h-2 w-2 rounded-full ${publicHeaderInfo.hasIssues ? "bg-amber-500 animate-pulse" : "bg-blue-500"}`}
-                />
-                <span className="text-[10px] text-muted-foreground font-mono">
-                  {publicHeaderInfo.hasIssues
-                    ? "issues detected"
-                    : "all systems operational"}
-                </span>
+                <div className="h-4 w-32 bg-muted/50 rounded animate-pulse" />
               </div>
-            </>
+            )
           ) : (
+            // Authenticated pages: show full navigation
             <>
               <div className="flex items-center">
                 <nav className="flex items-center gap-1">
@@ -581,6 +602,31 @@ export function AppShell({ children, headerLogo }: AppShellProps) {
               </TooltipTrigger>
               <TooltipContent>Theme: {theme}</TooltipContent>
             </Tooltip>
+            {authEnabled && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  {isAuthenticated ? (
+                    <button
+                      type="button"
+                      onClick={() => logout()}
+                      className="hover:text-foreground transition-colors"
+                    >
+                      <LogOut className="h-3.5 w-3.5" />
+                    </button>
+                  ) : (
+                    <Link
+                      href="/login"
+                      className="hover:text-foreground transition-colors"
+                    >
+                      <LogIn className="h-3.5 w-3.5" />
+                    </Link>
+                  )}
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isAuthenticated ? "Sign out" : "Sign in"}
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
         </div>
       </footer>

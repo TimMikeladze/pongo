@@ -1,7 +1,7 @@
 // src/lib/data.ts
 
-import { unstable_cache } from "next/cache";
 import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import {
   alertEvents,
@@ -1240,14 +1240,20 @@ export const getAggregatedStatusDistributionData = cache(
           down_count: number;
         }>(query);
 
-        const row = rows[0] || { up_count: 0, degraded_count: 0, down_count: 0 };
+        const row = rows[0] || {
+          up_count: 0,
+          degraded_count: 0,
+          down_count: 0,
+        };
         return {
           up: Number(row.up_count) || 0,
           degraded: Number(row.degraded_count) || 0,
           down: Number(row.down_count) || 0,
         };
       },
-      [`agg-status-dist-${monitorIdsKey(monitorIds)}-${timeRangeKey(timeRange)}`],
+      [
+        `agg-status-dist-${monitorIdsKey(monitorIds)}-${timeRangeKey(timeRange)}`,
+      ],
       {
         tags: ["check-results"],
         revalidate: 60,

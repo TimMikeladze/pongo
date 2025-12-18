@@ -41,7 +41,6 @@ import {
   RecentChecksSkeleton,
   RegionBreakdownSkeleton,
   StatsGridSkeleton,
-  UptimeBarsSkeleton,
 } from "@/components/skeletons";
 import { StatsCard } from "@/components/stats-card";
 import { StatusBadge } from "@/components/status-badge";
@@ -395,7 +394,9 @@ async function MonitorAnnouncements({ monitorId }: { monitorId: string }) {
                   <Icon className="h-4 w-4 mt-0.5 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs font-medium">{announcement.title}</p>
+                      <p className="text-xs font-medium">
+                        {announcement.title}
+                      </p>
                       <span className="text-[10px] opacity-60">
                         {formatDistanceToNow(new Date(announcement.createdAt), {
                           addSuffix: true,

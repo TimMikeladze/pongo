@@ -1,5 +1,6 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { getSession, verifyAccessCode } from "@/lib/auth";
 
 export async function login(
@@ -14,4 +15,10 @@ export async function login(
   await session.save();
 
   return { success: true };
+}
+
+export async function logout(): Promise<void> {
+  const session = await getSession();
+  session.destroy();
+  redirect("/login");
 }
