@@ -82,7 +82,7 @@ export function UptimeChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
-          formatter={(value: number) => [`${value}%`, "uptime"]}
+          formatter={(value) => [`${value}%`, "uptime"]}
         />
         <Bar dataKey="uptime" radius={[2, 2, 0, 0]}>
           {data.map((entry) => (
@@ -115,7 +115,7 @@ export function UptimeChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
-          formatter={(value: number) => [`${value}%`, "uptime"]}
+          formatter={(value) => [`${value}%`, "uptime"]}
         />
         <Area
           type="monotone"

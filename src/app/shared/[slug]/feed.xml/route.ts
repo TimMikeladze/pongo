@@ -1,8 +1,8 @@
 import { getDashboardBySlug, getFeedItems } from "@/lib/data";
 import { generateRss } from "@/lib/feed";
 
-// ISR: Revalidate every 60 seconds
-export const revalidate = 60;
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
 
 export async function GET(
   request: Request,
@@ -26,7 +26,7 @@ export async function GET(
   return new Response(generateRss(dashboard, baseUrl, items), {
     headers: {
       "Content-Type": "application/rss+xml; charset=utf-8",
-      "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
     },
   });
 }

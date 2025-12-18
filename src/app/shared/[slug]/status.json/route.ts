@@ -7,8 +7,8 @@ import {
 } from "@/lib/data";
 import type { IncidentSeverity, MonitorStatus } from "@/lib/types";
 
-// ISR: Revalidate every 30 seconds
-export const revalidate = 30;
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
 
 type StatusIndicator = "none" | "minor" | "major" | "critical";
 
@@ -140,7 +140,7 @@ export async function GET(request: Request, { params }: Props) {
 
   return NextResponse.json(response, {
     headers: {
-      "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
     },
   });
 }

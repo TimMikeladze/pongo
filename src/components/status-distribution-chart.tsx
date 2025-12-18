@@ -84,8 +84,8 @@ export function StatusDistributionChart({
             }}
             labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
             itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
-            formatter={(value: number, name: string) => [
-              `${value} (${((value / total) * 100).toFixed(1)}%)`,
+            formatter={(value, name) => [
+              `${value} (${((Number(value) / total) * 100).toFixed(1)}%)`,
               name,
             ]}
           />

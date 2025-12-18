@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { getDashboardBySlug, getDashboards } from "@/lib/data";
 
-// ISR: Revalidate public status pages every 30 seconds
-export const revalidate = 30;
+// ISR: Revalidate public status pages every 5 minutes
+export const revalidate = 300;
 
 // Allow new dashboard slugs to work without rebuild
 export const dynamicParams = true;

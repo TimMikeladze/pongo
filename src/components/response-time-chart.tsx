@@ -90,7 +90,7 @@ export function ResponseTimeChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
-          formatter={(value: number) => [`${value}ms`, "latency"]}
+          formatter={(value) => [`${value}ms`, "latency"]}
         />
         <Area
           type="monotone"
@@ -128,7 +128,7 @@ export function ResponseTimeChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
-          formatter={(value: number) => [`${value}ms`, "latency"]}
+          formatter={(value) => [`${value}ms`, "latency"]}
         />
         <Bar
           dataKey="responseTime"

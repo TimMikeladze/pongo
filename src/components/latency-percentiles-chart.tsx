@@ -86,7 +86,7 @@ export function LatencyPercentilesChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
-          formatter={(value: number) => [`${value}ms`]}
+          formatter={(value) => [`${value}ms`]}
         />
         <Legend
           wrapperStyle={{ fontSize: "9px", fontFamily: "monospace" }}
@@ -143,7 +143,7 @@ export function LatencyPercentilesChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
-          formatter={(value: number) => [`${value}ms`]}
+          formatter={(value) => [`${value}ms`]}
         />
         <Legend
           wrapperStyle={{ fontSize: "9px", fontFamily: "monospace" }}

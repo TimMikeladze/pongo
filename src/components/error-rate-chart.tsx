@@ -83,7 +83,7 @@ export function ErrorRateChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
-          formatter={(value: number, name: string) => [
+          formatter={(value, name) => [
             name === "errorRate" ? `${value}%` : value,
             name === "errorRate" ? "error rate" : "errors",
           ]}
@@ -132,7 +132,7 @@ export function ErrorRateChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
-          formatter={(value: number, name: string) => [
+          formatter={(value, name) => [
             name === "errorRate" ? `${value}%` : value,
             name === "errorRate" ? "error rate" : "errors",
           ]}

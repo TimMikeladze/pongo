@@ -251,7 +251,7 @@ export const getUptimePercentage = cache(
       [`uptime-${monitorId}-${timeRangeKey(timeRange)}`],
       {
         tags: [`monitor-${monitorId}`, "check-results"],
-        revalidate: 60,
+        revalidate: 600,
       },
     )();
   },
@@ -271,7 +271,7 @@ export const getAverageResponseTime = cache(
       [`avg-response-${monitorId}-${timeRangeKey(timeRange)}`],
       {
         tags: [`monitor-${monitorId}`, "check-results"],
-        revalidate: 60,
+        revalidate: 600,
       },
     )();
   },
@@ -298,7 +298,7 @@ export const getErrorRate = cache(
       [`error-rate-${monitorId}-${timeRangeKey(timeRange)}`],
       {
         tags: [`monitor-${monitorId}`, "check-results"],
-        revalidate: 60,
+        revalidate: 600,
       },
     )();
   },
@@ -321,7 +321,7 @@ export const getP95ResponseTime = cache(
       [`p95-${monitorId}-${timeRangeKey(timeRange)}`],
       {
         tags: [`monitor-${monitorId}`, "check-results"],
-        revalidate: 60,
+        revalidate: 600,
       },
     )();
   },
@@ -344,7 +344,7 @@ export const getP99ResponseTime = cache(
       [`p99-${monitorId}-${timeRangeKey(timeRange)}`],
       {
         tags: [`monitor-${monitorId}`, "check-results"],
-        revalidate: 60,
+        revalidate: 600,
       },
     )();
   },
@@ -360,7 +360,7 @@ export const getTotalChecks = cache(
       [`total-checks-${monitorId}-${timeRangeKey(timeRange)}`],
       {
         tags: [`monitor-${monitorId}`, "check-results"],
-        revalidate: 60,
+        revalidate: 600,
       },
     )();
   },
@@ -458,7 +458,7 @@ export const getStatusBuckets = cache(
       [`status-buckets-${monitorId}-${timeRangeKey(timeRange)}-${interval}`],
       {
         tags: [`monitor-${monitorId}`, "check-results"],
-        revalidate: 60,
+        revalidate: 600,
       },
     )();
   },
@@ -493,7 +493,7 @@ export const getSLAStatus = cache(
       [`sla-status-${dashboardId}-${timeRangeKey(timeRange)}`],
       {
         tags: [`dashboard-${dashboardId}`, "check-results"],
-        revalidate: 60,
+        revalidate: 600,
       },
     )();
   },
@@ -976,7 +976,7 @@ export const getAggregatedResponseTimeChartData = cache(
       ],
       {
         tags: ["check-results"],
-        revalidate: 60,
+        revalidate: 600,
       },
     )();
   },
@@ -1031,7 +1031,7 @@ export const getAggregatedErrorRateChartData = cache(
       ],
       {
         tags: ["check-results"],
-        revalidate: 60,
+        revalidate: 600,
       },
     )();
   },
@@ -1082,7 +1082,7 @@ export const getAggregatedUptimeChartData = cache(
       ],
       {
         tags: ["check-results"],
-        revalidate: 60,
+        revalidate: 600,
       },
     )();
   },
@@ -1154,7 +1154,7 @@ export const getAggregatedLatencyPercentilesChartData = cache(
       ],
       {
         tags: ["check-results"],
-        revalidate: 60,
+        revalidate: 600,
       },
     )();
   },
@@ -1203,7 +1203,7 @@ export const getAggregatedThroughputChartData = cache(
       ],
       {
         tags: ["check-results"],
-        revalidate: 60,
+        revalidate: 600,
       },
     )();
   },
@@ -1256,7 +1256,7 @@ export const getAggregatedStatusDistributionData = cache(
       ],
       {
         tags: ["check-results"],
-        revalidate: 60,
+        revalidate: 600,
       },
     )();
   },
