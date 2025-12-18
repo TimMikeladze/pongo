@@ -37,7 +37,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-8 px-6">
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-2">
-            <PongoLogo className="h-6 w-6" />
+            <PongoLogo size={24} />
             <span className="text-lg tracking-wider font-medium">pongo</span>
           </div>
           <p className="text-xs text-muted-foreground">

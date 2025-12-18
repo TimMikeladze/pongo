@@ -29,6 +29,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { logout } from "@/app/login/actions";
 import { useFullscreen } from "@/components/fullscreen-provider";
+import { PongoLogo } from "@/components/pongo-logo";
 import { usePublicHeader } from "@/components/public-header-provider";
 import { SupportDialog } from "@/components/support-dialog";
 import { useTheme } from "@/components/theme-provider";
@@ -504,11 +505,7 @@ export function AppShell({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center gap-3 cursor-default">
-                <img
-                  src="/logo.png"
-                  alt="Pongo logo"
-                  className="h-6 w-6 rounded-full"
-                />
+                <PongoLogo size={24} />
                 <div className="flex flex-col">
                   <span className="font-medium">pongo.sh</span>
                   <span className="text-[10px] text-muted-foreground/60">

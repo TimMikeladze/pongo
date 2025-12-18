@@ -1,16 +1,20 @@
-import type { ImgHTMLAttributes } from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-export function PongoLogo({
-  className,
-  ...props
-}: ImgHTMLAttributes<HTMLImageElement>) {
+interface PongoLogoProps {
+  className?: string;
+  size?: number;
+}
+
+export function PongoLogo({ className, size = 24 }: PongoLogoProps) {
   return (
-    <img
+    <Image
       src="/logo.png"
       alt="Pongo logo"
+      width={size}
+      height={size}
       className={cn("rounded-full", className)}
-      {...props}
+      priority
     />
   );
 }
