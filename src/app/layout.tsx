@@ -7,6 +7,7 @@ import { AppShell } from "@/components/app-shell";
 import { PublicHeaderProvider } from "@/components/public-header-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { isAuthEnabled, isAuthenticated } from "@/lib/auth";
+import { UmamiScript } from "@/lib/umami";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -94,6 +95,8 @@ export default async function RootLayout({
             __html: JSON.stringify(organizationSchema),
           }}
         />
+        {/* Analytics - only loads if NEXT_PUBLIC_UMAMI_WEBSITE_ID and NEXT_PUBLIC_UMAMI_URL are set */}
+        <UmamiScript />
         <NuqsAdapter defaultOptions={{ shallow: false }}>
           <ThemeProvider defaultTheme="dark" storageKey="pongo-theme">
             <PublicHeaderProvider>
