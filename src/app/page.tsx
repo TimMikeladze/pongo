@@ -94,6 +94,20 @@ export default async function OverviewPage({ searchParams }: Props) {
     return <PublicDashboardsList dashboards={publicDashboards} />;
   }
 
+  // Structured data for SEO (SoftwareApplication schema)
+  const softwareSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "Pongo",
+    applicationCategory: "DeveloperApplication",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+    operatingSystem: "Linux, macOS, Windows",
+  };
+
   const showAbout = process.env.SHOW_ABOUT === "true";
   const monitors = await getMonitors();
   const activeMonitors = monitors.filter((m) => m.isActive);
@@ -200,6 +214,14 @@ export default async function OverviewPage({ searchParams }: Props) {
 
   return (
     <div>
+      {/* Structured data for search engines */}
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: Safe - JSON.stringify with static configuration data only
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(softwareSchema),
+        }}
+      />
       <AutoRefresh intervalSeconds={minRefreshInterval} />
       {/* About Section */}
       {showAbout && (
