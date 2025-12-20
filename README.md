@@ -6,9 +6,20 @@
   <strong>Self-hosted uptime monitoring and status pages</strong><br/>
   <sub>Built with Next.js 15, React 19, and Bun</sub>
 </p>
+
 <p align="center">
+  <a href="https://vercel.com/new/clone?repository-url=https://github.com/TimMikeladze/pongo&env=DATABASE_URL,CRON_SECRET&project-name=pongo&repository-name=pongo">
+    <img src="https://vercel.com/button" alt="Deploy with Vercel"/>
+  </a>
+  <a href="https://fly.io/launch?org=personal">
+    <img src="https://fly.io/static/images/launch-button.svg" alt="Launch on Fly.io" height="32px"/>
+  </a>
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#deployment">Deployment</a> •
   <a href="#features">Features</a> •
-  <a href="#getting-started">Getting Started</a> •
   <a href="#configuration">Configuration</a> •
   <a href="#architecture">Architecture</a>
 </p>
@@ -16,6 +27,50 @@
 ---
 
 Define monitors, organize dashboards, manage alerts through webhooks, and serve public or private status pages with multi-region monitoring support.
+
+## Quick Start
+
+Choose your deployment method:
+
+### Local Development
+
+```bash
+git clone https://github.com/TimMikeladze/pongo.git
+cd pongo
+bun install
+bun dev
+```
+
+Visit http://localhost:3000 to view the dashboard.
+
+### Deploy to Vercel (TypeScript monitors only)
+
+1. Click the "Deploy with Vercel" button above
+2. Set environment variables:
+   - `DATABASE_URL` - Your database connection string
+   - `CRON_SECRET` - Generate with `openssl rand -base64 32`
+3. Deploy and access your status page
+
+**Note:** Vercel deployment uses serverless cron for TypeScript monitors. For Python monitors, deploy the scheduler separately (see [Deployment Guide](#deployment)).
+
+### Deploy to Fly.io (Full support)
+
+```bash
+# Install Fly CLI
+curl -L https://fly.io/install.sh | sh
+
+# Launch your app
+fly launch
+
+# Set secrets
+fly secrets set DATABASE_URL="your-database-url"
+fly secrets set ACCESS_CODE="your-access-code"
+
+# Deploy
+fly deploy
+```
+
+Fly.io supports both TypeScript and Python monitors with the included Dockerfile.
 
 ## Features
 
@@ -27,11 +82,188 @@ Define monitors, organize dashboards, manage alerts through webhooks, and serve 
 - **Public/private status pages** with RSS/Atom feeds
 - **Modern React UI** with dark mode, responsive design, and rich charts
 
-## Getting Started
+## Deployment
+
+Pongo offers flexible deployment options to match your infrastructure needs.
+
+### Deployment Decision Matrix
+
+| Scenario | Dashboard | Scheduler | Python Support | Best For |
+|----------|-----------|-----------|----------------|----------|
+| **Vercel Only** | Vercel | Vercel Cron | ❌ No | Simple TypeScript monitors, serverless |
+| **Fly.io** | Fly.io | Fly.io | ✅ Yes | Full-featured, single platform |
+| **Hybrid** | Vercel | VPS/Docker | ✅ Yes | Global dashboard + flexible monitoring |
+| **Self-Hosted** | VPS/Docker | VPS/Docker | ✅ Yes | Complete control, on-premises |
+
+### Option 1: Vercel (Serverless - TypeScript Only)
+
+**Pros:** Zero server management, global CDN, auto-scaling
+**Cons:** TypeScript monitors only, no Python support
+**Best for:** Simple monitoring setups
+
+1. Click "Deploy with Vercel" button above
+2. Connect your GitHub repository
+3. Configure environment variables:
+   ```bash
+   DATABASE_URL=your-postgres-or-turso-url
+   CRON_SECRET=$(openssl rand -base64 32)
+   ACCESS_CODE=your-dashboard-password
+   ```
+4. Deploy
+
+The built-in `/api/cron` endpoint runs every 15 minutes via Vercel Cron.
+
+### Option 2: Fly.io (Full-Featured)
+
+**Pros:** Python + TypeScript monitors, persistent VMs, global deployment
+**Cons:** Requires Fly.io account
+**Best for:** Production deployments with Python monitors
 
 ```bash
+# Install Fly CLI
+curl -L https://fly.io/install.sh | sh
+
+# Clone and navigate
+git clone https://github.com/TimMikeladze/pongo.git
+cd pongo
+
+# Launch (creates fly.toml)
+fly launch
+
+# Configure secrets
+fly secrets set DATABASE_URL="postgres://..."
+fly secrets set ACCESS_CODE="your-password"
+
+# Deploy
+fly deploy
+```
+
+### Option 3: Hybrid (Vercel Dashboard + VPS Scheduler)
+
+**Pros:** Fast global dashboard + Python monitor support
+**Cons:** Requires managing a VPS
+**Best for:** Best of both worlds
+
+**Dashboard on Vercel:**
+```bash
+# Deploy to Vercel (no cron configuration)
+vercel
+
+# Set environment variables
+vercel env add DATABASE_URL
+vercel env add ACCESS_CODE
+```
+
+**Scheduler on VPS/Docker:**
+```bash
+# On your VPS
+git clone https://github.com/TimMikeladze/pongo.git
+cd pongo
 bun install
+
+# Set environment variables
+export DATABASE_URL="your-shared-database-url"
+export PONGO_REGION="us-east"
+
+# Run scheduler
+bun scheduler
+```
+
+Both connect to the same database - scheduler writes results, dashboard displays them.
+
+### Option 4: Docker (Self-Hosted)
+
+**Pros:** Complete control, runs anywhere
+**Cons:** You manage infrastructure
+**Best for:** On-premises, complete control
+
+```bash
+# Clone repository
+git clone https://github.com/TimMikeladze/pongo.git
+cd pongo
+
+# Build image
+docker build -t pongo .
+
+# Run container
+docker run -d \
+  -p 3000:3000 \
+  -e DATABASE_URL="sqlite:///app/pongo/pongo.db" \
+  -e ACCESS_CODE="your-password" \
+  pongo
+```
+
+For production, use Docker Compose with PostgreSQL:
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+services:
+  pongo:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://postgres:password@db:5432/pongo
+      ACCESS_CODE: your-password
+    depends_on:
+      - db
+
+  scheduler:
+    build: .
+    command: ["bun", "scheduler"]
+    environment:
+      DATABASE_URL: postgres://postgres:password@db:5432/pongo
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: pongo
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
+```
+
+### Database Options
+
+Pongo supports multiple database backends:
+
+**SQLite** (Development/Small deployments)
+```bash
+DATABASE_URL=file:./pongo/pongo.db
+```
+
+**PostgreSQL** (Production)
+```bash
+DATABASE_URL=postgres://user:pass@host:5432/pongo
+```
+
+**Turso** (Serverless SQLite)
+```bash
+DATABASE_URL=libsql://your-db.turso.io
+TURSO_AUTH_TOKEN=your-token
+```
+
+## Getting Started (Local Development)
+
+```bash
+# Clone repository
+git clone https://github.com/TimMikeladze/pongo.git
+cd pongo
+
+# Install dependencies
+bun install
+
+# Start development server
 bun dev
+
+# In another terminal, start scheduler (optional)
+bun scheduler
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
@@ -42,12 +274,120 @@ All user configuration lives in the `pongo/` directory:
 
 ```
 pongo/
-├── monitors/           # Monitor definitions (*.ts)
+├── monitors/           # Monitor definitions (*.ts, *.py)
 ├── dashboards/         # Dashboard configs (*.ts)
 ├── announcements/      # Status announcements (*.md)
 ├── incidents/          # Incident reports (*.md)
 └── channels.ts         # Webhook notification channels
 ```
+
+### Writing Monitors
+
+Pongo supports monitors in both **TypeScript** and **Python**.
+
+#### TypeScript Monitors
+
+```typescript
+// pongo/monitors/example.ts
+import { monitor } from "../../src/lib/config-types";
+
+export default monitor({
+  name: "Example API",
+  interval: "15m",
+  timeout: "30s",
+
+  async handler() {
+    const start = Date.now();
+    const res = await fetch("https://api.example.com/health");
+    const responseTime = Date.now() - start;
+
+    return {
+      status: res.ok ? "up" : "down",
+      responseTime,
+      statusCode: res.status,
+    };
+  },
+});
+```
+
+#### Python Monitors
+
+Python monitors use a class-based structure and run as subprocesses:
+
+```python
+# pongo/monitors/example.py
+import time
+import urllib.request
+import json
+
+class Monitor:
+    """Monitor configuration and handler"""
+    name = "Example API"
+    interval = "15m"
+    timeout = "30s"
+
+    def check(self):
+        """Run the monitor check"""
+        start = time.time()
+
+        try:
+            req = urllib.request.Request("https://api.example.com/health")
+            with urllib.request.urlopen(req, timeout=10) as response:
+                response_time = int((time.time() - start) * 1000)
+
+                return {
+                    "status": "up" if response.getcode() == 200 else "down",
+                    "responseTime": response_time,
+                    "statusCode": response.getcode(),
+                }
+        except Exception as e:
+            return {
+                "status": "down",
+                "responseTime": int((time.time() - start) * 1000),
+                "message": str(e),
+            }
+
+# Entry point for subprocess execution
+if __name__ == "__main__":
+    monitor = Monitor()
+    result = monitor.check()
+    print(json.dumps(result))
+```
+
+**To register a Python monitor**, add it to `pongo/monitors/index.ts`:
+
+```typescript
+import { monitor } from "../../src/lib/config-types";
+import { runPythonMonitor } from "../../src/lib/python-runner";
+import path from "node:path";
+
+const examplePy = monitor({
+  name: "Example API (Python)",
+  interval: "15m",
+  timeout: "30s",
+  async handler() {
+    const pythonFile = path.join(__dirname, "example.py");
+    return await runPythonMonitor(pythonFile, 30000);
+  },
+});
+
+export default {
+  // ... other monitors
+  "example-py": examplePy,
+};
+```
+
+**Python Requirements:**
+- Python 3.x installed
+- [UV](https://astral.sh/uv) recommended for fast execution (optional)
+- No external dependencies needed (uses stdlib)
+- For packages, use UV or pip
+
+**Compatibility:**
+- ✅ Works: Local development, Docker, VPS, standalone scheduler
+- ❌ Doesn't work: Vercel serverless cron (use standalone scheduler instead)
+
+See `pongo/monitors/README.md` for detailed monitor examples and patterns.
 
 ## Architecture
 
