@@ -17,6 +17,10 @@ export async function generateMetadata({
     description: dashboard
       ? `Status dashboard for ${dashboard.name}`
       : "Dashboard details",
+    robots: {
+      index: false,
+      follow: false,
+    },
   };
 }
 

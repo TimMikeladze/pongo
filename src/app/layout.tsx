@@ -34,11 +34,20 @@ export const metadata: Metadata = {
     siteName: "Pongo.sh",
     title: "Pongo.sh",
     description: "Self-hosted uptime monitoring",
+    images: [
+      {
+        url: "/banner.png",
+        width: 1200,
+        height: 630,
+        alt: "Pongo.sh - Self-hosted uptime monitoring",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Pongo.sh",
     description: "Self-hosted uptime monitoring",
+    images: ["/banner.png"],
   },
   icons: {
     icon: [{ url: "/logo.png", type: "image/png" }],
@@ -62,9 +71,29 @@ export default async function RootLayout({
   const authEnabled = isAuthEnabled();
   const authenticated = await isAuthenticated();
 
+  // Structured data for SEO (Organization schema)
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://pongo.sh";
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Pongo.sh",
+    description: "Self-hosted uptime monitoring",
+    url: baseUrl,
+    logo: `${baseUrl}/logo.png`,
+    sameAs: ["https://github.com/TimMikeladze/pongo"],
+  };
+
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${jetbrainsMono.className} antialiased`}>
+        {/* Structured data for search engines - using JSON.stringify with static data is safe */}
+        <script
+          type="application/ld+json"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: Safe - JSON.stringify with static configuration data only
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationSchema),
+          }}
+        />
         <NuqsAdapter defaultOptions={{ shallow: false }}>
           <ThemeProvider defaultTheme="dark" storageKey="pongo-theme">
             <PublicHeaderProvider>

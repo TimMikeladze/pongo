@@ -17,6 +17,10 @@ export async function generateMetadata({
     description: monitor
       ? `Uptime monitoring for ${monitor.name}`
       : "Monitor details and statistics",
+    robots: {
+      index: false,
+      follow: false,
+    },
   };
 }
 

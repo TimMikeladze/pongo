@@ -4,6 +4,10 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Settings",
   description: "Manage your uptime monitor configuration",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 import Link from "next/link";

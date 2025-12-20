@@ -22,11 +22,36 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const dashboard = await getDashboardBySlug(slug);
+
+  const title = dashboard?.name ?? "Status Page";
+  const description = dashboard
+    ? `Real-time uptime monitoring and service status for ${dashboard.name}. View current system health, incident history, and performance metrics.`
+    : "Public status page";
+
   return {
-    title: dashboard?.name ?? "Status Page",
-    description: dashboard
-      ? `Service status for ${dashboard.name}`
-      : "Public status page",
+    title,
+    description,
+    keywords: [
+      "status page",
+      "uptime",
+      "service status",
+      "monitoring",
+      "system health",
+      dashboard?.name || "",
+    ].filter(Boolean),
+    openGraph: {
+      title: `${title} - Status`,
+      description,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} - Status`,
+      description,
+    },
+    alternates: {
+      canonical: `/shared/${slug}`,
+    },
   };
 }
 

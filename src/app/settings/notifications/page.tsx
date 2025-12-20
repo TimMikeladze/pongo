@@ -4,6 +4,10 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Notifications",
   description: "Configure email, SMS, and webhook alert notifications",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 import { Suspense } from "react";

@@ -9,6 +9,7 @@ import {
   Terminal,
   Zap,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AutoRefresh } from "@/components/auto-refresh";
@@ -41,6 +42,38 @@ import {
   getUptimePercentage,
 } from "@/lib/data";
 import { getTimeRange, timeRangeCache } from "@/lib/time-range";
+
+export const metadata: Metadata = {
+  title: "Overview",
+  description:
+    "Self-hosted, file-driven uptime monitoring designed for developers who prefer configuration as code. Define monitors in TypeScript, commit to git, and deploy anywhere.",
+  keywords: [
+    "uptime monitoring",
+    "status page",
+    "self-hosted",
+    "open source",
+    "uptime",
+    "monitoring",
+    "developer tools",
+    "configuration as code",
+    "TypeScript",
+  ],
+  openGraph: {
+    title: "Pongo.sh - Self-hosted uptime monitoring",
+    description:
+      "File-driven uptime monitoring for developers. Define monitors in TypeScript, commit to git, and deploy anywhere.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pongo.sh - Self-hosted uptime monitoring",
+    description:
+      "File-driven uptime monitoring for developers. Define monitors in TypeScript, commit to git, and deploy anywhere.",
+  },
+  alternates: {
+    canonical: "/",
+  },
+};
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
