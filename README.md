@@ -120,15 +120,158 @@ Cookie-based session authentication using iron-session. Set `ACCESS_CODE` env va
 
 Public routes bypass auth: `/public/*`, `/dashboards/shared/*`, `/login`
 
+## Deployment Architecture
+
+Pongo's scheduler can be deployed anywhere - it's a standalone service that only needs database connectivity and an HTTP endpoint.
+
+### Flexible Deployment Model
+
+The scheduler is completely decoupled from the Next.js application:
+
+```
+┌─────────────────┐     ┌──────────────┐     ┌─────────────────┐
+│   Next.js App   │────▶│   Database   │◀────│   Scheduler(s)  │
+│  (Dashboard UI) │     │ (SQLite/PG)  │     │ (Monitor Runner)│
+└─────────────────┘     └──────────────┘     └─────────────────┘
+         │                                             ▲
+         │                                             │
+         └─────────────────────────────────────────────┘
+              HTTP API (optional manual runs)
+```
+
+### Key Principles
+
+1. **Database as Source of Truth**
+   - All components read/write to the same database
+   - Dashboard reads check results
+   - Scheduler writes check results
+   - No direct communication needed between services
+
+2. **Deploy Anywhere**
+   - Scheduler runs as a Bun process (`bun scheduler`)
+   - Can run on any platform: VPS, Docker, Kubernetes, serverless
+   - Multiple schedulers can run simultaneously (multi-region)
+
+3. **HTTP API (Optional)**
+   - Scheduler exposes HTTP API on port 3001
+   - Used only for manual monitor runs from dashboard
+   - Set `SCHEDULER_URL=http://scheduler-host:3001` to enable
+
+### Deployment Scenarios
+
+#### Serverless (Vercel/Netlify)
+
+Use the built-in `/api/cron` endpoint instead of running a scheduler:
+
+```bash
+# Vercel cron calls /api/cron every minute
+# Set CRON_SECRET for authentication
+# No separate scheduler needed
+```
+
+#### Single Server
+
+Run everything on one machine:
+
+```bash
+# Terminal 1: Next.js app
+bun dev
+
+# Terminal 2: Scheduler
+bun scheduler
+
+# Terminal 3: Archiver (optional)
+bun archiver
+```
+
+#### Multi-Region
+
+Deploy schedulers in different regions for geographic redundancy:
+
+```bash
+# Region 1 (us-east)
+PONGO_REGION=us-east bun scheduler
+
+# Region 2 (eu-west)
+PONGO_REGION=eu-west bun scheduler
+
+# All write to the same database
+# Configure alerts to trigger based on region thresholds
+```
+
+#### Docker/Kubernetes
+
+```yaml
+# Separate pods/containers
+services:
+  app:
+    image: pongo-app
+    ports: ["3000:3000"]
+    environment:
+      DATABASE_URL: postgres://...
+
+  scheduler:
+    image: pongo-scheduler
+    ports: ["3001:3001"]
+    environment:
+      DATABASE_URL: postgres://...
+      PONGO_REGION: us-east-1
+```
+
+#### Managed Database + Edge Schedulers
+
+```bash
+# Shared PostgreSQL/Turso database
+DATABASE_URL=postgres://shared-db.example.com/pongo
+
+# Deploy schedulers in multiple locations
+# All write check results to the same database
+# Dashboard can be deployed anywhere with database access
+```
+
+### Requirements
+
+For the scheduler to work, you only need:
+
+1. **Database access** - Read/write to `checkResults`, `alertState`, `alertEvents` tables
+2. **Outbound HTTP** - Ability to make requests to monitored endpoints
+3. **Environment variables** - Same config as the Next.js app (`DATABASE_URL`, etc.)
+
+That's it. No message queues, no service mesh, no complex orchestration.
+
 ## Environment Variables
 
 | Variable | Description |
 |----------|-------------|
 | `DB_DRIVER` | Database driver (`sqlite` or `pg`) |
+| `DATABASE_URL` | Database connection string |
 | `ACCESS_CODE` | Enable authentication with this code |
 | `EXPIRY_DAYS` | Session TTL (default: 7) |
+| `CRON_SECRET` | Secret for authenticating serverless cron requests |
 | `SCHEDULER_MAX_CONCURRENCY` | Max concurrent monitor executions |
 | `PONGO_REGION` | Region identifier for multi-region setups |
+
+### Generating Secrets
+
+For `CRON_SECRET` and other sensitive values, generate secure random strings:
+
+```bash
+# Generate a secure random secret (32 bytes, base64 encoded)
+openssl rand -base64 32
+
+# Example output: Kx8f2vJ9mN4pQ7rT6wY1zA3bC5dE8gH0iL2kM4nP6qR=
+```
+
+Copy the output and set it in your environment:
+
+```bash
+# Local development (.env.local)
+CRON_SECRET=Kx8f2vJ9mN4pQ7rT6wY1zA3bC5dE8gH0iL2kM4nP6qR=
+
+# Vercel deployment
+vercel env add CRON_SECRET
+# Paste the generated secret when prompted
+```
 
 ## Tech Stack
 

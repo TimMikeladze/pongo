@@ -4,6 +4,6 @@ export default {
   name: "Status",
   slug: "status",
   public: true,
-  monitors: ["github", "cloudflare", "aws", "vercel", "openai", "npm"],
+  monitors: ["example", "vercel", "cloudflare", "hackernews"],
   slaTarget: 99.9,
 } satisfies DashboardConfig;
