@@ -1,5 +1,6 @@
 import { getIncidents, getMonitors } from "@/lib/data";
 import { IncidentCard } from "./incident-card";
+import { Card, CardContent } from "./ui/card";
 
 interface IncidentsTimelineProps {
   dashboardId?: string;
@@ -26,9 +27,11 @@ export async function IncidentsTimeline({
 
   if (displayIncidents.length === 0) {
     return (
-      <div className="text-center py-8 text-[11px] text-muted-foreground border border-border rounded-lg">
-        No incidents reported
-      </div>
+      <Card className="bg-card">
+        <CardContent className="text-center py-8 text-[11px] text-muted-foreground">
+          No incidents reported
+        </CardContent>
+      </Card>
     );
   }
 

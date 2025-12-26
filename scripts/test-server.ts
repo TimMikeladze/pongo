@@ -9,7 +9,14 @@
  *   TEST_SERVER_PORT=4001 bun run scripts/test-server.ts
  */
 
+import { serve } from "@hono/node-server";
+
 const PORT = parseInt(process.env.TEST_SERVER_PORT || "4000", 10);
+
+// Helper function to replace Bun.sleep
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 type EndpointState = {
   status: number;
@@ -149,7 +156,7 @@ async function handleEndpoint(path: string): Promise<Response> {
   // Random failure simulation
   if (state.failRate > 0 && Math.random() < state.failRate) {
     if (state.latency > 0) {
-      await Bun.sleep(state.latency);
+      await sleep(state.latency);
     }
     return new Response("Simulated random failure", {
       status: 500,
@@ -159,7 +166,7 @@ async function handleEndpoint(path: string): Promise<Response> {
 
   // Latency simulation
   if (state.latency > 0) {
-    await Bun.sleep(state.latency);
+    await sleep(state.latency);
   }
 
   return new Response(state.body, {
@@ -168,9 +175,9 @@ async function handleEndpoint(path: string): Promise<Response> {
   });
 }
 
-const server = Bun.serve({
+serve({
   port: PORT,
-  async fetch(req) {
+  fetch: async (req) => {
     const url = new URL(req.url);
 
     // Admin routes
@@ -183,8 +190,8 @@ const server = Bun.serve({
   },
 });
 
-console.log(`Test server running on http://localhost:${server.port}`);
-console.log(`Admin API: http://localhost:${server.port}/admin/endpoints`);
+console.log(`Test server running on http://localhost:${PORT}`);
+console.log(`Admin API: http://localhost:${PORT}/admin/endpoints`);
 console.log(`\nDefault endpoints:`);
 for (const [path] of endpoints) {
   console.log(`  ${path}`);

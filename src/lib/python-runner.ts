@@ -1,5 +1,6 @@
 // src/lib/python-runner.ts
 
+import { spawn } from "node:child_process";
 import type { MonitorResult } from "./config-types";
 
 /**
@@ -47,10 +48,17 @@ export async function runPythonMonitor(
     // Spawn Python subprocess
     // stdout: "pipe" allows us to capture JSON output
     // stderr: "pipe" allows us to capture error messages
-    const proc = Bun.spawn(cmd, {
-      stdout: "pipe",
-      stderr: "pipe",
+    const [command, ...args] = cmd;
+    const proc = spawn(command, args, {
+      stdio: ["ignore", "pipe", "pipe"],
     });
+
+    // Collect stdout and stderr
+    const stdoutChunks: Buffer[] = [];
+    const stderrChunks: Buffer[] = [];
+
+    proc.stdout.on("data", (chunk) => stdoutChunks.push(chunk));
+    proc.stderr.on("data", (chunk) => stderrChunks.push(chunk));
 
     // Set up timeout to prevent hanging monitors
     // This ensures monitors can't run indefinitely
@@ -62,17 +70,23 @@ export async function runPythonMonitor(
     });
 
     // Wait for process to complete or timeout (whichever comes first)
-    const exitPromise = proc.exited.then(() => proc);
-    const _result = await Promise.race([exitPromise, timeoutPromise]);
+    const exitPromise = new Promise<{ code: number | null }>(
+      (resolve, reject) => {
+        proc.on("exit", (code) => resolve({ code }));
+        proc.on("error", (err) => reject(err));
+      },
+    );
+
+    const result = await Promise.race([exitPromise, timeoutPromise]);
 
     // Read stdout and stderr streams
     // stdout contains the JSON result from the monitor
     // stderr contains any error messages or Python exceptions
-    const stdout = await new Response(proc.stdout).text();
-    const stderr = await new Response(proc.stderr).text();
+    const stdout = Buffer.concat(stdoutChunks).toString("utf-8");
+    const stderr = Buffer.concat(stderrChunks).toString("utf-8");
 
     // Check for non-zero exit code (indicates Python error)
-    if (proc.exitCode !== 0) {
+    if (result.code !== 0) {
       throw new Error(`Python monitor failed: ${stderr || "Unknown error"}`);
     }
 

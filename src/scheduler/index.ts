@@ -1,5 +1,6 @@
 // src/scheduler/index.ts
 
+import { serve } from "@hono/node-server";
 import { REGION } from "./region";
 import { Scheduler } from "./scheduler";
 import { createServer } from "./server";
@@ -35,7 +36,7 @@ async function main() {
 
   // Start HTTP API
   const server = createServer(scheduler, config.port);
-  Bun.serve(server);
+  serve({ fetch: server.fetch, port: server.port, hostname: server.hostname });
   console.log(`[server] HTTP API listening on http://localhost:${config.port}`);
 
   // Graceful shutdown

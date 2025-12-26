@@ -1,5 +1,6 @@
 // src/archiver/index.ts
 
+import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { Archiver } from "./archiver";
 import type { ArchiverConfig } from "./types";
@@ -52,14 +53,14 @@ function loadConfig(): ArchiverConfig & { port: number } {
   };
 }
 
-function createHealthServer(port: number) {
+function createHealthServer() {
   const app = new Hono();
 
   app.get("/health", (c) => {
     return c.json({ status: "ok" });
   });
 
-  return { fetch: app.fetch, port };
+  return app;
 }
 
 async function main() {
@@ -70,8 +71,8 @@ async function main() {
   const config = loadConfig();
 
   // Start health server (even when archival is disabled, for Fly.io health checks)
-  const server = createHealthServer(config.port);
-  Bun.serve(server);
+  const app = createHealthServer();
+  serve({ fetch: app.fetch, port: config.port });
   console.log(
     `[archiver] Health server listening on http://localhost:${config.port}`,
   );
