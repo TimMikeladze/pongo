@@ -28,12 +28,15 @@ export default monitor({
       };
       const indicator = data.status.indicator;
 
-      if (indicator === "critical" || indicator === "major") {
+      // Explicitly handle all documented Cloudflare status indicators
+      // Docs: https://www.cloudflarestatus.com/api
+      // Possible values: "none", "minor", "major", "critical"
+
+      if (indicator === "none") {
         return {
-          status: "down",
+          status: "up",
           responseTime,
           statusCode: res.status,
-          message: data.status.description,
         };
       }
 
@@ -46,10 +49,21 @@ export default monitor({
         };
       }
 
+      if (indicator === "major" || indicator === "critical") {
+        return {
+          status: "down",
+          responseTime,
+          statusCode: res.status,
+          message: data.status.description,
+        };
+      }
+
+      // Unknown indicator - treat as down for safety
       return {
-        status: "up",
+        status: "down",
         responseTime,
         statusCode: res.status,
+        message: `Unknown indicator: ${indicator}`,
       };
     } catch (error) {
       return {
