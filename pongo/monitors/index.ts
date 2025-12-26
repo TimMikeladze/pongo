@@ -4,6 +4,7 @@ import { runPythonMonitor } from "../../src/lib/python-runner";
 import cloudflare from "./cloudflare";
 import example from "./example";
 import hackernews from "./hackernews";
+import pongo from "./pongo";
 import vercel from "./vercel";
 
 // Python monitor wrappers
@@ -32,6 +33,7 @@ export default {
   vercel,
   cloudflare,
   hackernews,
+  pongo,
   "hackernews-py": hackernewsPy,
   "vercel-py": vercelPy,
 };

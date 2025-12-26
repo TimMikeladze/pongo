@@ -122,6 +122,8 @@ export function AppShell({
 
   const isLoginPage = pathname === "/login";
   const isSharedPage = pathname.startsWith("/shared");
+  // Hide navigation when not authenticated (public view)
+  const showNavigation = isAuthenticated && !isSharedPage;
 
   if (isLoginPage) {
     return <>{children}</>;
@@ -149,7 +151,7 @@ export function AppShell({
       <header
         className={cn(
           "shrink-0 border-b border-border bg-background transition-all duration-300 relative z-10",
-          isDense ? "h-0 opacity-0 overflow-hidden" : "h-12",
+          isDense || !showNavigation ? "h-0 opacity-0 overflow-hidden" : "h-12",
         )}
       >
         <div
@@ -158,39 +160,7 @@ export function AppShell({
             !fullWidth && "md:max-w-6xl",
           )}
         >
-          {isSharedPage ? (
-            // Public/shared pages: show public header or loading state
-            publicHeaderInfo ? (
-              <>
-                <div>
-                  <h1 className="text-sm font-medium font-mono">
-                    {publicHeaderInfo.name}
-                  </h1>
-                  {publicHeaderInfo.description && (
-                    <p className="text-[10px] text-muted-foreground">
-                      {publicHeaderInfo.description}
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`h-2 w-2 rounded-full ${publicHeaderInfo.hasIssues ? "bg-amber-500 animate-pulse" : "bg-blue-500"}`}
-                  />
-                  <span className="text-[10px] text-muted-foreground font-mono">
-                    {publicHeaderInfo.hasIssues
-                      ? "issues detected"
-                      : "all systems operational"}
-                  </span>
-                </div>
-              </>
-            ) : (
-              // Loading state for shared pages - prevents flash of authenticated nav
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-32 bg-muted/50 rounded animate-pulse" />
-              </div>
-            )
-          ) : (
-            // Authenticated pages: show full navigation
+          {showNavigation && (
             <>
               <div className="flex items-center">
                 <nav className="flex items-center gap-1">
