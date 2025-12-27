@@ -310,48 +310,52 @@ export default monitor({
 });
 ```
 
-#### Python Monitors
+#### Python Monitors (Vercel Python Runtime)
 
-Python monitors use a class-based structure and run as subprocesses:
+Python monitors use the [Vercel Python Runtime](https://vercel.com/docs/functions/runtimes/python) and are deployed as serverless functions. Create Python files in the `api/monitors/` directory:
 
 ```python
-# pongo/monitors/example.py
+# api/monitors/example.py
+from http.server import BaseHTTPRequestHandler
 import time
 import urllib.request
 import json
 
-class Monitor:
-    """Monitor configuration and handler"""
-    name = "Example API"
-    interval = "15m"
-    timeout = "30s"
 
-    def check(self):
-        """Run the monitor check"""
-        start = time.time()
+def check_example():
+    """Run the monitor check"""
+    start = time.time()
 
-        try:
-            req = urllib.request.Request("https://api.example.com/health")
-            with urllib.request.urlopen(req, timeout=10) as response:
-                response_time = int((time.time() - start) * 1000)
+    try:
+        req = urllib.request.Request("https://api.example.com/health")
+        with urllib.request.urlopen(req, timeout=10) as response:
+            response_time = int((time.time() - start) * 1000)
 
-                return {
-                    "status": "up" if response.getcode() == 200 else "down",
-                    "responseTime": response_time,
-                    "statusCode": response.getcode(),
-                }
-        except Exception as e:
             return {
-                "status": "down",
-                "responseTime": int((time.time() - start) * 1000),
-                "message": str(e),
+                "status": "up" if response.getcode() == 200 else "down",
+                "responseTime": response_time,
+                "statusCode": response.getcode(),
             }
+    except Exception as e:
+        return {
+            "status": "down",
+            "responseTime": int((time.time() - start) * 1000),
+            "message": str(e),
+        }
 
-# Entry point for subprocess execution
-if __name__ == "__main__":
-    monitor = Monitor()
-    result = monitor.check()
-    print(json.dumps(result))
+
+class handler(BaseHTTPRequestHandler):
+    """Vercel serverless function handler"""
+
+    def do_GET(self):
+        result = check_example()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(json.dumps(result).encode())
+
+    def do_POST(self):
+        self.do_GET()
 ```
 
 **To register a Python monitor**, add it to `pongo/monitors/index.ts`:
@@ -359,15 +363,14 @@ if __name__ == "__main__":
 ```typescript
 import { monitor } from "../../src/lib/config-types";
 import { runPythonMonitor } from "../../src/lib/python-runner";
-import path from "node:path";
 
 const examplePy = monitor({
   name: "Example API (Python)",
   interval: "15m",
   timeout: "30s",
   async handler() {
-    const pythonFile = path.join(__dirname, "example.py");
-    return await runPythonMonitor(pythonFile, 30000);
+    // Calls /api/monitors/example (api/monitors/example.py)
+    return await runPythonMonitor("example", 30000);
   },
 });
 
@@ -377,15 +380,15 @@ export default {
 };
 ```
 
-**Python Requirements:**
-- Python 3.x installed
-- [UV](https://astral.sh/uv) recommended for fast execution (optional)
-- No external dependencies needed (uses stdlib)
-- For packages, use UV or pip
+**Vercel Python Runtime:**
+- Uses `BaseHTTPRequestHandler` for HTTP handling
+- Deployed as serverless functions at `/api/monitors/{name}`
+- No additional dependencies needed (uses Python stdlib)
+- Add `requirements.txt` to project root for external packages
 
 **Compatibility:**
-- ✅ Works: Local development, Docker, VPS, standalone scheduler
-- ❌ Doesn't work: Vercel serverless cron (use standalone scheduler instead)
+- ✅ Works: Vercel deployment (serverless)
+- ⚠️ Local dev: Requires `vercel dev` instead of `next dev`
 
 See `pongo/monitors/README.md` for detailed monitor examples and patterns.
 
