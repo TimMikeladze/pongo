@@ -54,15 +54,6 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 # Final stage for app image
 FROM base
 
-# Install Python and UV for Python monitors
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y python3 python3-pip curl && \
-    curl -LsSf https://astral.sh/uv/install.sh | sh && \
-    rm -rf /var/lib/apt/lists/*
-
-# Add UV to PATH
-ENV PATH="/root/.local/bin:${PATH}"
-
 # Copy production dependencies
 COPY --from=production-deps /app/node_modules ./node_modules
 
