@@ -274,11 +274,14 @@ All user configuration lives in the `pongo/` directory:
 
 ```
 pongo/
-├── monitors/           # Monitor definitions (*.ts, *.py)
+├── monitors/           # Monitor definitions (*.ts)
 ├── dashboards/         # Dashboard configs (*.ts)
 ├── announcements/      # Status announcements (*.md)
 ├── incidents/          # Incident reports (*.md)
 └── channels.ts         # Webhook notification channels
+
+api/
+└── monitors/           # Python monitors (Vercel Python Runtime)
 ```
 
 ### Writing Monitors
@@ -408,6 +411,15 @@ Frontend and API routes using Next.js 15 App Router.
 | `/settings` | Application configuration |
 | `/public/[slug]` | Public status pages (no auth required) |
 | `/api/cron` | Vercel Cron endpoint for serverless monitoring |
+| `/api/monitors/*` | Python monitor serverless functions |
+
+### `/api` - Vercel Python Runtime Functions
+
+Python monitors deployed as Vercel serverless functions.
+
+- Uses `BaseHTTPRequestHandler` for HTTP handling
+- Each `.py` file becomes an API endpoint (e.g., `api/monitors/hackernews.py` → `/api/monitors/hackernews`)
+- Called by `runPythonMonitor()` in TypeScript monitor wrappers
 
 ### `/src/scheduler` - Monitor Execution Service
 
@@ -440,6 +452,7 @@ Dual-database support using Drizzle ORM.
 - **config-types.ts** - Monitor, dashboard, announcement, and channel interfaces
 - **data.ts** - Data access layer with React cache wrapping
 - **loader.ts** - Loads configs from `pongo/` directory
+- **python-runner.ts** - HTTP client for Python monitor API endpoints
 - **types.ts** - Core type definitions
 - **feed.ts** - RSS/Atom feed generation
 
