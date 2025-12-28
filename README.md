@@ -51,7 +51,7 @@ Visit http://localhost:3000 to view the dashboard.
    - `CRON_SECRET` - Generate with `openssl rand -base64 32`
 3. Deploy and access your status page
 
-**Note:** Vercel deployment uses serverless cron for TypeScript monitors. For Python monitors, deploy the scheduler separately (see [Deployment Guide](#deployment)).
+**Note:** Vercel deployment uses serverless cron. For custom scheduling, deploy the scheduler separately (see [Deployment Guide](#deployment)).
 
 ### Deploy to Fly.io (Full support)
 
@@ -70,7 +70,7 @@ fly secrets set ACCESS_CODE="your-access-code"
 fly deploy
 ```
 
-Fly.io supports both TypeScript and Python monitors with the included Dockerfile.
+Fly.io supports persistent VMs with multi-region deployment using the included Dockerfile.
 
 ## Features
 
@@ -88,17 +88,17 @@ Pongo offers flexible deployment options to match your infrastructure needs.
 
 ### Deployment Decision Matrix
 
-| Scenario | Dashboard | Scheduler | Python Support | Best For |
-|----------|-----------|-----------|----------------|----------|
-| **Vercel Only** | Vercel | Vercel Cron | ❌ No | Simple TypeScript monitors, serverless |
-| **Fly.io** | Fly.io | Fly.io | ✅ Yes | Full-featured, single platform |
-| **Hybrid** | Vercel | VPS/Docker | ✅ Yes | Global dashboard + flexible monitoring |
-| **Self-Hosted** | VPS/Docker | VPS/Docker | ✅ Yes | Complete control, on-premises |
+| Scenario | Dashboard | Scheduler | Best For |
+|----------|-----------|-----------|----------|
+| **Vercel Only** | Vercel | Vercel Cron | Serverless, auto-scaling |
+| **Fly.io** | Fly.io | Fly.io | Persistent VMs, multi-region |
+| **Hybrid** | Vercel | VPS/Docker | Global dashboard + flexible monitoring |
+| **Self-Hosted** | VPS/Docker | VPS/Docker | Complete control, on-premises |
 
-### Option 1: Vercel (Serverless - TypeScript Only)
+### Option 1: Vercel (Serverless)
 
 **Pros:** Zero server management, global CDN, auto-scaling
-**Cons:** TypeScript monitors only, no Python support
+**Cons:** Cron runs every 15 minutes minimum
 **Best for:** Simple monitoring setups
 
 1. Click "Deploy with Vercel" button above
@@ -113,11 +113,11 @@ Pongo offers flexible deployment options to match your infrastructure needs.
 
 The built-in `/api/cron` endpoint runs every 15 minutes via Vercel Cron.
 
-### Option 2: Fly.io (Full-Featured)
+### Option 2: Fly.io (Persistent VMs)
 
-**Pros:** Python + TypeScript monitors, persistent VMs, global deployment
+**Pros:** Persistent VMs, multi-region deployment, flexible scheduling
 **Cons:** Requires Fly.io account
-**Best for:** Production deployments with Python monitors
+**Best for:** Production deployments with custom intervals
 
 ```bash
 # Install Fly CLI
@@ -140,7 +140,7 @@ fly deploy
 
 ### Option 3: Hybrid (Vercel Dashboard + VPS Scheduler)
 
-**Pros:** Fast global dashboard + Python monitor support
+**Pros:** Fast global dashboard with flexible scheduling
 **Cons:** Requires managing a VPS
 **Best for:** Best of both worlds
 
@@ -279,16 +279,11 @@ pongo/
 ├── announcements/      # Status announcements (*.md)
 ├── incidents/          # Incident reports (*.md)
 └── channels.ts         # Webhook notification channels
-
-api/
-└── monitors/           # Python monitors (Vercel Python Runtime)
 ```
 
 ### Writing Monitors
 
-Pongo supports monitors in both **TypeScript** and **Python**.
-
-#### TypeScript Monitors
+Create TypeScript monitors in the `pongo/monitors/` directory:
 
 ```typescript
 // pongo/monitors/example.ts
@@ -313,86 +308,6 @@ export default monitor({
 });
 ```
 
-#### Python Monitors (Vercel Python Runtime)
-
-Python monitors use the [Vercel Python Runtime](https://vercel.com/docs/functions/runtimes/python) and are deployed as serverless functions. Create Python files in the `api/monitors/` directory:
-
-```python
-# api/monitors/example.py
-from http.server import BaseHTTPRequestHandler
-import time
-import urllib.request
-import json
-
-
-def check_example():
-    """Run the monitor check"""
-    start = time.time()
-
-    try:
-        req = urllib.request.Request("https://api.example.com/health")
-        with urllib.request.urlopen(req, timeout=10) as response:
-            response_time = int((time.time() - start) * 1000)
-
-            return {
-                "status": "up" if response.getcode() == 200 else "down",
-                "responseTime": response_time,
-                "statusCode": response.getcode(),
-            }
-    except Exception as e:
-        return {
-            "status": "down",
-            "responseTime": int((time.time() - start) * 1000),
-            "message": str(e),
-        }
-
-
-class handler(BaseHTTPRequestHandler):
-    """Vercel serverless function handler"""
-
-    def do_GET(self):
-        result = check_example()
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
-        self.end_headers()
-        self.wfile.write(json.dumps(result).encode())
-
-    def do_POST(self):
-        self.do_GET()
-```
-
-**To register a Python monitor**, add it to `pongo/monitors/index.ts`:
-
-```typescript
-import { monitor } from "../../src/lib/config-types";
-import { runPythonMonitor } from "../../src/lib/python-runner";
-
-const examplePy = monitor({
-  name: "Example API (Python)",
-  interval: "15m",
-  timeout: "30s",
-  async handler() {
-    // Calls /api/monitors/example (api/monitors/example.py)
-    return await runPythonMonitor("example", 30000);
-  },
-});
-
-export default {
-  // ... other monitors
-  "example-py": examplePy,
-};
-```
-
-**Vercel Python Runtime:**
-- Uses `BaseHTTPRequestHandler` for HTTP handling
-- Deployed as serverless functions at `/api/monitors/{name}`
-- No additional dependencies needed (uses Python stdlib)
-- Add `requirements.txt` to project root for external packages
-
-**Compatibility:**
-- ✅ Works: Vercel deployment (serverless)
-- ⚠️ Local dev: Requires `vercel dev` instead of `next dev`
-
 See `pongo/monitors/README.md` for detailed monitor examples and patterns.
 
 ## Architecture
@@ -411,15 +326,6 @@ Frontend and API routes using Next.js 15 App Router.
 | `/settings` | Application configuration |
 | `/public/[slug]` | Public status pages (no auth required) |
 | `/api/cron` | Vercel Cron endpoint for serverless monitoring |
-| `/api/monitors/*` | Python monitor serverless functions |
-
-### `/api` - Vercel Python Runtime Functions
-
-Python monitors deployed as Vercel serverless functions.
-
-- Uses `BaseHTTPRequestHandler` for HTTP handling
-- Each `.py` file becomes an API endpoint (e.g., `api/monitors/hackernews.py` → `/api/monitors/hackernews`)
-- Called by `runPythonMonitor()` in TypeScript monitor wrappers
 
 ### `/src/scheduler` - Monitor Execution Service
 
@@ -452,7 +358,6 @@ Dual-database support using Drizzle ORM.
 - **config-types.ts** - Monitor, dashboard, announcement, and channel interfaces
 - **data.ts** - Data access layer with React cache wrapping
 - **loader.ts** - Loads configs from `pongo/` directory
-- **python-runner.ts** - HTTP client for Python monitor API endpoints
 - **types.ts** - Core type definitions
 - **feed.ts** - RSS/Atom feed generation
 

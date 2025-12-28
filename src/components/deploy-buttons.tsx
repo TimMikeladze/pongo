@@ -72,11 +72,11 @@ export function DeployButtons() {
           <div className="flex flex-wrap justify-center gap-4 text-xs text-muted-foreground pt-2">
             <div className="flex items-center space-x-1">
               <div className="h-2 w-2 rounded-full bg-green-500" />
-              <span>Vercel: TypeScript monitors</span>
+              <span>Vercel: Edge-optimized deployment</span>
             </div>
             <div className="flex items-center space-x-1">
               <div className="h-2 w-2 rounded-full bg-blue-500" />
-              <span>Fly.io: Full Python + TypeScript support</span>
+              <span>Fly.io: Multi-region deployment</span>
             </div>
           </div>
         </div>
