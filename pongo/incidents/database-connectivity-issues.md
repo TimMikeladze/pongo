@@ -5,6 +5,7 @@ severity: major
 status: resolved
 affectedMonitors:
   - example
+createdAt: "2025-12-05T10:15:00Z"
 resolvedAt: "2025-12-05T14:30:00Z"
 ---
 

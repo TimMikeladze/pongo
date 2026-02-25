@@ -2,6 +2,7 @@
 dashboard: demo
 title: "[Demo] Performance Improvements"
 type: info
+createdAt: "2025-12-06T00:00:00Z"
 ---
 
 > **Note:** This is mock data for demonstration purposes.

@@ -5,6 +5,7 @@ severity: minor
 status: investigating
 affectedMonitors:
   - example
+createdAt: "2025-12-07T08:00:00Z"
 ---
 
 > **Note:** This is mock data for demonstration purposes.

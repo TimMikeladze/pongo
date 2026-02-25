@@ -2,6 +2,7 @@
 dashboard: demo
 title: "[Demo] Scheduled Maintenance"
 type: maintenance
+createdAt: "2025-12-10T00:00:00Z"
 expiresAt: "2025-12-15T06:00:00Z"
 ---
 

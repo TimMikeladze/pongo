@@ -92,7 +92,7 @@ export async function loadAnnouncements(): Promise<Announcement[]> {
         title: frontmatter.title,
         message: await marked(body),
         type: frontmatter.type,
-        createdAt: stats.birthtime.toISOString(),
+        createdAt: frontmatter.createdAt ?? stats.mtime.toISOString(),
         expiresAt: frontmatter.expiresAt,
         archived: frontmatter.archived,
       });
@@ -132,8 +132,13 @@ export async function loadIncidents(): Promise<Incident[]> {
       const frontmatter = data as IncidentFrontmatter;
       const stats = fs.statSync(filePath);
 
+      // Determine reference year for parsing update dates (from frontmatter dates or current year)
+      const referenceYear = new Date(
+        frontmatter.createdAt ?? frontmatter.resolvedAt ?? new Date().toISOString(),
+      ).getUTCFullYear();
+
       // Parse markdown body into updates (split by ## headers)
-      const updates = parseIncidentUpdates(body);
+      const updates = parseIncidentUpdates(body, referenceYear);
 
       incidents.push({
         id,
@@ -143,7 +148,7 @@ export async function loadIncidents(): Promise<Incident[]> {
         status: frontmatter.status,
         affectedMonitorIds: frontmatter.affectedMonitors,
         updates,
-        createdAt: stats.birthtime.toISOString(),
+        createdAt: frontmatter.createdAt ?? updates[0]?.createdAt ?? stats.mtime.toISOString(),
         resolvedAt: frontmatter.resolvedAt,
         archived: frontmatter.archived,
       });
@@ -162,7 +167,7 @@ export async function loadIncidents(): Promise<Incident[]> {
  * Parse incident markdown body into structured updates
  * Expects format: ## Status - Date\n\nMessage
  */
-function parseIncidentUpdates(body: string): IncidentUpdate[] {
+function parseIncidentUpdates(body: string, referenceYear: number): IncidentUpdate[] {
   const updates: IncidentUpdate[] = [];
   const sections = body.split(/^## /m).filter(Boolean);
 
@@ -175,7 +180,7 @@ function parseIncidentUpdates(body: string): IncidentUpdate[] {
     const match = headerLine.match(/^(\w+)\s*-\s*(.+)$/);
     if (match) {
       const statusStr = match[1].toLowerCase();
-      const _dateStr = match[2];
+      const dateStr = match[2];
 
       let status: IncidentUpdate["status"] = "investigating";
       if (statusStr === "identified") status = "identified";
@@ -186,12 +191,34 @@ function parseIncidentUpdates(body: string): IncidentUpdate[] {
         id: `update-${updates.length}`,
         status,
         message,
-        createdAt: new Date().toISOString(), // Could parse dateStr for real dates
+        createdAt: parseUpdateDate(dateStr, referenceYear),
       });
     }
   }
 
   return updates;
+}
+
+const MONTH_MAP: Record<string, number> = {
+  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+};
+
+/**
+ * Parse a date string like "Dec 5, 10:15 UTC" into an ISO string
+ */
+function parseUpdateDate(dateStr: string, referenceYear: number): string {
+  const match = dateStr.trim().match(/^(\w+)\s+(\d+),?\s+(\d+):(\d+)\s*(?:UTC)?$/i);
+  if (!match) return new Date().toISOString();
+
+  const month = MONTH_MAP[match[1].toLowerCase()];
+  if (month === undefined) return new Date().toISOString();
+
+  const day = parseInt(match[2], 10);
+  const hours = parseInt(match[3], 10);
+  const minutes = parseInt(match[4], 10);
+
+  return new Date(Date.UTC(referenceYear, month, day, hours, minutes)).toISOString();
 }
 
 /**

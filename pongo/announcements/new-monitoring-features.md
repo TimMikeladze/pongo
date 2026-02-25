@@ -2,6 +2,7 @@
 dashboard: demo
 title: "[Demo] New Monitoring Features"
 type: success
+createdAt: "2025-12-03T00:00:00Z"
 ---
 
 > **Note:** This is mock data for demonstration purposes.

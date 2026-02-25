@@ -5,6 +5,7 @@ severity: critical
 status: resolved
 affectedMonitors:
   - example
+createdAt: "2025-12-01T06:00:00Z"
 resolvedAt: "2025-12-01T09:45:00Z"
 ---
 
