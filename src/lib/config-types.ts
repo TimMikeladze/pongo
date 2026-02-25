@@ -54,6 +54,7 @@ export interface AnnouncementFrontmatter {
   dashboard: string; // dashboard ID
   title: string;
   type: "info" | "warning" | "success" | "maintenance";
+  createdAt?: string; // ISO date
   expiresAt?: string; // ISO date
   archived?: boolean; // if true, not shown on dashboard
 }
@@ -68,6 +69,7 @@ export interface IncidentFrontmatter {
   severity: IncidentSeverity;
   status: IncidentStatus;
   affectedMonitors: string[]; // monitor IDs
+  createdAt?: string; // ISO date
   resolvedAt?: string; // ISO date
   archived?: boolean; // if true, not shown on dashboard
 }
