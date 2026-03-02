@@ -24,6 +24,40 @@
 
 ---
 
+## Screenshots
+
+### Overview Dashboard
+
+<p align="center">
+  <img src="public/screenshots/home.png" alt="Overview Dashboard" width="800" />
+</p>
+
+### Public Status Page
+
+<p align="center">
+  <img src="public/screenshots/status-page.png" alt="Public Status Page" width="800" />
+</p>
+
+### Monitor Detail
+
+<p align="center">
+  <img src="public/screenshots/monitor-detail.png" alt="Monitor Detail" width="800" />
+</p>
+
+### Monitors
+
+<p align="center">
+  <img src="public/screenshots/monitors.png" alt="Monitors" width="800" />
+</p>
+
+### Settings
+
+<p align="center">
+  <img src="public/screenshots/settings.png" alt="Settings" width="800" />
+</p>
+
+---
+
 Define monitors, dashboards, alerts, incidents, and announcements as TypeScript files and Markdown — version-controlled alongside your code. No UI forms. Just code.
 
 - ⚡ Uptime monitoring with configurable intervals and cron schedules
