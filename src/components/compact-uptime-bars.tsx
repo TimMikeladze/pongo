@@ -14,10 +14,10 @@ interface CompactUptimeBarsProps {
 }
 
 const statusColors: Record<MonitorStatus | "pending", string> = {
-  up: "bg-status-up",
-  down: "bg-status-down",
-  degraded: "bg-status-degraded",
-  pending: "bg-status-pending",
+  up: "bg-blue-500",
+  down: "bg-red-500",
+  degraded: "bg-amber-500",
+  pending: "bg-muted-foreground/20",
 };
 
 export async function CompactUptimeBars({
@@ -52,9 +52,9 @@ export async function CompactUptimeBars({
                 <p className="text-foreground">{bucket.label}</p>
                 <p
                   className={cn(
-                    bucket.status === "up" && "text-status-up",
-                    bucket.status === "down" && "text-status-down",
-                    bucket.status === "degraded" && "text-status-degraded",
+                    bucket.status === "up" && "text-blue-500",
+                    bucket.status === "down" && "text-red-500",
+                    bucket.status === "degraded" && "text-amber-500",
                     bucket.status === "pending" && "text-muted-foreground",
                   )}
                 >

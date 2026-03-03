@@ -8,10 +8,10 @@ interface StatusBadgeProps {
 }
 
 const statusConfig = {
-  up: { label: "operational", className: "bg-status-up" },
-  down: { label: "down", className: "bg-status-down" },
-  degraded: { label: "degraded", className: "bg-status-degraded" },
-  pending: { label: "pending", className: "bg-status-pending" },
+  up: { label: "operational", className: "bg-green-500" },
+  down: { label: "down", className: "bg-red-500" },
+  degraded: { label: "degraded", className: "bg-yellow-500" },
+  pending: { label: "pending", className: "bg-gray-500" },
 };
 
 const sizeConfig = {
