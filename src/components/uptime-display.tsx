@@ -29,10 +29,10 @@ interface UptimeDisplayProps {
 }
 
 const statusColors: Record<MonitorStatus | "pending", string> = {
-  up: "bg-blue-500",
-  down: "bg-red-500",
-  degraded: "bg-amber-500",
-  pending: "bg-muted-foreground/20",
+  up: "bg-status-up",
+  down: "bg-status-down",
+  degraded: "bg-status-degraded",
+  pending: "bg-status-pending",
 };
 
 const statusLabels: Record<MonitorStatus | "pending", string> = {
@@ -73,7 +73,7 @@ export function UptimeDisplay({
 
   const colors = useMemo(() => {
     return {
-      up: isDark ? "#3b82f6" : "#2563eb",
+      up: isDark ? "#4ade80" : "#16a34a",
       grid: isDark ? "#1a1a1a" : "#e5e5e5",
       text: isDark ? "#a3a3a3" : "#666",
     };
@@ -125,9 +125,9 @@ export function UptimeDisplay({
             <span
               className={cn(
                 "text-xs font-mono",
-                currentStatus === "up" && "text-blue-500",
-                currentStatus === "down" && "text-red-500",
-                currentStatus === "degraded" && "text-amber-500",
+                currentStatus === "up" && "text-status-up",
+                currentStatus === "down" && "text-status-down",
+                currentStatus === "degraded" && "text-status-degraded",
                 currentStatus === "pending" && "text-muted-foreground",
               )}
             >
@@ -157,9 +157,9 @@ export function UptimeDisplay({
                     <p className="text-foreground">{bucket.label}</p>
                     <p
                       className={cn(
-                        bucket.status === "up" && "text-blue-500",
-                        bucket.status === "down" && "text-red-500",
-                        bucket.status === "degraded" && "text-amber-500",
+                        bucket.status === "up" && "text-status-up",
+                        bucket.status === "down" && "text-status-down",
+                        bucket.status === "degraded" && "text-status-degraded",
                         bucket.status === "pending" && "text-muted-foreground",
                       )}
                     >
