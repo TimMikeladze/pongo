@@ -99,7 +99,7 @@ export function SupportDialog({
           }
           title={`${label} pongo`}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="h-3.5 w-3.5" />
           {showLabel && <span>{label}</span>}
         </button>
       </DialogTrigger>
