@@ -43,7 +43,7 @@
   --sidebar-ring: oklch(0.7 0 0);
 
   /* Status colors - dark mode */
-  --status-up: oklch(0.85 0.3 145);
+  --status-up: oklch(0.62 0.21 259);
   --status-down: oklch(0.75 0.32 25);
   --status-degraded: oklch(0.88 0.22 85);
   --status-pending: oklch(0.4 0 0);
@@ -84,7 +84,7 @@
   --sidebar-border: oklch(0.85 0 0);
   --sidebar-ring: oklch(0.35 0 0);
 
-  --status-up: oklch(0.45 0.18 145);
+  --status-up: oklch(0.55 0.22 262);
   --status-down: oklch(0.55 0.22 25);
   --status-degraded: oklch(0.65 0.15 85);
   --status-pending: oklch(0.65 0 0);
@@ -125,7 +125,7 @@
   --sidebar-border: oklch(0.22 0 0);
   --sidebar-ring: oklch(0.7 0 0);
 
-  --status-up: oklch(0.85 0.3 145);
+  --status-up: oklch(0.62 0.21 259);
   --status-down: oklch(0.75 0.32 25);
   --status-degraded: oklch(0.88 0.22 85);
   --status-pending: oklch(0.4 0 0);
@@ -215,15 +215,15 @@
 
 /* Glow effect for status indicators */
 .glow-up {
-  box-shadow: 0 0 8px oklch(0.45 0.18 145 / 0.5);
+  box-shadow: 0 0 8px oklch(0.55 0.22 262 / 0.5);
 }
 
 .dark .glow-up {
-  box-shadow: 0 0 8px oklch(0.85 0.3 145 / 0.5);
+  box-shadow: 0 0 8px oklch(0.62 0.21 259 / 0.5);
 }
 
 .light .glow-up {
-  box-shadow: 0 0 8px oklch(0.45 0.18 145 / 0.5);
+  box-shadow: 0 0 8px oklch(0.55 0.22 262 / 0.5);
 }
 
 .glow-down {
