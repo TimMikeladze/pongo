@@ -73,7 +73,7 @@ export function UptimeDisplay({
 
   const colors = useMemo(() => {
     return {
-      up: isDark ? "#3b82f6" : "#2563eb",
+      up: isDark ? "#4ade80" : "#16a34a",
       grid: isDark ? "#1a1a1a" : "#e5e5e5",
       text: isDark ? "#a3a3a3" : "#666",
     };

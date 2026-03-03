@@ -32,7 +32,7 @@ export function StatusDistributionChart({
   const isDark = mounted ? resolvedTheme === "dark" : true;
   const colors = useMemo(() => {
     return {
-      up: isDark ? "#3b82f6" : "#2563eb",
+      up: isDark ? "#4ade80" : "#16a34a",
       degraded: isDark ? "#facc15" : "#ca8a04",
       down: isDark ? "#ef4444" : "#dc2626",
       grid: isDark ? "#1a1a1a" : "#e5e5e5",
