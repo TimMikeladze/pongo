@@ -240,10 +240,12 @@ export const getUptimePercentage = cache(
         const results = await getCheckResults(monitorId, { timeRange });
 
         if (results.length === 0) return 100;
-        const upCount = results.filter(
-          (r) => r.status === "up" || r.status === "degraded",
-        ).length;
-        return Math.round((upCount / results.length) * 10000) / 100;
+        const uptimeScore = results.reduce((acc, r) => {
+          if (r.status === "up") return acc + 1;
+          if (r.status === "degraded") return acc + 0.5;
+          return acc;
+        }, 0);
+        return Math.round((uptimeScore / results.length) * 10000) / 100;
       },
       [`uptime-${monitorId}-${timeRangeKey(timeRange)}`],
       {
