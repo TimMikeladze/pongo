@@ -40,7 +40,7 @@ export default monitor({
         };
       }
 
-      if (indicator === "minor") {
+      if (indicator === "minor" || indicator === "major") {
         return {
           status: "degraded",
           responseTime,
@@ -49,7 +49,7 @@ export default monitor({
         };
       }
 
-      if (indicator === "major" || indicator === "critical") {
+      if (indicator === "critical") {
         return {
           status: "down",
           responseTime,

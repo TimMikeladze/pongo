@@ -317,10 +317,9 @@ async function MonitorRecentChecks({
                   "text-xs",
                   result.status === "up" &&
                     "text-green-700 dark:text-green-400",
-                  result.status === "down" &&
-                    "text-yellow-700 dark:text-yellow-400",
                   result.status === "degraded" &&
-                    "text-red-700 dark:text-red-400",
+                    "text-yellow-700 dark:text-yellow-400",
+                  result.status === "down" && "text-red-700 dark:text-red-400",
                 )}
               >
                 {result.statusCode || "err"}
