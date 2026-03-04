@@ -15,13 +15,13 @@ const statusConfig = {
   },
   down: {
     label: "down",
-    className: "bg-yellow-600",
-    textClassName: "text-yellow-700 dark:text-yellow-400",
+    className: "bg-red-500",
+    textClassName: "text-red-700 dark:text-red-400",
   },
   degraded: {
     label: "degraded",
-    className: "bg-red-500",
-    textClassName: "text-red-700 dark:text-red-400",
+    className: "bg-yellow-500",
+    textClassName: "text-yellow-700 dark:text-yellow-400",
   },
   pending: {
     label: "pending",
