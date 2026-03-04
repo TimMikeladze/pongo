@@ -6,9 +6,9 @@ interface AlertSeverityBadgeProps {
 }
 
 const severityStyles: Record<AlertSeverity, string> = {
-  critical: "bg-red-500/20 text-red-500",
-  warning: "bg-yellow-500/20 text-yellow-500",
-  info: "bg-blue-500/20 text-blue-500",
+  critical: "bg-red-500/20 text-red-700 dark:text-red-400",
+  warning: "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+  info: "bg-blue-500/20 text-blue-700 dark:text-blue-400",
 };
 
 export function AlertSeverityBadge({ severity }: AlertSeverityBadgeProps) {

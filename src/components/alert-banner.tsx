@@ -15,15 +15,15 @@ export function AlertBanner({ firingAlerts }: AlertBannerProps) {
     <div className="bg-red-500/10 border border-red-500/30 rounded p-3 mb-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 text-red-500" />
-          <span className="text-sm text-red-500 font-medium">
+          <AlertTriangle className="h-4 w-4 text-red-700 dark:text-red-400" />
+          <span className="text-sm text-red-700 dark:text-red-400 font-medium">
             {firingAlerts.length} alert{firingAlerts.length > 1 ? "s" : ""}{" "}
             currently firing
           </span>
         </div>
         <Link
           href="#firing"
-          className="text-xs text-red-500 hover:text-red-400 transition-colors"
+          className="text-xs text-red-700 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
         >
           View
         </Link>
@@ -32,13 +32,13 @@ export function AlertBanner({ firingAlerts }: AlertBannerProps) {
         {firingAlerts.slice(0, 3).map((alert) => (
           <span
             key={alert.alertId}
-            className="text-[10px] px-2 py-0.5 bg-red-500/20 rounded text-red-500"
+            className="text-[10px] px-2 py-0.5 bg-red-500/20 rounded text-red-700 dark:text-red-400"
           >
             {alert.alertId}
           </span>
         ))}
         {firingAlerts.length > 3 && (
-          <span className="text-[10px] text-red-500/70">
+          <span className="text-[10px] text-red-700/70 dark:text-red-400/70">
             +{firingAlerts.length - 3} more
           </span>
         )}

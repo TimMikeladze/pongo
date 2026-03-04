@@ -134,7 +134,9 @@ export async function loadIncidents(): Promise<Incident[]> {
 
       // Determine reference year for parsing update dates (from frontmatter dates or current year)
       const referenceYear = new Date(
-        frontmatter.createdAt ?? frontmatter.resolvedAt ?? new Date().toISOString(),
+        frontmatter.createdAt ??
+          frontmatter.resolvedAt ??
+          new Date().toISOString(),
       ).getUTCFullYear();
 
       // Parse markdown body into updates (split by ## headers)
@@ -148,7 +150,10 @@ export async function loadIncidents(): Promise<Incident[]> {
         status: frontmatter.status,
         affectedMonitorIds: frontmatter.affectedMonitors,
         updates,
-        createdAt: frontmatter.createdAt ?? updates[0]?.createdAt ?? stats.mtime.toISOString(),
+        createdAt:
+          frontmatter.createdAt ??
+          updates[0]?.createdAt ??
+          stats.mtime.toISOString(),
         resolvedAt: frontmatter.resolvedAt,
         archived: frontmatter.archived,
       });
@@ -167,7 +172,10 @@ export async function loadIncidents(): Promise<Incident[]> {
  * Parse incident markdown body into structured updates
  * Expects format: ## Status - Date\n\nMessage
  */
-function parseIncidentUpdates(body: string, referenceYear: number): IncidentUpdate[] {
+function parseIncidentUpdates(
+  body: string,
+  referenceYear: number,
+): IncidentUpdate[] {
   const updates: IncidentUpdate[] = [];
   const sections = body.split(/^## /m).filter(Boolean);
 
@@ -200,15 +208,27 @@ function parseIncidentUpdates(body: string, referenceYear: number): IncidentUpda
 }
 
 const MONTH_MAP: Record<string, number> = {
-  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
-  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+  jan: 0,
+  feb: 1,
+  mar: 2,
+  apr: 3,
+  may: 4,
+  jun: 5,
+  jul: 6,
+  aug: 7,
+  sep: 8,
+  oct: 9,
+  nov: 10,
+  dec: 11,
 };
 
 /**
  * Parse a date string like "Dec 5, 10:15 UTC" into an ISO string
  */
 function parseUpdateDate(dateStr: string, referenceYear: number): string {
-  const match = dateStr.trim().match(/^(\w+)\s+(\d+),?\s+(\d+):(\d+)\s*(?:UTC)?$/i);
+  const match = dateStr
+    .trim()
+    .match(/^(\w+)\s+(\d+),?\s+(\d+):(\d+)\s*(?:UTC)?$/i);
   if (!match) return new Date().toISOString();
 
   const month = MONTH_MAP[match[1].toLowerCase()];
@@ -218,7 +238,9 @@ function parseUpdateDate(dateStr: string, referenceYear: number): string {
   const hours = parseInt(match[3], 10);
   const minutes = parseInt(match[4], 10);
 
-  return new Date(Date.UTC(referenceYear, month, day, hours, minutes)).toISOString();
+  return new Date(
+    Date.UTC(referenceYear, month, day, hours, minutes),
+  ).toISOString();
 }
 
 /**

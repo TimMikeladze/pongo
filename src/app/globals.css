@@ -44,8 +44,8 @@
 
   /* Status colors - dark mode */
   --status-up: oklch(0.85 0.3 145);
-  --status-down: oklch(0.75 0.32 25);
-  --status-degraded: oklch(0.88 0.22 85);
+  --status-down: oklch(0.88 0.22 85);
+  --status-degraded: oklch(0.75 0.32 25);
   --status-pending: oklch(0.4 0 0);
 }
 
@@ -85,8 +85,8 @@
   --sidebar-ring: oklch(0.35 0 0);
 
   --status-up: oklch(0.45 0.18 145);
-  --status-down: oklch(0.55 0.22 25);
-  --status-degraded: oklch(0.65 0.15 85);
+  --status-down: oklch(0.65 0.15 85);
+  --status-degraded: oklch(0.55 0.22 25);
   --status-pending: oklch(0.65 0 0);
 }
 
@@ -126,8 +126,8 @@
   --sidebar-ring: oklch(0.7 0 0);
 
   --status-up: oklch(0.85 0.3 145);
-  --status-down: oklch(0.75 0.32 25);
-  --status-degraded: oklch(0.88 0.22 85);
+  --status-down: oklch(0.88 0.22 85);
+  --status-degraded: oklch(0.75 0.32 25);
   --status-pending: oklch(0.4 0 0);
 }
 
