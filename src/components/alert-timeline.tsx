@@ -88,7 +88,7 @@ export function AlertTimeline({
                   <span className="text-sm font-medium">{alertId}</span>
                   <AlertSeverityBadge severity={severity} />
                   {isFiring && (
-                    <span className="text-[10px] px-1.5 py-0.5 bg-red-500/20 text-red-500 rounded">
+                    <span className="text-[10px] px-1.5 py-0.5 bg-red-500/20 text-red-700 dark:text-red-400 rounded">
                       FIRING
                     </span>
                   )}
@@ -119,17 +119,21 @@ export function AlertTimeline({
                   className="flex items-start gap-2 text-[10px]"
                 >
                   {event.eventType === "fired" ? (
-                    <span className="text-red-500 mt-0.5">●</span>
+                    <span className="text-red-700 dark:text-red-400 mt-0.5">
+                      ●
+                    </span>
                   ) : (
-                    <span className="text-green-500 mt-0.5">●</span>
+                    <span className="text-green-700 dark:text-green-400 mt-0.5">
+                      ●
+                    </span>
                   )}
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span
                         className={
                           event.eventType === "fired"
-                            ? "text-red-500"
-                            : "text-green-500"
+                            ? "text-red-700 dark:text-red-400"
+                            : "text-green-700 dark:text-green-400"
                         }
                       >
                         {event.eventType === "fired" ? "Fired" : "Resolved"}
@@ -153,7 +157,9 @@ export function AlertTimeline({
               ))}
               {!latestEvent.resolvedAt && latestEvent.eventType === "fired" && (
                 <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                  <span className="text-yellow-500 mt-0.5">●</span>
+                  <span className="text-yellow-600 dark:text-yellow-400 mt-0.5">
+                    ●
+                  </span>
                   <span>
                     ongoing... ({formatDistanceToNow(latestEvent.triggeredAt)})
                   </span>

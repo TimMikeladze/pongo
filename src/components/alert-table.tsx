@@ -117,12 +117,12 @@ export function AlertTable({
                   </td>
                   <td className="p-2">
                     {isFiring ? (
-                      <span className="text-red-500 flex items-center gap-1">
+                      <span className="text-red-700 dark:text-red-400 flex items-center gap-1">
                         <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
                         Firing
                       </span>
                     ) : (
-                      <span className="text-green-500 flex items-center gap-1">
+                      <span className="text-green-700 dark:text-green-400 flex items-center gap-1">
                         <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
                         Resolved
                       </span>

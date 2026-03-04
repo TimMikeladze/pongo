@@ -33,8 +33,8 @@ export function StatusDistributionChart({
   const colors = useMemo(() => {
     return {
       up: isDark ? "#4ade80" : "#16a34a",
-      degraded: isDark ? "#facc15" : "#ca8a04",
-      down: isDark ? "#ef4444" : "#dc2626",
+      degraded: isDark ? "#ef4444" : "#dc2626",
+      down: isDark ? "#facc15" : "#ca8a04",
       grid: isDark ? "#1a1a1a" : "#e5e5e5",
       text: isDark ? "#a3a3a3" : "#666",
     };

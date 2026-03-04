@@ -8,10 +8,26 @@ interface StatusBadgeProps {
 }
 
 const statusConfig = {
-  up: { label: "operational", className: "bg-green-500" },
-  down: { label: "down", className: "bg-red-500" },
-  degraded: { label: "degraded", className: "bg-yellow-500" },
-  pending: { label: "pending", className: "bg-gray-500" },
+  up: {
+    label: "operational",
+    className: "bg-green-500",
+    textClassName: "text-green-700 dark:text-green-400",
+  },
+  down: {
+    label: "down",
+    className: "bg-yellow-600",
+    textClassName: "text-yellow-700 dark:text-yellow-400",
+  },
+  degraded: {
+    label: "degraded",
+    className: "bg-red-500",
+    textClassName: "text-red-700 dark:text-red-400",
+  },
+  pending: {
+    label: "pending",
+    className: "bg-gray-500",
+    textClassName: "text-gray-600 dark:text-gray-400",
+  },
 };
 
 const sizeConfig = {
@@ -33,7 +49,12 @@ export function StatusBadge({
         className={cn("rounded-full", sizeConfig[size], config.className)}
       />
       {showLabel && (
-        <span className="text-xs text-muted-foreground lowercase tracking-wide">
+        <span
+          className={cn(
+            "text-xs lowercase tracking-wide",
+            config.textClassName,
+          )}
+        >
           {config.label}
         </span>
       )}
