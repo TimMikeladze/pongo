@@ -29,9 +29,9 @@ interface UptimeDisplayProps {
 }
 
 const statusColors: Record<MonitorStatus | "pending", string> = {
-  up: "bg-blue-500",
-  down: "bg-yellow-500",
-  degraded: "bg-red-500",
+  up: "bg-green-500",
+  down: "bg-red-500",
+  degraded: "bg-yellow-500",
   pending: "bg-muted-foreground/20",
 };
 
@@ -125,11 +125,10 @@ export function UptimeDisplay({
             <span
               className={cn(
                 "text-xs font-mono",
-                currentStatus === "up" && "text-blue-700 dark:text-blue-400",
-                currentStatus === "down" &&
-                  "text-yellow-700 dark:text-yellow-400",
+                currentStatus === "up" && "text-green-700 dark:text-green-400",
+                currentStatus === "down" && "text-red-700 dark:text-red-400",
                 currentStatus === "degraded" &&
-                  "text-red-700 dark:text-red-400",
+                  "text-yellow-700 dark:text-yellow-400",
                 currentStatus === "pending" && "text-muted-foreground",
               )}
             >
@@ -160,11 +159,11 @@ export function UptimeDisplay({
                     <p
                       className={cn(
                         bucket.status === "up" &&
-                          "text-blue-700 dark:text-blue-400",
+                          "text-green-700 dark:text-green-400",
                         bucket.status === "down" &&
-                          "text-yellow-700 dark:text-yellow-400",
-                        bucket.status === "degraded" &&
                           "text-red-700 dark:text-red-400",
+                        bucket.status === "degraded" &&
+                          "text-yellow-700 dark:text-yellow-400",
                         bucket.status === "pending" && "text-muted-foreground",
                       )}
                     >
