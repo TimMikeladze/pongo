@@ -529,6 +529,9 @@ When `ACCESS_CODE` is set:
 | `S3_SECRET_ACCESS_KEY` | S3 secret key | - |
 | `S3_PREFIX` | S3 key prefix | - |
 | `NEXT_PUBLIC_URL` | Public URL for SEO/metadata | - |
+| `NEXT_PUBLIC_SITE_NAME` | Custom site name (metadata, page titles, footer) | `pongo.sh` |
+| `NEXT_PUBLIC_HIDE_GITHUB` | Hide the GitHub icon in the footer | - |
+| `NEXT_PUBLIC_HIDE_DOCS` | Hide the docs link in the appbar | - |
 | `NEXT_PUBLIC_HIDE_SUPPORT` | Hide the support icon in the footer | - |
 | `NEXT_PUBLIC_FOOTER_LOGO` | Custom footer logo image URL (e.g. `/custom-logo.png`) | pongo logo |
 | `NEXT_PUBLIC_FOOTER_TITLE` | Custom footer title text | `pongo.sh` |

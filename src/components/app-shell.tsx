@@ -68,12 +68,16 @@ const navigation = [
   { name: "monitors", href: "/monitors", icon: Activity },
   { name: "dashboards", href: "/dashboards", icon: LayoutDashboard },
   { name: "alerts", href: "/alerts", icon: Bell },
-  {
-    name: "docs",
-    href: "https://github.com/TimMikeladze/pongo#readme",
-    icon: BookOpen,
-    external: true,
-  },
+  ...(!process.env.NEXT_PUBLIC_HIDE_DOCS
+    ? [
+        {
+          name: "docs",
+          href: "https://github.com/TimMikeladze/pongo#readme",
+          icon: BookOpen,
+          external: true as const,
+        },
+      ]
+    : []),
 ];
 
 interface AppShellProps {
@@ -287,15 +291,17 @@ export function AppShell({
                 {theme === "light" && <Sun className="h-3.5 w-3.5" />}
                 {theme === "system" && <SunMoon className="h-3.5 w-3.5" />}
               </button>
-              <a
-                href="https://github.com/timmikeladze/pongo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                title="GitHub"
-              >
-                <Github className="h-3.5 w-3.5" />
-              </a>
+              {!process.env.NEXT_PUBLIC_HIDE_GITHUB && (
+                <a
+                  href="https://github.com/timmikeladze/pongo"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  title="GitHub"
+                >
+                  <Github className="h-3.5 w-3.5" />
+                </a>
+              )}
               <Dialog open={zenSupportOpen} onOpenChange={setZenSupportOpen}>
                 <DialogTrigger asChild>
                   <button
@@ -500,7 +506,11 @@ export function AppShell({
                 {process.env.NEXT_PUBLIC_FOOTER_LOGO ? (
                   <img
                     src={process.env.NEXT_PUBLIC_FOOTER_LOGO}
-                    alt={process.env.NEXT_PUBLIC_FOOTER_TITLE ?? "pongo.sh"}
+                    alt={
+                      process.env.NEXT_PUBLIC_FOOTER_TITLE ??
+                      process.env.NEXT_PUBLIC_SITE_NAME ??
+                      "pongo.sh"
+                    }
                     width={24}
                     height={24}
                     className="rounded-full"
@@ -510,7 +520,9 @@ export function AppShell({
                 )}
                 <div className="flex flex-col">
                   <span className="font-medium">
-                    {process.env.NEXT_PUBLIC_FOOTER_TITLE ?? "pongo.sh"}
+                    {process.env.NEXT_PUBLIC_FOOTER_TITLE ??
+                      process.env.NEXT_PUBLIC_SITE_NAME ??
+                      "pongo.sh"}
                   </span>
                   <span className="text-[10px] text-muted-foreground/60">
                     {process.env.NEXT_PUBLIC_FOOTER_CAPTION ??
@@ -527,19 +539,21 @@ export function AppShell({
             </TooltipContent>
           </Tooltip>
           <div className="flex items-center gap-3">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <a
-                  href="https://github.com/timmikeladze/pongo"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-foreground transition-colors"
-                >
-                  <Github className="h-3.5 w-3.5" />
-                </a>
-              </TooltipTrigger>
-              <TooltipContent>GitHub</TooltipContent>
-            </Tooltip>
+            {!process.env.NEXT_PUBLIC_HIDE_GITHUB && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <a
+                    href="https://github.com/timmikeladze/pongo"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-foreground transition-colors"
+                  >
+                    <Github className="h-3.5 w-3.5" />
+                  </a>
+                </TooltipTrigger>
+                <TooltipContent>GitHub</TooltipContent>
+              </Tooltip>
+            )}
             {!process.env.NEXT_PUBLIC_HIDE_SUPPORT && (
               <Tooltip>
                 <TooltipTrigger asChild>

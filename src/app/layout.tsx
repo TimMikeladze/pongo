@@ -14,11 +14,13 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
 });
 
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "pongo.sh";
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_URL || "https://pongo.sh"),
   title: {
-    default: "Overview | pongo.sh - open-source uptime monitoring",
-    template: "%s | pongo.sh - open-source uptime monitoring",
+    default: `Overview | ${siteName} - open-source uptime monitoring`,
+    template: `%s | ${siteName} - open-source uptime monitoring`,
   },
   description: "Self-hosted uptime monitoring",
   keywords: [
@@ -28,25 +30,25 @@ export const metadata: Metadata = {
     "self-hosted",
     "open source",
   ],
-  authors: [{ name: "pongo.sh" }],
+  authors: [{ name: siteName }],
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "pongo.sh",
-    title: "pongo.sh",
+    siteName: siteName,
+    title: siteName,
     description: "Self-hosted uptime monitoring",
     images: [
       {
         url: "/banner.png",
         width: 1200,
         height: 630,
-        alt: "pongo.sh - Self-hosted uptime monitoring",
+        alt: `${siteName} - Self-hosted uptime monitoring`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "pongo.sh",
+    title: siteName,
     description: "Self-hosted uptime monitoring",
     images: ["/banner.png"],
   },
@@ -77,7 +79,7 @@ export default async function RootLayout({
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "pongo.sh",
+    name: siteName,
     description: "Self-hosted uptime monitoring",
     url: baseUrl,
     logo: `${baseUrl}/logo.png`,
