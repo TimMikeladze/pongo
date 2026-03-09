@@ -15,6 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "pongo.sh";
+const faviconUrl = process.env.NEXT_PUBLIC_FAVICON || "/logo.png";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_URL || "https://pongo.sh"),
@@ -53,8 +54,8 @@ export const metadata: Metadata = {
     images: ["/banner.png"],
   },
   icons: {
-    icon: [{ url: "/logo.png", type: "image/png" }],
-    apple: "/logo.png",
+    icon: [{ url: faviconUrl, type: "image/png" }],
+    apple: faviconUrl,
   },
 };
 
