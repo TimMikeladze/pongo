@@ -31,10 +31,21 @@ export const INTERVAL_OPTIONS: readonly string[] = parseEnvList(
 );
 export type IntervalOption = string;
 
-export const DEFAULT_PRESET: TimeRangePreset =
+const envDefaultPreset =
   process.env.NEXT_PUBLIC_DEFAULT_PRESET?.trim() || "24h";
-export const DEFAULT_INTERVAL: IntervalOption =
+export const DEFAULT_PRESET: TimeRangePreset = TIME_RANGE_PRESETS.includes(
+  envDefaultPreset,
+)
+  ? envDefaultPreset
+  : TIME_RANGE_PRESETS[0];
+
+const envDefaultInterval =
   process.env.NEXT_PUBLIC_DEFAULT_INTERVAL?.trim() || "15m";
+export const DEFAULT_INTERVAL: IntervalOption = INTERVAL_OPTIONS.includes(
+  envDefaultInterval,
+)
+  ? envDefaultInterval
+  : INTERVAL_OPTIONS[0];
 
 /**
  * Maximum number of data points to allow for chart queries.
