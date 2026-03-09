@@ -29,7 +29,7 @@ export const INTERVAL_OPTIONS = [
 export type IntervalOption = (typeof INTERVAL_OPTIONS)[number];
 
 export const DEFAULT_PRESET: TimeRangePreset = "24h";
-export const DEFAULT_INTERVAL: IntervalOption = "1h";
+export const DEFAULT_INTERVAL: IntervalOption = "15m";
 
 /**
  * Maximum number of data points to allow for chart queries.
