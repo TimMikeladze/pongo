@@ -537,6 +537,10 @@ When `ACCESS_CODE` is set:
 | `NEXT_PUBLIC_FOOTER_LOGO` | Custom footer logo image URL (e.g. `/custom-logo.png`) | pongo logo |
 | `NEXT_PUBLIC_FOOTER_TITLE` | Custom footer title text | `pongo.sh` |
 | `NEXT_PUBLIC_FOOTER_CAPTION` | Custom footer caption text | `open-source uptime monitoring` |
+| `NEXT_PUBLIC_TIME_RANGE_PRESETS` | Comma-separated time range presets for the dashboard picker | `1h,24h,7d,30d,90d,180d,360d` |
+| `NEXT_PUBLIC_INTERVAL_OPTIONS` | Comma-separated interval options for chart data aggregation | `15m,30m,1h,24h,3d,7d,30d` |
+| `NEXT_PUBLIC_DEFAULT_PRESET` | Default time range preset | `24h` |
+| `NEXT_PUBLIC_DEFAULT_INTERVAL` | Default chart aggregation interval | `15m` |
 
 ## Scripts
 

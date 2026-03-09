@@ -1,35 +1,40 @@
-import { subDays, subHours } from "date-fns";
 import {
   createSearchParamsCache,
   parseAsStringLiteral,
   parseAsTimestamp,
 } from "nuqs/server";
+import { parseDuration } from "@/lib/config-types";
 
-export const TIME_RANGE_PRESETS = [
-  "1h",
-  "24h",
-  "7d",
-  "30d",
-  "90d",
-  "180d",
-  "360d",
-] as const;
-export type TimeRangePreset = (typeof TIME_RANGE_PRESETS)[number];
+const DEFAULT_PRESETS = "1h,24h,7d,30d,90d,180d,360d";
+const DEFAULT_INTERVALS = "15m,30m,1h,24h,3d,7d,30d";
 
-export const INTERVAL_OPTIONS = [
-  "5m",
-  "15m",
-  "30m",
-  "1h",
-  "24h",
-  "3d",
-  "7d",
-  "30d",
-] as const;
-export type IntervalOption = (typeof INTERVAL_OPTIONS)[number];
+function parseEnvList(
+  envValue: string | undefined,
+  fallback: string,
+): string[] {
+  const raw = envValue?.trim() || fallback;
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
-export const DEFAULT_PRESET: TimeRangePreset = "24h";
-export const DEFAULT_INTERVAL: IntervalOption = "15m";
+export const TIME_RANGE_PRESETS: readonly string[] = parseEnvList(
+  process.env.NEXT_PUBLIC_TIME_RANGE_PRESETS,
+  DEFAULT_PRESETS,
+);
+export type TimeRangePreset = string;
+
+export const INTERVAL_OPTIONS: readonly string[] = parseEnvList(
+  process.env.NEXT_PUBLIC_INTERVAL_OPTIONS,
+  DEFAULT_INTERVALS,
+);
+export type IntervalOption = string;
+
+export const DEFAULT_PRESET: TimeRangePreset =
+  process.env.NEXT_PUBLIC_DEFAULT_PRESET?.trim() || "24h";
+export const DEFAULT_INTERVAL: IntervalOption =
+  process.env.NEXT_PUBLIC_DEFAULT_INTERVAL?.trim() || "15m";
 
 /**
  * Maximum number of data points to allow for chart queries.
@@ -41,22 +46,7 @@ export const MAX_DATA_POINTS = 500;
  * Get the duration in milliseconds for a time range preset.
  */
 export function getPresetDurationMs(preset: TimeRangePreset): number {
-  switch (preset) {
-    case "1h":
-      return 60 * 60 * 1000;
-    case "24h":
-      return 24 * 60 * 60 * 1000;
-    case "7d":
-      return 7 * 24 * 60 * 60 * 1000;
-    case "30d":
-      return 30 * 24 * 60 * 60 * 1000;
-    case "90d":
-      return 90 * 24 * 60 * 60 * 1000;
-    case "180d":
-      return 180 * 24 * 60 * 60 * 1000;
-    case "360d":
-      return 360 * 24 * 60 * 60 * 1000;
-  }
+  return parseDuration(preset);
 }
 
 /**
@@ -103,11 +93,14 @@ export function getBestIntervalForDuration(durationMs: number): IntervalOption {
 }
 
 export const timeRangeSearchParams = {
-  preset: parseAsStringLiteral(TIME_RANGE_PRESETS).withDefault(DEFAULT_PRESET),
+  preset: parseAsStringLiteral(
+    TIME_RANGE_PRESETS as unknown as readonly [string, ...string[]],
+  ).withDefault(DEFAULT_PRESET),
   from: parseAsTimestamp,
   to: parseAsTimestamp,
-  interval:
-    parseAsStringLiteral(INTERVAL_OPTIONS).withDefault(DEFAULT_INTERVAL),
+  interval: parseAsStringLiteral(
+    INTERVAL_OPTIONS as unknown as readonly [string, ...string[]],
+  ).withDefault(DEFAULT_INTERVAL),
 };
 
 export const timeRangeCache = createSearchParamsCache(timeRangeSearchParams);
@@ -117,34 +110,8 @@ export function getPresetRange(preset: TimeRangePreset): {
   to: Date;
 } {
   const to = new Date();
-  let from: Date;
-
-  switch (preset) {
-    case "1h":
-      from = subHours(to, 1);
-      break;
-    case "24h":
-      from = subHours(to, 24);
-      break;
-    case "7d":
-      from = subDays(to, 7);
-      break;
-    case "30d":
-      from = subDays(to, 30);
-      break;
-    case "90d":
-      from = subDays(to, 90);
-      break;
-    case "180d":
-      from = subDays(to, 180);
-      break;
-    case "360d":
-      from = subDays(to, 360);
-      break;
-    default:
-      from = subHours(to, 24);
-  }
-
+  const durationMs = parseDuration(preset);
+  const from = new Date(to.getTime() - durationMs);
   return { from, to };
 }
 
@@ -170,24 +137,7 @@ export function formatIntervalLabel(interval: IntervalOption): string {
 }
 
 export function getIntervalMs(interval: IntervalOption): number {
-  switch (interval) {
-    case "5m":
-      return 5 * 60 * 1000;
-    case "15m":
-      return 15 * 60 * 1000;
-    case "30m":
-      return 30 * 60 * 1000;
-    case "1h":
-      return 60 * 60 * 1000;
-    case "24h":
-      return 24 * 60 * 60 * 1000;
-    case "3d":
-      return 3 * 24 * 60 * 60 * 1000;
-    case "7d":
-      return 7 * 24 * 60 * 60 * 1000;
-    case "30d":
-      return 30 * 24 * 60 * 60 * 1000;
-  }
+  return parseDuration(interval);
 }
 
 /**
@@ -199,46 +149,36 @@ export function formatBucketLabel(
   timestamp: number | bigint | string,
   interval: IntervalOption,
 ): string {
-  // Ensure timestamp is a number (handles bigint/string from database)
-  // Floor to interval boundary to ensure clean display times
   const intervalMs = getIntervalMs(interval);
   const flooredTimestamp =
     Math.floor(Number(timestamp) / intervalMs) * intervalMs;
   const date = new Date(flooredTimestamp);
-  switch (interval) {
-    case "5m":
-    case "15m":
-    case "30m":
-    case "1h":
-      return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: "UTC",
-      });
-    case "24h":
-      return date.toLocaleDateString([], {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        timeZone: "UTC",
-      });
-    case "3d":
-      return date.toLocaleDateString([], {
-        month: "short",
-        day: "numeric",
-        timeZone: "UTC",
-      });
-    case "7d":
-      return date.toLocaleDateString([], {
-        month: "short",
-        day: "numeric",
-        timeZone: "UTC",
-      });
-    case "30d":
-      return date.toLocaleDateString([], {
-        month: "short",
-        day: "numeric",
-        timeZone: "UTC",
-      });
+
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+
+  if (intervalMs < ONE_DAY) {
+    // Sub-day intervals: show time
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "UTC",
+    });
   }
+
+  if (intervalMs === ONE_DAY) {
+    // Exactly 1 day: show date + time
+    return date.toLocaleDateString([], {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      timeZone: "UTC",
+    });
+  }
+
+  // Multi-day intervals: show date only
+  return date.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
 }
