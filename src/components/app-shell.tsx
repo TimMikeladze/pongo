@@ -497,11 +497,24 @@ export function AppShell({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center gap-3 cursor-default">
-                <PongoLogo size={24} />
+                {process.env.NEXT_PUBLIC_FOOTER_LOGO ? (
+                  <img
+                    src={process.env.NEXT_PUBLIC_FOOTER_LOGO}
+                    alt={process.env.NEXT_PUBLIC_FOOTER_TITLE ?? "pongo.sh"}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <PongoLogo size={24} />
+                )}
                 <div className="flex flex-col">
-                  <span className="font-medium">pongo.sh</span>
+                  <span className="font-medium">
+                    {process.env.NEXT_PUBLIC_FOOTER_TITLE ?? "pongo.sh"}
+                  </span>
                   <span className="text-[10px] text-muted-foreground/60">
-                    open-source uptime monitoring
+                    {process.env.NEXT_PUBLIC_FOOTER_CAPTION ??
+                      "open-source uptime monitoring"}
                   </span>
                 </div>
               </div>
@@ -527,14 +540,16 @@ export function AppShell({
               </TooltipTrigger>
               <TooltipContent>GitHub</TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>
-                  <SupportDialog showLabel={false} />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>Support</TooltipContent>
-            </Tooltip>
+            {!process.env.NEXT_PUBLIC_HIDE_SUPPORT && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <SupportDialog showLabel={false} />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Support</TooltipContent>
+              </Tooltip>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
