@@ -15,6 +15,7 @@ import { useChartFullscreen, useChartType } from "@/components/chart-card";
 import type { ChartType } from "@/components/chart-type-toggle";
 import { useTheme } from "@/components/theme-provider";
 import type { ResponseTimeDataPoint } from "@/lib/data";
+import { dualTimeLabelFormatter } from "@/lib/format-time";
 
 interface ResponseTimeChartProps {
   data: ResponseTimeDataPoint[];
@@ -90,6 +91,7 @@ export function ResponseTimeChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          labelFormatter={dualTimeLabelFormatter}
           formatter={(value) => [`${value}ms`, "latency"]}
         />
         <Area
@@ -128,6 +130,7 @@ export function ResponseTimeChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          labelFormatter={dualTimeLabelFormatter}
           formatter={(value) => [`${value}ms`, "latency"]}
         />
         <Bar

@@ -15,6 +15,7 @@ import { useChartFullscreen, useChartType } from "@/components/chart-card";
 import type { ChartType } from "@/components/chart-type-toggle";
 import { useTheme } from "@/components/theme-provider";
 import type { UptimeDataPoint } from "@/lib/data";
+import { dualTimeLabelFormatter } from "@/lib/format-time";
 
 interface UptimeChartProps {
   data: UptimeDataPoint[];
@@ -82,6 +83,7 @@ export function UptimeChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          labelFormatter={dualTimeLabelFormatter}
           formatter={(value) => [`${value}%`, "uptime"]}
         />
         <Bar dataKey="uptime" radius={[2, 2, 0, 0]}>
@@ -115,6 +117,7 @@ export function UptimeChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          labelFormatter={dualTimeLabelFormatter}
           formatter={(value) => [`${value}%`, "uptime"]}
         />
         <Area

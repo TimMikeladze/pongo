@@ -15,6 +15,7 @@ import { useChartFullscreen, useChartType } from "@/components/chart-card";
 import type { ChartType } from "@/components/chart-type-toggle";
 import { useTheme } from "@/components/theme-provider";
 import type { ThroughputDataPoint } from "@/lib/data";
+import { dualTimeLabelFormatter } from "@/lib/format-time";
 
 interface ThroughputChartProps {
   data: ThroughputDataPoint[];
@@ -89,6 +90,7 @@ export function ThroughputChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          labelFormatter={dualTimeLabelFormatter}
           formatter={(value) => [`${value}`, "checks"]}
         />
         <Area
@@ -125,6 +127,7 @@ export function ThroughputChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          labelFormatter={dualTimeLabelFormatter}
           formatter={(value) => [`${value}`, "checks"]}
         />
         <Bar dataKey="checks" fill={colors.stroke} radius={[2, 2, 0, 0]} />

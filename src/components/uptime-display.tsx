@@ -1,5 +1,7 @@
 "use client";
 
+import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { BarChart3, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -9,6 +11,7 @@ import {
   ResponsiveContainer,
   XAxis,
 } from "recharts";
+import { DualTime } from "@/components/dual-time";
 import { useTheme } from "@/components/theme-provider";
 import {
   Tooltip,
@@ -67,9 +70,15 @@ export function UptimeDisplay({
     return statusBuckets[statusBuckets.length - 1]?.status ?? "pending";
   }, [statusBuckets]);
 
-  // Calculate time range label
-  const startLabel = statusBuckets[0]?.label ?? "";
-  const endLabel = statusBuckets[statusBuckets.length - 1]?.label ?? "Now";
+  // Calculate time range labels (UTC + local)
+  const startTs = statusBuckets[0]?.timestamp;
+  const endTs = statusBuckets[statusBuckets.length - 1]?.timestamp;
+  const startLabel = startTs
+    ? `${formatInTimeZone(new Date(startTs), "UTC", "h:mm a")} UTC / ${format(new Date(startTs), "h:mm a")} Local`
+    : "";
+  const endLabel = endTs
+    ? `${formatInTimeZone(new Date(endTs), "UTC", "h:mm a")} UTC / ${format(new Date(endTs), "h:mm a")} Local`
+    : "Now";
 
   const colors = useMemo(() => {
     return {
@@ -83,6 +92,7 @@ export function UptimeDisplay({
   const sparklineData = useMemo(() => {
     return statusBuckets.map((bucket) => ({
       time: bucket.label,
+      _ts: bucket.timestamp,
       uptime: bucket.status === "pending" ? null : bucket.uptime,
       checks: bucket.checks,
     }));
@@ -155,7 +165,11 @@ export function UptimeDisplay({
                   className="bg-card border-border text-xs font-mono"
                 >
                   <div className="space-y-1">
-                    <p className="text-foreground">{bucket.label}</p>
+                    <DualTime
+                      date={bucket.timestamp}
+                      formatStr="MMM d, h:mm a"
+                      className="text-foreground block"
+                    />
                     <p
                       className={cn(
                         bucket.status === "up" &&
@@ -210,7 +224,12 @@ export function UptimeDisplay({
                     value !== null ? `${value}%` : "No data",
                     "uptime",
                   ]}
-                  labelFormatter={(label) => label}
+                  labelFormatter={(_label, payload) => {
+                    const ts = payload?.[0]?.payload?._ts;
+                    if (!ts) return _label;
+                    const d = new Date(ts);
+                    return `UTC ${formatInTimeZone(d, "UTC", "h:mm a")}\nLocal ${format(d, "h:mm a")}`;
+                  }}
                 />
                 <Area
                   type="monotone"

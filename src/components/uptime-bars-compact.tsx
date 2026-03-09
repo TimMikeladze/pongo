@@ -1,5 +1,6 @@
 "use client";
 
+import { DualTime } from "@/components/dual-time";
 import {
   Tooltip,
   TooltipContent,
@@ -41,7 +42,11 @@ export function UptimeBarsCompact({ statusBuckets }: UptimeBarsCompactProps) {
               className="bg-card border-border text-xs font-mono"
             >
               <div className="space-y-1">
-                <p className="text-foreground">{bucket.label}</p>
+                <DualTime
+                  date={bucket.timestamp}
+                  formatStr="h:mm a"
+                  className="text-foreground block"
+                />
                 <p
                   className={cn(
                     bucket.status === "up" &&

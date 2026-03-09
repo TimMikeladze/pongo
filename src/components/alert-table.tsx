@@ -1,6 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { BellOff, ChevronDown, ChevronRight, PowerOff } from "lucide-react";
 import { useState } from "react";
 import type { AlertOverride } from "@/db";
@@ -129,12 +130,42 @@ export function AlertTable({
                     )}
                   </td>
                   <td className="p-2 text-muted-foreground">
-                    {format(event.triggeredAt, "MMM d, h:mm a")}
+                    <span
+                      title={`Local ${format(event.triggeredAt, "MMM d, h:mm a")}`}
+                    >
+                      {formatInTimeZone(
+                        event.triggeredAt,
+                        "UTC",
+                        "MMM d, h:mm a",
+                      )}{" "}
+                      UTC
+                    </span>
+                    <br />
+                    <span className="opacity-60">
+                      {format(event.triggeredAt, "h:mm a")} Local
+                    </span>
                   </td>
                   <td className="p-2 text-muted-foreground">
-                    {event.resolvedAt
-                      ? format(event.resolvedAt, "MMM d, h:mm a")
-                      : "—"}
+                    {event.resolvedAt ? (
+                      <>
+                        <span
+                          title={`Local ${format(event.resolvedAt, "MMM d, h:mm a")}`}
+                        >
+                          {formatInTimeZone(
+                            event.resolvedAt,
+                            "UTC",
+                            "MMM d, h:mm a",
+                          )}{" "}
+                          UTC
+                        </span>
+                        <br />
+                        <span className="opacity-60">
+                          {format(event.resolvedAt, "h:mm a")} Local
+                        </span>
+                      </>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td className="p-2 text-muted-foreground">
                     {isFiring

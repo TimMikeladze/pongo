@@ -65,6 +65,7 @@
     "cmdk": "^1.1.1",
     "croner": "^10.0.1",
     "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "drizzle-orm": "^0.45.1",
     "embla-carousel-react": "^8.6.0",
     "gray-matter": "^4.0.3",

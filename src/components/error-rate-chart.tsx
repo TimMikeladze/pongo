@@ -16,6 +16,7 @@ import { useChartFullscreen, useChartType } from "@/components/chart-card";
 import type { ChartType } from "@/components/chart-type-toggle";
 import { useTheme } from "@/components/theme-provider";
 import type { ErrorRateDataPoint } from "@/lib/data";
+import { dualTimeLabelFormatter } from "@/lib/format-time";
 
 interface ErrorRateChartProps {
   data: ErrorRateDataPoint[];
@@ -83,6 +84,7 @@ export function ErrorRateChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          labelFormatter={dualTimeLabelFormatter}
           formatter={(value, name) => [
             name === "errorRate" ? `${value}%` : value,
             name === "errorRate" ? "error rate" : "errors",
@@ -132,6 +134,7 @@ export function ErrorRateChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          labelFormatter={dualTimeLabelFormatter}
           formatter={(value, name) => [
             name === "errorRate" ? `${value}%` : value,
             name === "errorRate" ? "error rate" : "errors",

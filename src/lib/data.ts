@@ -659,22 +659,26 @@ export async function enableAlert(alertId: string): Promise<void> {
 
 export interface ResponseTimeDataPoint {
   time: string;
+  _ts: number;
   responseTime: number;
 }
 
 export interface ErrorRateDataPoint {
   time: string;
+  _ts: number;
   errorRate: number;
   errors: number;
 }
 
 export interface UptimeDataPoint {
   time: string;
+  _ts: number;
   uptime: number;
 }
 
 export interface LatencyPercentilesDataPoint {
   time: string;
+  _ts: number;
   p50: number;
   p95: number;
   p99: number;
@@ -682,6 +686,7 @@ export interface LatencyPercentilesDataPoint {
 
 export interface ThroughputDataPoint {
   time: string;
+  _ts: number;
   checks: number;
 }
 
@@ -739,6 +744,7 @@ export async function getResponseTimeChartData(
 
   return rows.map((row) => ({
     time: formatBucketLabel(row.bucket, interval),
+    _ts: Number(row.bucket),
     responseTime: Math.round(row.avg_response_time),
   }));
 }
@@ -774,6 +780,7 @@ export async function getErrorRateChartData(
 
   return rows.map((row) => ({
     time: formatBucketLabel(row.bucket, interval),
+    _ts: Number(row.bucket),
     errorRate: row.total > 0 ? Math.round((row.errors / row.total) * 100) : 0,
     errors: Number(row.errors),
   }));
@@ -810,6 +817,7 @@ export async function getUptimeChartData(
 
   return rows.map((row) => ({
     time: formatBucketLabel(row.bucket, interval),
+    _ts: Number(row.bucket),
     uptime: Math.round((Number(row.up_count) / Number(row.total)) * 100),
   }));
 }
@@ -866,6 +874,7 @@ export async function getLatencyPercentilesChartData(
         0;
       return {
         time: formatBucketLabel(bucket, interval),
+        _ts: Number(bucket),
         p50,
         p95,
         p99,
@@ -902,6 +911,7 @@ export async function getThroughputChartData(
 
   return rows.map((row) => ({
     time: formatBucketLabel(row.bucket, interval),
+    _ts: Number(row.bucket),
     checks: Number(row.checks),
   }));
 }
@@ -1034,6 +1044,7 @@ export const getAggregatedResponseTimeChartData = cache(
 
         return rows.map((row) => ({
           time: formatBucketLabel(row.bucket, interval),
+          _ts: Number(row.bucket),
           responseTime: Math.round(row.avg_response_time),
         }));
       },
@@ -1085,6 +1096,7 @@ export const getAggregatedErrorRateChartData = cache(
 
         return rows.map((row) => ({
           time: formatBucketLabel(row.bucket, interval),
+          _ts: Number(row.bucket),
           errorRate:
             Number(row.total) > 0
               ? Math.round((Number(row.errors) / Number(row.total)) * 100)
@@ -1140,6 +1152,7 @@ export const getAggregatedUptimeChartData = cache(
 
         return rows.map((row) => ({
           time: formatBucketLabel(row.bucket, interval),
+          _ts: Number(row.bucket),
           uptime: Math.round((Number(row.up_count) / Number(row.total)) * 100),
         }));
       },
@@ -1209,6 +1222,7 @@ export const getAggregatedLatencyPercentilesChartData = cache(
               0;
             return {
               time: formatBucketLabel(bucket, interval),
+              _ts: Number(bucket),
               p50,
               p95,
               p99,
@@ -1261,6 +1275,7 @@ export const getAggregatedThroughputChartData = cache(
 
         return rows.map((row) => ({
           time: formatBucketLabel(row.bucket, interval),
+          _ts: Number(row.bucket),
           checks: Number(row.checks),
         }));
       },

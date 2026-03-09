@@ -16,6 +16,7 @@ import { useChartFullscreen, useChartType } from "@/components/chart-card";
 import type { ChartType } from "@/components/chart-type-toggle";
 import { useTheme } from "@/components/theme-provider";
 import type { LatencyPercentilesDataPoint } from "@/lib/data";
+import { dualTimeLabelFormatter } from "@/lib/format-time";
 
 interface LatencyPercentilesChartProps {
   data: LatencyPercentilesDataPoint[];
@@ -86,6 +87,7 @@ export function LatencyPercentilesChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          labelFormatter={dualTimeLabelFormatter}
           formatter={(value) => [`${value}ms`]}
         />
         <Legend
@@ -143,6 +145,7 @@ export function LatencyPercentilesChart({
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
+          labelFormatter={dualTimeLabelFormatter}
           formatter={(value) => [`${value}ms`]}
         />
         <Legend

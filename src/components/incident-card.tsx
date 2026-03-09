@@ -1,6 +1,7 @@
 "use client";
 
 import { format, formatDistanceToNow } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import {
   type AlertCircle,
   CheckCircle,
@@ -127,7 +128,14 @@ export function IncidentCard({
                       {update.status}
                     </span>
                     <span className="opacity-40">
-                      {format(new Date(update.createdAt), "MMM d, HH:mm")}
+                      {formatInTimeZone(
+                        new Date(update.createdAt),
+                        "UTC",
+                        "MMM d, HH:mm",
+                      )}{" "}
+                      UTC
+                      {" · "}
+                      {format(new Date(update.createdAt), "HH:mm")} Local
                     </span>
                   </div>
                   <p className="text-[11px] opacity-80 mt-1">

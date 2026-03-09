@@ -1,4 +1,5 @@
 import { format, formatDistanceToNow } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { Bell, BellOff, PowerOff } from "lucide-react";
 import type { AlertOverride } from "@/db";
 import type { AlertEventWithMonitor } from "@/lib/data";
@@ -139,7 +140,14 @@ export function AlertTimeline({
                         {event.eventType === "fired" ? "Fired" : "Resolved"}
                       </span>
                       <span className="text-muted-foreground">
-                        {format(event.triggeredAt, "MMM d, h:mm a")}
+                        {formatInTimeZone(
+                          event.triggeredAt,
+                          "UTC",
+                          "MMM d, h:mm a",
+                        )}{" "}
+                        UTC
+                        {" · "}
+                        {format(event.triggeredAt, "h:mm a")} Local
                       </span>
                       {event.duration && (
                         <span className="text-muted-foreground">

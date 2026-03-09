@@ -1,5 +1,6 @@
 "use client";
 
+import { DualTime } from "@/components/dual-time";
 import {
   Tooltip,
   TooltipContent,
@@ -46,7 +47,11 @@ export function StatusTimeline({ data, limit = 30 }: StatusTimelineProps) {
               </TooltipTrigger>
               <TooltipContent className="bg-card border-border">
                 <div className="text-xs font-mono">
-                  <p className="text-muted-foreground mb-1">{bucket.time}</p>
+                  <DualTime
+                    date={bucket.timestamp}
+                    formatStr="MMM d, h:mm a"
+                    className="text-muted-foreground mb-1 block"
+                  />
                   <p
                     className={cn(
                       "lowercase",

@@ -5,6 +5,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getStatusBuckets, type TimeRange } from "@/lib/data";
+import { formatBucketDualTime } from "@/lib/format-time";
 import type { MonitorStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -49,7 +50,14 @@ export async function CompactUptimeBars({
               className="bg-card border-border text-xs font-mono"
             >
               <div className="space-y-1">
-                <p className="text-foreground">{bucket.label}</p>
+                <p className="text-foreground">
+                  <span className="text-muted-foreground">UTC</span>{" "}
+                  {formatBucketDualTime(bucket.timestamp, "1h").utc}
+                </p>
+                <p className="text-foreground">
+                  <span className="text-muted-foreground">Local</span>{" "}
+                  {formatBucketDualTime(bucket.timestamp, "1h").local}
+                </p>
                 <p
                   className={cn(
                     bucket.status === "up" &&
