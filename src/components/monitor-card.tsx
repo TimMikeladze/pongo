@@ -8,19 +8,25 @@ import {
   getStatusBuckets,
   type TimeRange,
 } from "@/lib/data";
+import type { IntervalOption } from "@/lib/time-range";
 import type { Monitor } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface MonitorCardProps {
   monitor: Monitor;
   timeRange: TimeRange;
+  interval: IntervalOption;
 }
 
-export async function MonitorCard({ monitor, timeRange }: MonitorCardProps) {
+export async function MonitorCard({
+  monitor,
+  timeRange,
+  interval,
+}: MonitorCardProps) {
   const [latestResult, stats, statusBuckets] = await Promise.all([
     getLatestCheckResult(monitor.id),
     getMonitorStats(monitor.id, timeRange),
-    getStatusBuckets(monitor.id, timeRange, "1h"),
+    getStatusBuckets(monitor.id, timeRange, interval),
   ]);
 
   const status = latestResult?.status ?? "pending";

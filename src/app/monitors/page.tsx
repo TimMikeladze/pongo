@@ -19,7 +19,8 @@ interface Props {
 export default async function MonitorsPage({ searchParams }: Props) {
   const params = await searchParams;
   const monitors = await getMonitors();
-  const { preset, from, to } = await timeRangeCache.parse(searchParams);
+  const { preset, from, to, interval } =
+    await timeRangeCache.parse(searchParams);
   const timeRange = getTimeRange({ preset, from, to });
   const activeCount = monitors.filter((m) => m.isActive).length;
   const pausedCount = monitors.length - activeCount;
@@ -97,6 +98,7 @@ export default async function MonitorsPage({ searchParams }: Props) {
               key={monitor.id}
               monitor={monitor}
               timeRange={timeRange}
+              interval={interval}
             />
           ))}
         </div>

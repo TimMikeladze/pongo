@@ -481,6 +481,7 @@ export default async function OverviewPage({ searchParams }: Props) {
                 key={monitor.id}
                 monitor={monitor}
                 timeRange={timeRange}
+                interval={interval}
               />
             ))}
           </div>
