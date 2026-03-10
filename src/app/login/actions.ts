@@ -3,23 +3,9 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getSession, verifyAccessCode } from "@/lib/auth";
+import { createRateLimiter, isRateLimited } from "@/lib/rate-limit";
 
-const loginAttempts = new Map<string, { count: number; resetAt: number }>();
-const MAX_ATTEMPTS = 5;
-const WINDOW_MS = 60_000;
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const record = loginAttempts.get(ip);
-
-  if (!record || now > record.resetAt) {
-    loginAttempts.set(ip, { count: 1, resetAt: now + WINDOW_MS });
-    return false;
-  }
-
-  record.count++;
-  return record.count > MAX_ATTEMPTS;
-}
+const loginLimiter = createRateLimiter(5, 60_000);
 
 export async function login(
   code: string,
@@ -30,7 +16,7 @@ export async function login(
     h.get("x-real-ip") ||
     "unknown";
 
-  if (isRateLimited(ip)) {
+  if (isRateLimited(loginLimiter, ip)) {
     return { success: false, error: "Too many attempts. Try again later." };
   }
 
