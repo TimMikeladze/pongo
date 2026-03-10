@@ -37,8 +37,26 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-8 px-6">
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-2">
-            <PongoLogo size={24} />
-            <span className="text-lg tracking-wider font-medium">pongo</span>
+            {process.env.NEXT_PUBLIC_FOOTER_LOGO ? (
+              <img
+                src={process.env.NEXT_PUBLIC_FOOTER_LOGO}
+                alt={
+                  process.env.NEXT_PUBLIC_FOOTER_TITLE ??
+                  process.env.NEXT_PUBLIC_SITE_NAME ??
+                  "pongo"
+                }
+                width={24}
+                height={24}
+                className="rounded-full"
+              />
+            ) : (
+              <PongoLogo size={24} />
+            )}
+            <span className="text-lg tracking-wider font-medium">
+              {process.env.NEXT_PUBLIC_FOOTER_TITLE ??
+                process.env.NEXT_PUBLIC_SITE_NAME ??
+                "pongo"}
+            </span>
           </div>
           <p className="text-xs text-muted-foreground">
             enter access code to continue
