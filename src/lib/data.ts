@@ -19,6 +19,19 @@ import {
   loadIncidents,
   loadMonitors,
 } from "./loader";
+
+/**
+ * Sanitize a string for safe SQL interpolation.
+ * Only allows alphanumeric characters, hyphens, underscores, and dots.
+ * Throws on invalid input to prevent SQL injection.
+ */
+function sanitizeSqlValue(value: string): string {
+  if (!/^[a-zA-Z0-9_.-]+$/.test(value)) {
+    throw new Error(`Unsafe SQL value: "${value}"`);
+  }
+  return value;
+}
+
 import type { IntervalOption } from "./time-range";
 import { formatBucketLabel, getIntervalMs } from "./time-range";
 import type {
@@ -728,7 +741,7 @@ export async function getResponseTimeChartData(
       ${dbHelpers.round("AVG(response_time_ms)")} as avg_response_time,
       COUNT(*) as cnt
     FROM pongo_check_results
-    WHERE monitor_id = '${monitorId}'
+    WHERE monitor_id = '${sanitizeSqlValue(monitorId)}'
       AND ${ts} >= ${fromMs}
       AND ${ts} <= ${toMs}
       AND status != 'down'
@@ -765,7 +778,7 @@ export async function getErrorRateChartData(
       SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as errors,
       COUNT(*) as total
     FROM pongo_check_results
-    WHERE monitor_id = '${monitorId}'
+    WHERE monitor_id = '${sanitizeSqlValue(monitorId)}'
       AND ${ts} >= ${fromMs}
       AND ${ts} <= ${toMs}
     GROUP BY bucket
@@ -802,7 +815,7 @@ export async function getUptimeChartData(
       SUM(CASE WHEN status IN ('up', 'degraded') THEN 1 ELSE 0 END) as up_count,
       COUNT(*) as total
     FROM pongo_check_results
-    WHERE monitor_id = '${monitorId}'
+    WHERE monitor_id = '${sanitizeSqlValue(monitorId)}'
       AND ${ts} >= ${fromMs}
       AND ${ts} <= ${toMs}
     GROUP BY bucket
@@ -839,7 +852,7 @@ export async function getLatencyPercentilesChartData(
       (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
       response_time_ms
     FROM pongo_check_results
-    WHERE monitor_id = '${monitorId}'
+    WHERE monitor_id = '${sanitizeSqlValue(monitorId)}'
       AND ${ts} >= ${fromMs}
       AND ${ts} <= ${toMs}
       AND status != 'down'
@@ -897,7 +910,7 @@ export async function getThroughputChartData(
       (${ts} / ${intervalMs}) * ${intervalMs} as bucket,
       COUNT(*) as checks
     FROM pongo_check_results
-    WHERE monitor_id = '${monitorId}'
+    WHERE monitor_id = '${sanitizeSqlValue(monitorId)}'
       AND ${ts} >= ${fromMs}
       AND ${ts} <= ${toMs}
     GROUP BY bucket
@@ -936,7 +949,7 @@ export async function getStatusTimelineData(
       COUNT(*) as total,
       ${dbHelpers.round("AVG(response_time_ms)")} as avg_response_time
     FROM pongo_check_results
-    WHERE monitor_id = '${monitorId}'
+    WHERE monitor_id = '${sanitizeSqlValue(monitorId)}'
       AND ${ts} >= ${fromMs}
       AND ${ts} <= ${toMs}
     GROUP BY bucket
@@ -987,7 +1000,7 @@ export async function getStatusDistributionData(
       SUM(CASE WHEN status = 'degraded' THEN 1 ELSE 0 END) as degraded_count,
       SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as down_count
     FROM pongo_check_results
-    WHERE monitor_id = '${monitorId}'
+    WHERE monitor_id = '${sanitizeSqlValue(monitorId)}'
       AND ${ts} >= ${fromMs}
       AND ${ts} <= ${toMs}
   `;
@@ -1021,7 +1034,9 @@ export const getAggregatedResponseTimeChartData = cache(
         const intervalMs = getIntervalMs(interval);
         const fromMs = timeRange.from.getTime();
         const toMs = timeRange.to.getTime();
-        const idList = monitorIds.map((id) => `'${id}'`).join(",");
+        const idList = monitorIds
+          .map((id) => `'${sanitizeSqlValue(id)}'`)
+          .join(",");
         const ts = dbHelpers.timestampToMs("checked_at");
 
         const query = `
@@ -1072,7 +1087,9 @@ export const getAggregatedErrorRateChartData = cache(
         const intervalMs = getIntervalMs(interval);
         const fromMs = timeRange.from.getTime();
         const toMs = timeRange.to.getTime();
-        const idList = monitorIds.map((id) => `'${id}'`).join(",");
+        const idList = monitorIds
+          .map((id) => `'${sanitizeSqlValue(id)}'`)
+          .join(",");
         const ts = dbHelpers.timestampToMs("checked_at");
 
         const query = `
@@ -1128,7 +1145,9 @@ export const getAggregatedUptimeChartData = cache(
         const intervalMs = getIntervalMs(interval);
         const fromMs = timeRange.from.getTime();
         const toMs = timeRange.to.getTime();
-        const idList = monitorIds.map((id) => `'${id}'`).join(",");
+        const idList = monitorIds
+          .map((id) => `'${sanitizeSqlValue(id)}'`)
+          .join(",");
         const ts = dbHelpers.timestampToMs("checked_at");
 
         const query = `
@@ -1180,7 +1199,9 @@ export const getAggregatedLatencyPercentilesChartData = cache(
         const intervalMs = getIntervalMs(interval);
         const fromMs = timeRange.from.getTime();
         const toMs = timeRange.to.getTime();
-        const idList = monitorIds.map((id) => `'${id}'`).join(",");
+        const idList = monitorIds
+          .map((id) => `'${sanitizeSqlValue(id)}'`)
+          .join(",");
         const ts = dbHelpers.timestampToMs("checked_at");
 
         const query = `
@@ -1253,7 +1274,9 @@ export const getAggregatedThroughputChartData = cache(
         const intervalMs = getIntervalMs(interval);
         const fromMs = timeRange.from.getTime();
         const toMs = timeRange.to.getTime();
-        const idList = monitorIds.map((id) => `'${id}'`).join(",");
+        const idList = monitorIds
+          .map((id) => `'${sanitizeSqlValue(id)}'`)
+          .join(",");
         const ts = dbHelpers.timestampToMs("checked_at");
 
         const query = `
@@ -1301,7 +1324,9 @@ export const getAggregatedStatusDistributionData = cache(
       async () => {
         const fromMs = timeRange.from.getTime();
         const toMs = timeRange.to.getTime();
-        const idList = monitorIds.map((id) => `'${id}'`).join(",");
+        const idList = monitorIds
+          .map((id) => `'${sanitizeSqlValue(id)}'`)
+          .join(",");
         const ts = dbHelpers.timestampToMs("checked_at");
 
         const query = `

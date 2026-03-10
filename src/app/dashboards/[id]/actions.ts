@@ -1,17 +1,28 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { isAuthenticated } from "@/lib/auth";
 
 const SCHEDULER_URL = process.env.SCHEDULER_URL ?? "http://localhost:3001";
+const SCHEDULER_SECRET = process.env.SCHEDULER_SECRET;
 
 export async function triggerAllMonitors(
   monitorIds: string[],
   dashboardId: string,
 ) {
+  if (!(await isAuthenticated())) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   try {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (SCHEDULER_SECRET) headers.Authorization = `Bearer ${SCHEDULER_SECRET}`;
+
     const res = await fetch(`${SCHEDULER_URL}/monitors/trigger`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ monitorIds }),
     });
 

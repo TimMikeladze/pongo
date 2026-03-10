@@ -1,25 +1,8 @@
 import { getIronSession } from "iron-session";
 import { type NextRequest, NextResponse } from "next/server";
-import type { SessionData } from "@/lib/auth";
+import { getSessionOptions, type SessionData } from "@/lib/auth";
 
 const ACCESS_CODE = process.env.ACCESS_CODE;
-const EXPIRY_DAYS = Number(process.env.EXPIRY_DAYS) || 7;
-
-function getSessionOptions() {
-  return {
-    password:
-      ACCESS_CODE?.padEnd(32, ACCESS_CODE) ||
-      "this-password-is-not-used-when-auth-disabled",
-    cookieName: "pongo-auth",
-    ttl: EXPIRY_DAYS * 24 * 60 * 60,
-    cookieOptions: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax" as const,
-      path: "/",
-    },
-  };
-}
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from "node:crypto";
 import { getIronSession, type SessionOptions } from "iron-session";
 import { cookies } from "next/headers";
 
@@ -12,11 +13,21 @@ export function isAuthEnabled(): boolean {
   return !!ACCESS_CODE;
 }
 
+function getSessionPassword(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (secret && secret.length >= 32) return secret;
+  if (secret) {
+    return createHash("sha256").update(secret).digest("hex").slice(0, 32);
+  }
+  if (ACCESS_CODE) {
+    return createHash("sha256").update(ACCESS_CODE).digest("hex").slice(0, 32);
+  }
+  return "this-password-is-not-used-when-auth-disabled";
+}
+
 export function getSessionOptions(): SessionOptions {
   return {
-    password:
-      ACCESS_CODE?.padEnd(32, ACCESS_CODE) ||
-      "this-password-is-not-used-when-auth-disabled",
+    password: getSessionPassword(),
     cookieName: "pongo-auth",
     ttl: EXPIRY_DAYS * 24 * 60 * 60,
     cookieOptions: {
@@ -42,5 +53,15 @@ export async function isAuthenticated(): Promise<boolean> {
 }
 
 export function verifyAccessCode(code: string): boolean {
-  return code === ACCESS_CODE;
+  if (!ACCESS_CODE) return false;
+
+  const a = Buffer.from(code);
+  const b = Buffer.from(ACCESS_CODE);
+
+  if (a.length !== b.length) {
+    timingSafeEqual(b, b);
+    return false;
+  }
+
+  return timingSafeEqual(a, b);
 }

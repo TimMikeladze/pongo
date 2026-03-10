@@ -53,9 +53,12 @@ function isMonitorDue(
 export async function GET(request: Request) {
   // Verify the request is from Vercel Cron
   const authHeader = request.headers.get("authorization");
-  const isVercelCron = request.headers.get("x-vercel-cron");
+  // Only trust x-vercel-cron header when actually deployed on Vercel
+  // (Vercel strips this header from external requests; other platforms don't)
+  const isVercelCron =
+    process.env.VERCEL && request.headers.get("x-vercel-cron");
 
-  // Allow Vercel Cron (has x-vercel-cron header)
+  // Allow Vercel Cron (has x-vercel-cron header on Vercel platform)
   // OR require CRON_SECRET for manual/external invocations
   if (!isVercelCron) {
     if (!process.env.CRON_SECRET) {
@@ -167,7 +170,7 @@ export async function GET(request: Request) {
             monitorId: id,
             status: "error",
             responseTime: 0,
-            message: error instanceof Error ? error.message : "Unknown error",
+            message: "Monitor check failed",
           };
         }
       },
@@ -204,7 +207,7 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "Internal server error",
         duration: Date.now() - startTime,
       },
       { status: 500 },

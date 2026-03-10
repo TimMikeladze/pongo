@@ -1,18 +1,35 @@
 // src/scheduler/server.ts
 import { Hono } from "hono";
+import { createMiddleware } from "hono/factory";
 import { REGION } from "./region";
 import type { Scheduler } from "./scheduler";
+
+const SCHEDULER_SECRET = process.env.SCHEDULER_SECRET;
+
+const authMiddleware = createMiddleware(async (c, next) => {
+  if (!SCHEDULER_SECRET) return next();
+
+  const auth = c.req.header("authorization");
+  if (auth !== `Bearer ${SCHEDULER_SECRET}`) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+  return next();
+});
 
 export function createServer(scheduler: Scheduler, port: number) {
   const app = new Hono();
 
-  // Health check
+  // Health check (no auth required)
   app.get("/health", (c) => {
     return c.json({
       status: "ok",
       region: REGION,
     });
   });
+
+  // All /monitors routes require auth
+  app.use("/monitors/*", authMiddleware);
+  app.use("/monitors", authMiddleware);
 
   // List all monitors
   app.get("/monitors", (c) => {
@@ -101,6 +118,6 @@ export function createServer(scheduler: Scheduler, port: number) {
   return {
     fetch: app.fetch,
     port,
-    hostname: "0.0.0.0",
+    hostname: process.env.SCHEDULER_HOST ?? "127.0.0.1",
   };
 }
