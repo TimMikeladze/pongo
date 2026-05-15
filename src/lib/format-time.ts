@@ -9,7 +9,7 @@ export function formatDualTime(
   date: Date | number | string,
   formatStr = "MMM d, h:mm a",
 ): { utc: string; local: string } {
-  const d = date instanceof Date ? date : new Date(Number(date));
+  const d = date instanceof Date ? date : new Date(date);
   return {
     utc: formatInTimeZone(d, "UTC", formatStr),
     local: format(d, formatStr),

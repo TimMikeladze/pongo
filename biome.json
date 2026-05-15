@@ -14,7 +14,10 @@
       "!dist",
       "!build",
       "!drizzle/**/*",
-      "!src/components/ui"
+      "!src/components/ui",
+      "!playwright-report",
+      "!test-results",
+      "!playwright/.cache"
     ]
   },
   "formatter": {
