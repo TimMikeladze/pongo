@@ -37,7 +37,7 @@ export default async function Image() {
           overflow: "hidden",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {/* biome-ignore lint/performance/noImgElement: ImageResponse (satori) only supports plain img, not next/image */}
         <img
           src="https://pongo.sh/banner.png"
           alt="pongo.sh logo"

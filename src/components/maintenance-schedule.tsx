@@ -2,12 +2,10 @@ import { getMonitors, getUpcomingMaintenance } from "@/lib/data";
 
 interface MaintenanceScheduleProps {
   dashboardId?: string;
-  showDelete?: boolean;
 }
 
 export async function MaintenanceSchedule({
   dashboardId,
-  showDelete = false,
 }: MaintenanceScheduleProps) {
   const maintenance = await getUpcomingMaintenance(dashboardId);
 

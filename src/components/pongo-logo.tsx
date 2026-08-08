@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface PongoLogoProps {
@@ -7,7 +8,7 @@ interface PongoLogoProps {
 
 export function PongoLogo({ className, size = 24 }: PongoLogoProps) {
   return (
-    <img
+    <Image
       src="/logo.png"
       alt="pongo.sh logo"
       width={size}

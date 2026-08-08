@@ -29,7 +29,7 @@ export default async function PublicAnnouncementsPage({ params }: Props) {
   const { slug } = await params;
   const dashboard = await getDashboardBySlug(slug);
 
-  if (!dashboard || !dashboard.isPublic) {
+  if (!dashboard?.isPublic) {
     notFound();
   }
 

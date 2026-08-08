@@ -60,7 +60,6 @@ export async function AnnouncementsList({
                   })}
                 </span>
               </div>
-              {/* biome-ignore lint/security/noDangerouslySetInnerHtml: rendering markdown */}
               <div
                 className="text-[11px] opacity-80 mt-1 prose prose-sm dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: announcement.message }}

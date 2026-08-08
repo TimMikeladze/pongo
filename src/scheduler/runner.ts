@@ -52,7 +52,11 @@ export async function runMonitor(
   config: SchedulerConfig,
 ): Promise<ExecutionResult> {
   const executedAt = new Date();
-  let lastResult: MonitorResult | null = null;
+  let lastResult: MonitorResult = {
+    status: "down",
+    responseTime: 0,
+    message: "No check attempts were made",
+  };
   let attempts = 0;
 
   for (let i = 0; i <= config.maxRetries; i++) {
@@ -99,7 +103,7 @@ export async function runMonitor(
   // All retries exhausted, return last result
   return {
     monitorId: monitor.id,
-    result: lastResult!,
+    result: lastResult,
     attempts,
     executedAt,
   };

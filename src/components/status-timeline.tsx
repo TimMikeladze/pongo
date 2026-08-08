@@ -72,7 +72,6 @@ export function StatusTimeline({ data, limit = 30 }: StatusTimelineProps) {
               </TooltipContent>
             </Tooltip>
           ) : (
-            // biome-ignore lint/suspicious/noArrayIndexKey: empty slots have no unique identifier
             <div
               key={`empty-${index}`}
               className="h-6 w-1 rounded-[1px] bg-secondary opacity-30"

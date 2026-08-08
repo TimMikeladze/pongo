@@ -134,7 +134,10 @@ async function initDatabase(): Promise<PongoDb> {
   globalCache.__pongoDb = _db;
   globalCache.__pongoDbClose = _closeDb;
 
-  return _db!;
+  if (!_db) {
+    throw new Error("Database failed to initialize");
+  }
+  return _db;
 }
 
 // Promise for async initialization

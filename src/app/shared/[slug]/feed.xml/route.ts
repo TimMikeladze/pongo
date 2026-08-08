@@ -11,7 +11,7 @@ export async function GET(
   const { slug } = await params;
   const dashboard = await getDashboardBySlug(slug);
 
-  if (!dashboard || !dashboard.isPublic) {
+  if (!dashboard?.isPublic) {
     return new Response("Not Found", { status: 404 });
   }
 

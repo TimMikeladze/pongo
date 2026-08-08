@@ -92,7 +92,6 @@ export default async function RootLayout({
       <head>
         {/* Blocking theme script - runs before paint to prevent FOUC */}
         <script
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: static inline script with no user input
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem("pongo-theme")||"dark";if(t==="system"){t=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"}document.documentElement.classList.remove("light","dark");document.documentElement.classList.add(t)}catch(e){}})()`,
           }}
@@ -102,7 +101,6 @@ export default async function RootLayout({
         {/* Structured data for search engines - using JSON.stringify with static data is safe */}
         <script
           type="application/ld+json"
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: Safe - JSON.stringify with static configuration data only
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(organizationSchema),
           }}

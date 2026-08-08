@@ -41,8 +41,10 @@ describe("rate limiter", () => {
     expect(isRateLimited(limiter, "1.2.3.4")).toBe(true); // blocked
 
     // Manually expire the window
-    const record = limiter.attempts.get("1.2.3.4")!;
-    record.resetAt = Date.now() - 1;
+    const record = limiter.attempts.get("1.2.3.4");
+    expect(record).toBeDefined();
+    // biome-ignore lint/style/noNonNullAssertion: presence just verified above
+    record!.resetAt = Date.now() - 1;
 
     expect(isRateLimited(limiter, "1.2.3.4")).toBe(false); // reset
   });

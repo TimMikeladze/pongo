@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { PongoLogo } from "@/components/pongo-logo";
@@ -38,7 +39,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-2">
             {process.env.NEXT_PUBLIC_FOOTER_LOGO ? (
-              <img
+              <Image
                 src={process.env.NEXT_PUBLIC_FOOTER_LOGO}
                 alt={
                   process.env.NEXT_PUBLIC_FOOTER_TITLE ??
@@ -47,6 +48,7 @@ export default function LoginPage() {
                 }
                 width={24}
                 height={24}
+                unoptimized
                 className="rounded-full"
               />
             ) : (
