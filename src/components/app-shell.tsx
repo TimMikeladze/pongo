@@ -5,11 +5,9 @@ import {
   Bell,
   BookOpen,
   Coffee,
-  Github,
   Heart,
   Info,
   LayoutDashboard,
-  Linkedin,
   LogIn,
   LogOut,
   Maximize,
@@ -21,16 +19,16 @@ import {
   Sun,
   SunMoon,
   Terminal,
-  Twitter,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { logout } from "@/app/login/actions";
+import { Github, Linkedin, Twitter } from "@/components/brand-icons";
 import { useFullscreen } from "@/components/fullscreen-provider";
 import { PongoLogo } from "@/components/pongo-logo";
-import { usePublicHeader } from "@/components/public-header-provider";
 import { SupportDialog } from "@/components/support-dialog";
 import { useTheme } from "@/components/theme-provider";
 import { TimeRangePicker } from "@/components/time-range-picker";
@@ -92,7 +90,7 @@ interface AppShellProps {
 
 export function AppShell({
   children,
-  headerLogo,
+  headerLogo: _headerLogo,
   authEnabled = false,
   isAuthenticated = false,
 }: AppShellProps) {
@@ -106,7 +104,6 @@ export function AppShell({
     toggleFullWidth,
   } = useTheme();
   const { isFullscreen: isChartFullscreen } = useFullscreen();
-  const { headerInfo: publicHeaderInfo } = usePublicHeader();
   const [mounted, setMounted] = useState(false);
   const [showZenControls, setShowZenControls] = useState(false);
   const [zenSupportOpen, setZenSupportOpen] = useState(false);
@@ -504,7 +501,7 @@ export function AppShell({
             <TooltipTrigger asChild>
               <div className="flex items-center gap-3 cursor-default">
                 {process.env.NEXT_PUBLIC_FOOTER_LOGO ? (
-                  <img
+                  <Image
                     src={process.env.NEXT_PUBLIC_FOOTER_LOGO}
                     alt={
                       process.env.NEXT_PUBLIC_FOOTER_TITLE ??
@@ -513,6 +510,7 @@ export function AppShell({
                     }
                     width={24}
                     height={24}
+                    unoptimized
                     className="rounded-full"
                   />
                 ) : (

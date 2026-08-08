@@ -3,16 +3,17 @@ import {
   Bell,
   Code,
   Database,
-  Github,
   Globe,
   Layout,
   Terminal,
   Zap,
 } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { Github } from "@/components/brand-icons";
 import { ChartCard } from "@/components/chart-card";
 import { ErrorRateChart } from "@/components/error-rate-chart";
 import { LatencyPercentilesChart } from "@/components/latency-percentiles-chart";
@@ -217,7 +218,6 @@ export default async function OverviewPage({ searchParams }: Props) {
       {/* Structured data for search engines */}
       <script
         type="application/ld+json"
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: Safe - JSON.stringify with static configuration data only
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(softwareSchema),
         }}
@@ -229,7 +229,7 @@ export default async function OverviewPage({ searchParams }: Props) {
           {/* Header & Hero */}
           <div className="flex flex-col gap-6 mb-8">
             <div className="flex items-start gap-4">
-              <img
+              <Image
                 src="/banner.png"
                 alt="pongo.sh"
                 width={64}

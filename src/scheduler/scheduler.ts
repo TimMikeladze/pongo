@@ -76,7 +76,11 @@ export class Scheduler {
       return;
     }
 
-    const state = this.states.get(monitorId)!;
+    const state = this.states.get(monitorId);
+    if (!state) {
+      console.error(`[scheduler] Missing state for monitor: ${monitorId}`);
+      return;
+    }
     if (state.isRunning) {
       console.log(`[scheduler] Skipping ${monitorId} - already running`);
       return;

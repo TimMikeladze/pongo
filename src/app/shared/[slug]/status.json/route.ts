@@ -91,7 +91,7 @@ export async function GET(request: Request, { params }: Props) {
   const { slug } = await params;
   const dashboard = await getDashboardBySlug(slug);
 
-  if (!dashboard || !dashboard.isPublic) {
+  if (!dashboard?.isPublic) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

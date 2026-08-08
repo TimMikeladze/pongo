@@ -5,16 +5,14 @@ import {
   ChevronUp,
   Coffee,
   Copy,
-  Github,
   Heart,
   Info,
-  Linkedin,
   Share2,
   Star,
-  Twitter,
   UserPlus,
 } from "lucide-react";
 import { useState } from "react";
+import { Github, Linkedin, Twitter } from "@/components/brand-icons";
 import {
   Dialog,
   DialogContent,

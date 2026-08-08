@@ -1,6 +1,7 @@
 // src/lib/config-types.ts
 
 import type { AlertConfig, AlertSeverity } from "@/scheduler/alerts/types";
+
 export type { AlertSeverity };
 
 import type { IncidentSeverity, IncidentStatus, MonitorStatus } from "./types";
