@@ -261,32 +261,44 @@
     flex: 0 1 auto;
     display: inline-flex;
     align-items: center;
-    gap: 9px;
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: -0.035em;
+    gap: 10px;
+    border-radius: 6px;
     white-space: nowrap;
+  }
+
+  .brand-mark {
+    display: inline-flex;
+    flex: 0 0 32px;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+  }
+
+  .brand-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    max-width: 240px;
+    gap: 1px;
   }
 
   .brand-name {
-    min-width: 0;
-    max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-size: 18px;
+    font-weight: 650;
+    line-height: 22px;
+    letter-spacing: -0.025em;
   }
 
   .brand-context {
-    min-width: 0;
-    max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-    padding-left: 14px;
-    border-left: 1px solid var(--border);
     color: var(--muted-foreground);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 400;
-    letter-spacing: 0;
+    line-height: 16px;
   }
 
   .primary-nav {
@@ -316,6 +328,7 @@
   }
 
   .header-controls {
+    --header-control-size: 36px;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -327,8 +340,8 @@
     align-items: center;
     justify-content: center;
     gap: 7px;
-    min-height: 32px;
-    min-width: 32px;
+    min-height: var(--header-control-size, 32px);
+    min-width: var(--header-control-size, 32px);
     padding: 5px 10px;
     border: 1px solid var(--border);
     border-radius: 7px;
@@ -891,9 +904,12 @@
   }
 
   @media (max-width: 640px) {
-    .brand-context {
-      padding-left: 10px;
-      font-size: 12px;
+    .brand-copy {
+      max-width: 180px;
+    }
+
+    .header-controls {
+      --header-control-size: 44px;
     }
 
     .primary-nav a {

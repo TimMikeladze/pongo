@@ -137,23 +137,27 @@ export function AppShell({
       <header className="app-header">
         <div className="shell-container" data-testid="shell-header">
           <Link href={publicBase ?? "/"} className="brand-link">
-            {headerLogo ? (
-              <Image
-                src={headerLogo}
-                width={28}
-                height={28}
-                alt=""
-                unoptimized
-                className="rounded-full"
-              />
-            ) : (
-              <PongoLogo size={28} />
-            )}
-            <span className="brand-name" title={name}>
-              {name}
+            <span className="brand-mark" aria-hidden="true">
+              {headerLogo ? (
+                <Image
+                  src={headerLogo}
+                  width={32}
+                  height={32}
+                  alt=""
+                  unoptimized
+                  className="object-contain"
+                />
+              ) : (
+                <PongoLogo size={32} />
+              )}
             </span>
-            <span className="brand-context" title={context}>
-              {context}
+            <span className="brand-copy">
+              <span className="brand-name" title={name}>
+                {name}
+              </span>
+              <span className="brand-context" title={context}>
+                {context}
+              </span>
             </span>
           </Link>
           {operator && (

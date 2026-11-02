@@ -24,3 +24,9 @@ Support regression tests wait for the streamed page heading before interacting w
 Implementation and final local checks are complete: 96 unit tests, 16 browser tests, lint, typecheck and production Next build. Both final independent reviews found no material remaining issues.
 
 [PR #27](https://github.com/TimMikeladze/pongo/pull/27) is open from `codex/pongo-ui-redesign` to main. CI exposed a cross-platform width-test assumption: Linux reserves a 6px scrollbar gutter while macOS overlays it. The expected width now uses the body’s available inline width; exact shell alignment and no-overflow assertions remain. CI results are tracked on the PR.
+
+## App bar refinement
+
+User requested app bar refinement after reviewing the light header. Replace the inline wordmark/divider/context grouping with a compact identity block: existing logo, 18px wordmark, 12px secondary context underneath. Keep the current labels, routes and shared container widths. Align logo, navigation and theme/feed controls optically, preserve custom logos and long-name truncation, and verify public/operator headers in both themes on desktop and mobile. Reuse the existing layout/interaction regressions, then update PR #27.
+
+App bar verification passed: light/dark public/operator captures at 1440px and 390px, long identity/context at 320px without overflow, all 16 browser regressions, lint and typecheck. Custom logos retain their full shape; the brand image is decorative to assistive technology because the adjacent text names the link.
