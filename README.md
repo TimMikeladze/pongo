@@ -354,6 +354,9 @@ Root cause: upstream provider network partition.
 | `/alerts` | Alert management and history |
 | `/dashboards/[id]` | Dashboard detail (monitors, incidents, announcements) |
 | `/shared/[slug]` | Public status page (no auth) |
+| `/shared/[slug]/incidents` | Public incident history |
+| `/shared/[slug]/maintenance` | Public maintenance schedule |
+| `/shared/[slug]/announcements` | Public updates |
 | `/shared/[slug]/feed.xml` | RSS feed |
 | `/shared/[slug]/feed.atom` | Atom feed |
 | `/settings` | Application settings |
@@ -434,6 +437,14 @@ PONGO_REGION=eu-west bun scheduler   # Region 2
 ```
 
 Configure `regionThreshold` on alerts to control when they fire across regions.
+
+## Using the dashboard
+
+Overview puts affected monitors and firing alerts before performance charts. Search and filter monitors by status; the URL preserves those filters when reloading or sharing the page. Expand Performance for the response, availability, error, latency, throughput and status-distribution charts.
+
+Public status pages keep Status, Incidents, Maintenance and Updates in the header. Availability bars support pointer inspection and arrow-key navigation, with Home and End moving to either end. Long histories group adjacent periods so bars remain visible on phones; tooltips show the covered intervals and measured checks. The sparkline retains every interval. Missing measurements display an em dash instead of assuming 100% availability or zero response time.
+
+Settings controls theme, content width and view mode. The footer’s Page options also provides width and zen controls. Mobile status history also provides an inspector with a period slider and Previous/Next controls. Width applies to the header, content and footer together. Press Escape or use Exit zen to restore navigation. Preferences are saved in the browser.
 
 ## Scheduler
 
@@ -530,9 +541,9 @@ When `ACCESS_CODE` is set:
 | `S3_PREFIX` | S3 key prefix | - |
 | `NEXT_PUBLIC_URL` | Public URL for SEO/metadata | - |
 | `NEXT_PUBLIC_SITE_NAME` | Custom site name (metadata, page titles, footer) | `pongo.sh` |
-| `NEXT_PUBLIC_HIDE_GITHUB` | Hide the GitHub icon in the footer | - |
+| `NEXT_PUBLIC_HIDE_GITHUB` | Hide GitHub in Page options | - |
 | `NEXT_PUBLIC_HIDE_DOCS` | Hide the docs link in the appbar | - |
-| `NEXT_PUBLIC_HIDE_SUPPORT` | Hide the support icon in the footer | - |
+| `NEXT_PUBLIC_HIDE_SUPPORT` | Hide Support in Page options | - |
 | `NEXT_PUBLIC_FAVICON` | Custom favicon image URL (e.g. `/custom-favicon.png`) | `/logo.png` |
 | `NEXT_PUBLIC_FOOTER_LOGO` | Custom footer logo image URL (e.g. `/custom-logo.png`) | pongo logo |
 | `NEXT_PUBLIC_FOOTER_TITLE` | Custom footer title text | `pongo.sh` |

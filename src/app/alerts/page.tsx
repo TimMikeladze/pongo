@@ -1,19 +1,15 @@
-import { Bell } from "lucide-react";
 import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Alerts",
-  description: "View alert history and manage notifications",
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
-
+import Link from "next/link";
 import { Suspense } from "react";
 import { AlertBanner } from "@/components/alert-banner";
 import { AlertViewToggle } from "@/components/alert-view-toggle";
 import { AlertsContent } from "@/components/alerts-content";
+import {
+  MetricStrip,
+  PageHeading,
+  SectionHeading,
+} from "@/components/page-layout";
+import { TimeRangePicker } from "@/components/time-range-picker";
 import {
   getAlertEvents,
   getAlertOverrides,
@@ -23,67 +19,98 @@ import {
 import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 import type { AlertSeverity } from "@/scheduler/alerts/types";
 
+export const metadata: Metadata = {
+  title: "Alerts",
+  description: "Firing alerts, history, and notification overrides",
+  robots: { index: false, follow: false },
+};
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export default async function AlertsPage({ searchParams }: PageProps) {
-  const params = await searchParams;
-  const { preset, from, to } = timeRangeCache.parse(params);
+  const { preset, from, to } = await timeRangeCache.parse(searchParams);
   const timeRange = getTimeRange({ preset, from, to });
-
   const [firingAlerts, events, overrides, monitors] = await Promise.all([
     getFiringAlerts(),
     getAlertEvents(timeRange),
     getAlertOverrides(),
     getMonitors(),
   ]);
-
-  // Build alert severity map from monitor configs
   const alertSeverities: Record<string, AlertSeverity> = {};
-  for (const monitor of monitors) {
-    if (monitor.alerts) {
-      for (const alert of monitor.alerts) {
-        alertSeverities[alert.id] = alert.severity ?? "warning";
-      }
-    }
-  }
+  for (const monitor of monitors)
+    for (const alert of monitor.alerts ?? [])
+      alertSeverities[alert.id] = alert.severity ?? "warning";
+  const silenced = Object.values(overrides).filter(
+    (override) =>
+      override.silencedUntil && new Date(override.silencedUntil) > new Date(),
+  ).length;
+  const disabled = Object.values(overrides).filter(
+    (override) => override.disabled,
+  ).length;
 
   return (
-    <div>
-      {/* Firing alerts banner */}
-      <AlertBanner firingAlerts={firingAlerts} />
-
-      {/* Header */}
-      <div className="flex flex-col gap-4 mb-6 pt-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-3">
-          <Bell className="h-4 w-4 text-primary" />
-          <div>
-            <h1 className="text-sm">alerts</h1>
-            <p className="text-[10px] text-muted-foreground mt-0.5">
-              alert history
-            </p>
-          </div>
-        </div>
-        <Suspense>
-          <AlertViewToggle />
-        </Suspense>
-      </div>
-
-      {/* Content */}
-      <Suspense
-        fallback={
-          <div className="text-center py-8 text-sm text-muted-foreground">
-            Loading alerts...
-          </div>
+    <div className="page-stack">
+      <PageHeading
+        title="Alerts"
+        description="Investigate firing rules and review alert activity."
+        actions={
+          <>
+            <TimeRangePicker />
+            <Link
+              href="/settings/notifications"
+              className="text-sm underline underline-offset-4"
+            >
+              Notification channels
+            </Link>
+          </>
         }
-      >
-        <AlertsContent
-          events={events}
-          overrides={overrides}
-          alertSeverities={alertSeverities}
+      />
+      <AlertBanner firingAlerts={firingAlerts} />
+      <MetricStrip>
+        <div>
+          <span className="text-xs text-muted-foreground">Firing now</span>
+          <p className="mt-1 text-2xl font-medium tabular-nums">
+            {firingAlerts.length}
+          </p>
+        </div>
+        <div>
+          <span className="text-xs text-muted-foreground">Events in range</span>
+          <p className="mt-1 text-2xl font-medium tabular-nums">
+            {events.length}
+          </p>
+        </div>
+        <div>
+          <span className="text-xs text-muted-foreground">Silenced rules</span>
+          <p className="mt-1 text-2xl font-medium tabular-nums">{silenced}</p>
+        </div>
+        <div>
+          <span className="text-xs text-muted-foreground">Disabled rules</span>
+          <p className="mt-1 text-2xl font-medium tabular-nums">{disabled}</p>
+        </div>
+      </MetricStrip>
+      <section id="alert-history">
+        <SectionHeading
+          title="Alert history"
+          description="Use Table view to inspect event snapshots. Each event’s action menu can silence or disable its rule."
+          actions={
+            <Suspense>
+              <AlertViewToggle />
+            </Suspense>
+          }
         />
-      </Suspense>
+        <Suspense
+          fallback={
+            <p className="text-sm text-muted-foreground">Loading alerts…</p>
+          }
+        >
+          <AlertsContent
+            events={events}
+            overrides={overrides}
+            alertSeverities={alertSeverities}
+          />
+        </Suspense>
+      </section>
     </div>
   );
 }

@@ -31,6 +31,7 @@ export default defineConfig({
     timeout: 120_000,
     env: {
       DATABASE_URL: "file:./pongo/e2e.db",
+      PONGO_DIST_DIR: ".next-e2e",
     },
   },
 });

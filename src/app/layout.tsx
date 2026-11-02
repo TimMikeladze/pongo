@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type React from "react";
 import "./globals.css";
@@ -8,11 +7,6 @@ import { PublicHeaderProvider } from "@/components/public-header-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { isAuthEnabled, isAuthenticated } from "@/lib/auth";
 import { UmamiScript } from "@/lib/umami";
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-});
 
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "pongo.sh";
 const faviconUrl = process.env.NEXT_PUBLIC_FAVICON || "/logo.png";
@@ -60,7 +54,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#080808",
+  themeColor: "#111315",
 };
 
 export default async function RootLayout({
@@ -97,7 +91,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className={`${jetbrainsMono.className} antialiased`}>
+      <body>
         {/* Structured data for search engines - using JSON.stringify with static data is safe */}
         <script
           type="application/ld+json"

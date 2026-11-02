@@ -27,12 +27,14 @@ export function ChartTypeToggle({
         type="button"
         onClick={() => onChange("line")}
         className={cn(
-          "p-1 rounded transition-colors",
+          "min-h-8 min-w-8 p-1 rounded transition-colors",
           value === "line"
             ? "bg-background text-foreground shadow-sm"
             : "text-muted-foreground hover:text-foreground",
         )}
         title="Line chart"
+        aria-label="Line chart"
+        aria-pressed={value === "line"}
       >
         <LineChart className="h-3 w-3" />
       </button>
@@ -40,12 +42,14 @@ export function ChartTypeToggle({
         type="button"
         onClick={() => onChange("bar")}
         className={cn(
-          "p-1 rounded transition-colors",
+          "min-h-8 min-w-8 p-1 rounded transition-colors",
           value === "bar"
             ? "bg-background text-foreground shadow-sm"
             : "text-muted-foreground hover:text-foreground",
         )}
         title="Bar chart"
+        aria-label="Bar chart"
+        aria-pressed={value === "bar"}
       >
         <BarChart3 className="h-3 w-3" />
       </button>

@@ -4,648 +4,422 @@ import {
   Activity,
   Bell,
   BookOpen,
-  Coffee,
-  Heart,
-  Info,
+  Check,
+  ExternalLink,
   LayoutDashboard,
   LogIn,
   LogOut,
   Maximize,
-  Maximize2,
   Minimize,
   Moon,
-  Share2,
-  Star,
+  Rss,
+  Settings,
+  SlidersHorizontal,
   Sun,
-  SunMoon,
   Terminal,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type React from "react";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { logout } from "@/app/login/actions";
-import { Github, Linkedin, Twitter } from "@/components/brand-icons";
-import { useFullscreen } from "@/components/fullscreen-provider";
+import { Github } from "@/components/brand-icons";
 import { PongoLogo } from "@/components/pongo-logo";
+import { usePublicHeader } from "@/components/public-header-provider";
 import { SupportDialog } from "@/components/support-dialog";
 import { useTheme } from "@/components/theme-provider";
-import { TimeRangePicker } from "@/components/time-range-picker";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { DotPattern } from "@/components/ui/dot-pattern";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-
-function BlueskyIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-      aria-label="Bluesky"
-      role="img"
-    >
-      <path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z" />
-    </svg>
-  );
-}
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const navigation = [
-  { name: "overview", href: "/", icon: Terminal },
-  { name: "monitors", href: "/monitors", icon: Activity },
-  { name: "dashboards", href: "/dashboards", icon: LayoutDashboard },
-  { name: "alerts", href: "/alerts", icon: Bell },
-  ...(!process.env.NEXT_PUBLIC_HIDE_DOCS
-    ? [
-        {
-          name: "docs",
-          href: "https://github.com/TimMikeladze/pongo#readme",
-          icon: BookOpen,
-          external: true as const,
-        },
-      ]
-    : []),
+  { name: "Overview", href: "/", icon: Terminal },
+  { name: "Monitors", href: "/monitors", icon: Activity },
+  { name: "Dashboards", href: "/dashboards", icon: LayoutDashboard },
+  { name: "Alerts", href: "/alerts", icon: Bell },
+  { name: "Settings", href: "/settings", icon: Settings },
 ];
-
-interface AppShellProps {
-  children: React.ReactNode;
-  /** Optional path to header logo in /public (e.g., "/logo.png") */
-  headerLogo?: string;
-  /** Whether auth is enabled (ACCESS_CODE env var is set) */
-  authEnabled?: boolean;
-  /** Whether the current user is authenticated */
-  isAuthenticated?: boolean;
-}
 
 export function AppShell({
   children,
-  headerLogo: _headerLogo,
+  headerLogo,
   authEnabled = false,
   isAuthenticated = false,
-}: AppShellProps) {
+}: {
+  children: ReactNode;
+  headerLogo?: string;
+  authEnabled?: boolean;
+  isAuthenticated?: boolean;
+}) {
   const pathname = usePathname();
+  const { headerInfo } = usePublicHeader();
   const {
     density,
     toggleDensity,
     theme,
+    resolvedTheme,
     setTheme,
     fullWidth,
     toggleFullWidth,
   } = useTheme();
-  const { isFullscreen: isChartFullscreen } = useFullscreen();
   const [mounted, setMounted] = useState(false);
-  const [showZenControls, setShowZenControls] = useState(false);
-  const [zenSupportOpen, setZenSupportOpen] = useState(false);
-  const [zenAboutOpen, setZenAboutOpen] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const optionsTrigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!optionsOpen || !optionsTrigger.current) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) setOptionsOpen(false);
+    });
+    observer.observe(optionsTrigger.current);
+    return () => observer.disconnect();
+  }, [optionsOpen]);
+  useEffect(() => setMounted(true), []);
+  const zen = mounted && density === "dense";
+  const shared = pathname.startsWith("/shared/");
+  const slug = shared ? pathname.split("/")[2] : null;
+  const publicBase = slug ? `/shared/${slug}` : null;
+  const operator = isAuthenticated && !shared && pathname !== "/login";
+  const publicTabs = [
+    { label: "Status", suffix: "" },
+    { label: "Incidents", suffix: "/incidents" },
+    { label: "Maintenance", suffix: "/maintenance" },
+    { label: "Updates", suffix: "/announcements" },
+  ];
+  const name = process.env.NEXT_PUBLIC_SITE_NAME ?? "pongo.";
+  const context = shared
+    ? (headerInfo?.name ?? "Service status")
+    : operator
+      ? "Monitoring"
+      : "System status";
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
-
-      if (e.key === "Escape" && density === "dense") {
-        toggleDensity();
-      }
+    if (!zen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key !== "Escape" ||
+        event.defaultPrevented ||
+        document.querySelector('[role="dialog"][data-state="open"]')
+      )
+        return;
+      toggleDensity();
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [toggleDensity, density]);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [zen, toggleDensity]);
 
-  const isLoginPage = pathname === "/login";
-  const isSharedPage = pathname.startsWith("/shared");
-  // Hide navigation when not authenticated (public view)
-  const showNavigation = isAuthenticated && !isSharedPage;
-
-  if (isLoginPage) {
-    return <>{children}</>;
-  }
-
-  const isDense = mounted && density === "dense";
-
-  // Disable time range picker on list pages
-  const disableTimeRangePicker =
-    pathname === "/monitors" ||
-    pathname === "/dashboards" ||
-    pathname.startsWith("/settings");
+  const themeControl = (
+    <button
+      type="button"
+      className="control-button"
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      aria-label={`Switch to ${mounted && resolvedTheme === "light" ? "dark" : "light"} theme`}
+      title={`Theme: ${theme}`}
+    >
+      {mounted && resolvedTheme === "light" ? (
+        <Moon className="size-4" />
+      ) : (
+        <Sun className="size-4" />
+      )}
+    </button>
+  );
 
   return (
-    <div className="h-dvh bg-background flex flex-col overflow-hidden relative">
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <DotPattern
-          width={24}
-          height={24}
-          cr={1}
-          className="h-full w-full opacity-15"
-        />
-      </div>
-      <header
-        className={cn(
-          "shrink-0 border-b border-border bg-background transition-all duration-300 relative z-10",
-          isDense || !showNavigation ? "h-0 opacity-0 overflow-hidden" : "h-12",
-        )}
-      >
-        <div
-          className={cn(
-            "mx-auto h-full px-4 md:px-6 flex items-center justify-between relative",
-            !fullWidth && "md:max-w-6xl",
-          )}
-        >
-          {showNavigation && (
-            <>
-              <div className="flex items-center">
-                <nav className="flex items-center gap-1">
-                  {navigation.map((item) => {
-                    const isActive =
-                      !("external" in item) &&
-                      (item.href === "/"
+    <div
+      className="app-shell"
+      data-full-width={mounted && fullWidth}
+      data-zen={zen}
+    >
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
+      <header className="app-header">
+        <div className="shell-container" data-testid="shell-header">
+          <Link href={publicBase ?? "/"} className="brand-link">
+            {headerLogo ? (
+              <Image
+                src={headerLogo}
+                width={28}
+                height={28}
+                alt=""
+                unoptimized
+                className="rounded-full"
+              />
+            ) : (
+              <PongoLogo size={28} />
+            )}
+            <span className="brand-name" title={name}>
+              {name}
+            </span>
+            <span className="brand-context" title={context}>
+              {context}
+            </span>
+          </Link>
+          {operator && (
+            <nav className="primary-nav" aria-label="Main navigation">
+              {navigation.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={
+                    (
+                      item.href === "/"
                         ? pathname === "/"
-                        : pathname.startsWith(item.href));
-
-                    const className = cn(
-                      "flex items-center gap-2 px-3 py-1.5 text-xs transition-colors rounded",
-                      isActive
-                        ? "text-primary bg-accent"
-                        : "text-muted-foreground hover:text-foreground hover:bg-secondary",
-                    );
-
-                    if ("external" in item && item.external) {
-                      return (
-                        <a
-                          key={item.name}
-                          href={item.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={className}
-                        >
-                          <item.icon className="h-3.5 w-3.5" />
-                          <span className="hidden sm:inline">{item.name}</span>
-                        </a>
-                      );
-                    }
-
-                    return (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className={className}
-                      >
-                        <item.icon className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">{item.name}</span>
-                      </Link>
-                    );
-                  })}
-                </nav>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <TimeRangePicker disabled={disableTimeRangePicker} />
-              </div>
-            </>
+                        : pathname.startsWith(item.href)
+                    )
+                      ? "page"
+                      : undefined
+                  }
+                >
+                  <item.icon className="size-3.5" />
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
           )}
+          <div className="header-controls">
+            {themeControl}
+            {shared && publicBase && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="control-button"
+                    aria-label="Get status updates"
+                  >
+                    <Rss className="size-3.5" />
+                    <span className="hidden sm:inline">Get updates</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-72">
+                  <h2 className="text-sm font-semibold">
+                    Follow service updates
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-1 mb-3">
+                    Add a feed to your reader. No account required.
+                  </p>
+                  <div className="flex gap-2">
+                    <Link
+                      href={`${publicBase}/feed.xml`}
+                      className="control-button"
+                    >
+                      <Rss className="size-3.5" />
+                      RSS feed
+                    </Link>
+                    <Link
+                      href={`${publicBase}/feed.atom`}
+                      className="control-button"
+                    >
+                      Atom feed
+                    </Link>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
+            {!operator &&
+              !shared &&
+              authEnabled &&
+              !isAuthenticated &&
+              pathname !== "/login" && (
+                <Link href="/login" className="control-button">
+                  <LogIn className="size-3.5" />
+                  Sign in
+                </Link>
+              )}
+          </div>
         </div>
       </header>
-
-      {isDense && (
-        <div
-          role="toolbar"
-          aria-label="Zen mode controls"
-          className="fixed top-4 right-4 z-50"
-          onMouseEnter={() => setShowZenControls(true)}
-          onMouseLeave={() => setShowZenControls(false)}
+      {shared && publicBase && (
+        <nav
+          className="public-nav shell-container"
+          aria-label="Status page navigation"
         >
-          <div
-            className={cn(
-              "relative flex items-center gap-1 transition-all duration-300 ease-out",
-              showZenControls
-                ? "bg-background/95 backdrop-blur-md border border-border shadow-lg rounded-full px-1 py-1"
-                : "bg-transparent",
-            )}
-          >
-            <div
-              className={cn(
-                "absolute right-0 top-1/2 -translate-y-1/2 transition-all duration-300",
-                showZenControls ? "opacity-0 scale-0" : "opacity-100 scale-100",
-              )}
+          {publicTabs.map((tab) => (
+            <Link
+              key={tab.label}
+              href={`${publicBase}${tab.suffix}`}
+              aria-current={
+                pathname === `${publicBase}${tab.suffix}` ? "page" : undefined
+              }
             >
-              <div className="w-2 h-2 rounded-full bg-primary/40 hover:bg-primary/60 cursor-pointer" />
-            </div>
-
-            <div
-              className={cn(
-                "flex items-center gap-0.5 transition-all duration-300",
-                showZenControls
-                  ? "opacity-100 scale-100"
-                  : "opacity-0 scale-95 pointer-events-none",
-              )}
-            >
-              <button
-                type="button"
-                onClick={toggleFullWidth}
-                className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                title={fullWidth ? "Constrain width" : "Full width"}
-              >
-                {fullWidth ? (
-                  <Minimize className="h-3.5 w-3.5" />
-                ) : (
-                  <Maximize className="h-3.5 w-3.5" />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={toggleDensity}
-                className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                title="Exit zen mode (Esc)"
-              >
-                <Maximize2 className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  // Cycle: dark -> light -> system -> dark
-                  if (theme === "dark") setTheme("light");
-                  else if (theme === "light") setTheme("system");
-                  else setTheme("dark");
-                }}
-                className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                title={`Theme: ${theme}`}
-              >
-                {theme === "dark" && <Moon className="h-3.5 w-3.5" />}
-                {theme === "light" && <Sun className="h-3.5 w-3.5" />}
-                {theme === "system" && <SunMoon className="h-3.5 w-3.5" />}
-              </button>
-              {!process.env.NEXT_PUBLIC_HIDE_GITHUB && (
-                <a
-                  href="https://github.com/timmikeladze/pongo"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  title="GitHub"
-                >
-                  <Github className="h-3.5 w-3.5" />
-                </a>
-              )}
-              <Dialog open={zenSupportOpen} onOpenChange={setZenSupportOpen}>
-                <DialogTrigger asChild>
-                  <button
-                    type="button"
-                    className="p-2 rounded-full text-muted-foreground hover:text-pink-500 hover:bg-accent transition-colors"
-                    title="Support pongo.sh"
-                  >
-                    <Heart className="h-3.5 w-3.5" />
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="text-sm font-mono">
-                      {/* keep this empty */}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-3 pt-2">
-                    <p className="text-xs text-muted-foreground">
-                      pongo.sh is free and open source. here are some ways to
-                      support the project:
-                    </p>
-                    <div className="space-y-2">
-                      <a
-                        href="https://github.com/timmikeladze/pongo"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 rounded border border-border hover:bg-accent transition-colors group"
-                      >
-                        <Star className="h-4 w-4 text-muted-foreground group-hover:text-yellow-500 transition-colors" />
-                        <div>
-                          <div className="text-xs font-medium">
-                            star on github
-                          </div>
-                          <div className="text-[10px] text-muted-foreground">
-                            help others discover pongo.sh
-                          </div>
-                        </div>
-                      </a>
-                      <a
-                        href="https://github.com/timmikeladze/pongo"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 rounded border border-border hover:bg-accent transition-colors group"
-                      >
-                        <Github className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                        <div>
-                          <div className="text-xs font-medium">contribute</div>
-                          <div className="text-[10px] text-muted-foreground">
-                            report bugs or submit pull requests
-                          </div>
-                        </div>
-                      </a>
-                      <a
-                        href="https://github.com/sponsors/timmikeladze"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 rounded border border-border hover:bg-accent transition-colors group"
-                      >
-                        <Coffee className="h-4 w-4 text-muted-foreground group-hover:text-orange-500 transition-colors" />
-                        <div>
-                          <div className="text-xs font-medium">sponsor</div>
-                          <div className="text-[10px] text-muted-foreground">
-                            support ongoing development
-                          </div>
-                        </div>
-                      </a>
-                      <a
-                        href="https://twitter.com/intent/tweet?text=Check%20out%20pongo%20-%20open%20source%20uptime%20monitoring&url=https://pongo.sh"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 rounded border border-border hover:bg-accent transition-colors group"
-                      >
-                        <Share2 className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                        <div>
-                          <div className="text-xs font-medium">share us</div>
-                          <div className="text-[10px] text-muted-foreground">
-                            spread the word on social media
-                          </div>
-                        </div>
-                      </a>
-                      <div className="flex items-center justify-center gap-4 p-3 rounded border border-border">
-                        <a
-                          href="https://github.com/timmikeladze"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-muted-foreground hover:text-foreground transition-colors"
-                          title="GitHub"
-                        >
-                          <Github className="h-4 w-4" />
-                        </a>
-                        <a
-                          href="https://twitter.com/linesofcode"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-muted-foreground hover:text-foreground transition-colors"
-                          title="Twitter"
-                        >
-                          <Twitter className="h-4 w-4" />
-                        </a>
-                        <a
-                          href="https://bsky.app/profile/linesofcode.bsky.social"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-muted-foreground hover:text-[#0085ff] transition-colors"
-                          title="Bluesky"
-                        >
-                          <BlueskyIcon className="h-4 w-4" />
-                        </a>
-                        <a
-                          href="https://linkedin.com/in/tim-mikeladze"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-muted-foreground hover:text-[#0a66c2] transition-colors"
-                          title="LinkedIn"
-                        >
-                          <Linkedin className="h-4 w-4" />
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-              <Dialog open={zenAboutOpen} onOpenChange={setZenAboutOpen}>
-                <DialogTrigger asChild>
-                  <button
-                    type="button"
-                    className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                    title="About pongo.sh"
-                  >
-                    <Info className="h-3.5 w-3.5" />
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="text-sm font-mono">
-                      {/* keep this empty */}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-3 pt-2">
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      pongo.sh is an open source uptime monitoring solution
-                      designed for developers who prefer configuration as code.
-                      define your monitors as simple typescript files, commit
-                      them to your repository, and deploy anywhere that runs
-                      node.
-                    </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      track response times, uptime percentages, error rates, and
-                      latency percentiles with real-time dashboards. create
-                      beautiful public status pages to keep your users informed
-                      about service health.
-                    </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      no database required — pongo.sh reads monitor definitions
-                      directly from your filesystem. results are stored locally
-                      in sqlite, making it lightweight, portable, and easy to
-                      backup.
-                    </p>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-
-          <div
-            className={cn(
-              "absolute top-full right-0 mt-2 text-[10px] text-muted-foreground/50 whitespace-nowrap transition-opacity duration-300",
-              showZenControls ? "opacity-100" : "opacity-0",
-            )}
-          >
-            esc to exit
-          </div>
-        </div>
+              {tab.label}
+            </Link>
+          ))}
+        </nav>
       )}
-
-      <main className="flex-1 overflow-y-auto relative z-10">
-        <div
-          className={cn(
-            "mx-auto px-4 md:px-6 py-4 md:py-6",
-            !fullWidth && "md:max-w-6xl",
-          )}
-        >
-          {children}
-        </div>
-      </main>
-
-      <footer
-        className={cn(
-          "shrink-0 border-t border-border bg-background relative z-10 transition-all duration-300 h-12",
-          (isDense || isChartFullscreen) && "h-0 opacity-0 overflow-hidden",
-        )}
+      {!shared && <div className="shell-container border-b border-border" />}
+      <main
+        id="main-content"
+        className="app-main shell-container"
+        data-testid="shell-main"
+        tabIndex={-1}
       >
-        <div
-          className={cn(
-            "mx-auto h-full px-4 md:px-6 flex items-center justify-between text-xs text-muted-foreground font-mono",
-            !fullWidth && "md:max-w-6xl",
-          )}
-        >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-3 cursor-default">
-                {process.env.NEXT_PUBLIC_FOOTER_LOGO ? (
-                  <Image
-                    src={process.env.NEXT_PUBLIC_FOOTER_LOGO}
-                    alt={
-                      process.env.NEXT_PUBLIC_FOOTER_TITLE ??
-                      process.env.NEXT_PUBLIC_SITE_NAME ??
-                      "pongo.sh"
-                    }
-                    width={24}
-                    height={24}
-                    unoptimized
-                    className="rounded-full"
-                  />
-                ) : (
-                  <PongoLogo size={24} />
-                )}
-                <div className="flex flex-col">
-                  <span className="font-medium">
-                    {process.env.NEXT_PUBLIC_FOOTER_TITLE ??
-                      process.env.NEXT_PUBLIC_SITE_NAME ??
-                      "pongo.sh"}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground/60">
-                    {process.env.NEXT_PUBLIC_FOOTER_CAPTION ??
-                      "open-source uptime monitoring"}
-                  </span>
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="flex flex-col gap-0.5">
-                <span>Local: {new Date().toLocaleTimeString()}</span>
-                <span>UTC: {new Date().toISOString().slice(11, 19)}</span>
-              </div>
-            </TooltipContent>
-          </Tooltip>
-          <div className="flex items-center gap-3">
-            {!process.env.NEXT_PUBLIC_HIDE_GITHUB && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <a
-                    href="https://github.com/timmikeladze/pongo"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-foreground transition-colors"
+        {children}
+      </main>
+      <footer className="app-footer">
+        <div className="shell-container" data-testid="shell-footer">
+          <div className="flex items-center gap-2 min-w-0">
+            {process.env.NEXT_PUBLIC_FOOTER_LOGO ? (
+              <Image
+                src={process.env.NEXT_PUBLIC_FOOTER_LOGO}
+                width={20}
+                height={20}
+                alt=""
+                unoptimized
+                className="rounded-full"
+              />
+            ) : (
+              <PongoLogo size={20} />
+            )}
+            <span>
+              {process.env.NEXT_PUBLIC_FOOTER_TITLE ??
+                process.env.NEXT_PUBLIC_SITE_NAME ??
+                "pongo.sh"}
+            </span>
+            <span className="hidden sm:inline border-l border-border pl-3 ml-1">
+              {process.env.NEXT_PUBLIC_FOOTER_CAPTION ??
+                "Open-source uptime monitoring"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {publicBase && (
+              <Link
+                href={`${publicBase}/feed.xml`}
+                className="control-button"
+                aria-label="RSS feed"
+              >
+                <Rss className="size-3.5" />
+                RSS
+              </Link>
+            )}
+            {!zen && (
+              <Popover open={optionsOpen} onOpenChange={setOptionsOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    ref={optionsTrigger}
+                    type="button"
+                    className="control-button"
                   >
-                    <Github className="h-3.5 w-3.5" />
-                  </a>
-                </TooltipTrigger>
-                <TooltipContent>GitHub</TooltipContent>
-              </Tooltip>
-            )}
-            {!process.env.NEXT_PUBLIC_HIDE_SUPPORT && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span>
-                    <SupportDialog showLabel={false} />
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>Support</TooltipContent>
-              </Tooltip>
-            )}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={toggleFullWidth}
-                  className="hidden md:flex hover:text-foreground transition-colors"
+                    <SlidersHorizontal className="size-3.5" />
+                    Page options
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="end"
+                  side="top"
+                  className="w-64 max-h-[var(--radix-popover-content-available-height)] overflow-y-auto p-2 data-[state=closed]:animate-none"
                 >
-                  {fullWidth ? (
-                    <Minimize className="h-3.5 w-3.5" />
-                  ) : (
-                    <Maximize className="h-3.5 w-3.5" />
-                  )}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {fullWidth ? "Constrain width" : "Full width"}
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={toggleDensity}
-                  className="hidden md:flex hover:text-foreground transition-colors"
-                >
-                  <Maximize2 className="h-3.5 w-3.5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>Zen mode</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => {
-                    // Cycle: dark -> light -> system -> dark
-                    if (theme === "dark") setTheme("light");
-                    else if (theme === "light") setTheme("system");
-                    else setTheme("dark");
-                  }}
-                  className="hover:text-foreground transition-colors"
-                >
-                  {mounted && theme === "dark" && (
-                    <Moon className="h-3.5 w-3.5" />
-                  )}
-                  {mounted && theme === "light" && (
-                    <Sun className="h-3.5 w-3.5" />
-                  )}
-                  {mounted && theme === "system" && (
-                    <SunMoon className="h-3.5 w-3.5" />
-                  )}
-                  {!mounted && <Moon className="h-3.5 w-3.5" />}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>Theme: {theme}</TooltipContent>
-            </Tooltip>
-            {authEnabled && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  {isAuthenticated ? (
+                  <div className="page-options">
+                    <p className="px-2 py-1 text-xs text-muted-foreground">
+                      View
+                    </p>
                     <button
                       type="button"
-                      onClick={() => logout()}
-                      className="hover:text-foreground transition-colors"
+                      onClick={() => {
+                        setOptionsOpen(false);
+                        toggleFullWidth();
+                      }}
+                      aria-pressed={mounted && fullWidth}
                     >
-                      <LogOut className="h-3.5 w-3.5" />
+                      {mounted && fullWidth ? (
+                        <Minimize className="size-4" />
+                      ) : (
+                        <Maximize className="size-4" />
+                      )}
+                      {mounted && fullWidth
+                        ? "Constrain width"
+                        : "Use full width"}
                     </button>
-                  ) : (
-                    <Link
-                      href="/login"
-                      className="hover:text-foreground transition-colors"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOptionsOpen(false);
+                        toggleDensity();
+                      }}
                     >
-                      <LogIn className="h-3.5 w-3.5" />
-                    </Link>
-                  )}
-                </TooltipTrigger>
-                <TooltipContent>
-                  {isAuthenticated ? "Sign out" : "Sign in"}
-                </TooltipContent>
-              </Tooltip>
+                      <Check className="size-4" /> Enter zen mode
+                    </button>
+                    <div className="my-1 border-t border-border" />
+                    {!process.env.NEXT_PUBLIC_HIDE_DOCS && (
+                      <a
+                        href="https://github.com/TimMikeladze/pongo#readme"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <BookOpen className="size-4" /> Documentation
+                      </a>
+                    )}
+                    {!process.env.NEXT_PUBLIC_HIDE_GITHUB && (
+                      <a
+                        href="https://github.com/TimMikeladze/pongo"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Github className="size-4" /> GitHub
+                      </a>
+                    )}
+                    {!process.env.NEXT_PUBLIC_HIDE_SUPPORT && (
+                      <SupportDialog triggerClassName="page-options-dialog" />
+                    )}
+                    <SupportDialog
+                      mode="about"
+                      triggerClassName="page-options-dialog"
+                    />
+                    {authEnabled &&
+                      (isAuthenticated ? (
+                        <button type="button" onClick={() => logout()}>
+                          <LogOut className="size-4" /> Sign out
+                        </button>
+                      ) : (
+                        <Link
+                          href="/login"
+                          onClick={() => setOptionsOpen(false)}
+                        >
+                          <LogIn className="size-4" /> Sign in
+                        </Link>
+                      ))}
+                    {shared && isAuthenticated && (
+                      <Link href="/" onClick={() => setOptionsOpen(false)}>
+                        <ExternalLink className="size-4" /> Operator overview
+                      </Link>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
             )}
           </div>
         </div>
       </footer>
+      {zen && (
+        <div
+          className="zen-controls"
+          role="toolbar"
+          aria-label="Zen mode controls"
+        >
+          <button
+            type="button"
+            className="control-button"
+            onClick={toggleDensity}
+            aria-label="Exit zen mode"
+          >
+            Exit zen <span className="text-muted-foreground">Esc</span>
+          </button>
+          {themeControl}
+          <button
+            type="button"
+            className="control-button"
+            onClick={toggleFullWidth}
+            aria-label={fullWidth ? "Constrain width" : "Use full width"}
+          >
+            {fullWidth ? (
+              <Minimize className="size-4" />
+            ) : (
+              <Maximize className="size-4" />
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

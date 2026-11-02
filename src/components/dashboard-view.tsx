@@ -1,21 +1,29 @@
+import { CheckCircle2, CircleHelp, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { AnnouncementsList } from "@/components/announcements-list";
+import { dashboardMeasurements } from "@/components/dashboard-measurements";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
 import { MaintenanceSchedule } from "@/components/maintenance-schedule";
 import { MonitorErrorRateChart } from "@/components/monitor-error-rate-chart";
 import { MonitorResponseChart } from "@/components/monitor-response-chart";
+import {
+  EmptyState,
+  MetricStrip,
+  SectionHeading,
+} from "@/components/page-layout";
 import { SLAStatus } from "@/components/sla-status";
-import { StatsCard } from "@/components/stats-card";
+import { TimeRangePicker } from "@/components/time-range-picker";
 import { UptimeBars } from "@/components/uptime-bars";
 import {
   getActiveIncidents,
-  getAverageResponseTime,
+  getAnnouncements,
+  getCheckResults,
   getDashboard,
   getLatestCheckResult,
   getMonitors,
-  getUptimePercentage,
   type TimeRange,
 } from "@/lib/data";
+import { healthLabels, summarizeHealth } from "@/lib/health";
 import type { IntervalOption } from "@/lib/time-range";
 
 interface DashboardViewProps {
@@ -32,119 +40,127 @@ export async function DashboardView({
   interval = "1h",
 }: DashboardViewProps) {
   const dashboard = await getDashboard(dashboardId);
-
-  if (!dashboard) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <p className="text-muted-foreground text-xs">Dashboard not found</p>
-      </div>
-    );
-  }
-
-  const [allMonitors, activeIncidents] = await Promise.all([
+  if (!dashboard) return <EmptyState title="Dashboard not found" />;
+  const [allMonitors, activeIncidents, announcements] = await Promise.all([
     getMonitors(),
     getActiveIncidents(dashboardId),
+    getAnnouncements(dashboardId),
   ]);
-
-  const monitors = allMonitors.filter((m) =>
-    dashboard.monitorIds.includes(m.id),
+  const monitors = allMonitors.filter((monitor) =>
+    dashboard.monitorIds.includes(monitor.id),
   );
-
-  // Calculate overall stats
-  const latestResults = await Promise.all(
-    monitors.map((m) => getLatestCheckResult(m.id)),
-  );
-
-  const allUp = latestResults.every((result) => result?.status === "up");
-
-  const [uptimes, responseTimes] = await Promise.all([
-    Promise.all(monitors.map((m) => getUptimePercentage(m.id, timeRange))),
-    Promise.all(monitors.map((m) => getAverageResponseTime(m.id, timeRange))),
+  const [latestResults, checks] = await Promise.all([
+    Promise.all(monitors.map((monitor) => getLatestCheckResult(monitor.id))),
+    Promise.all(
+      monitors.map((monitor) => getCheckResults(monitor.id, { timeRange })),
+    ),
   ]);
-
-  const overallUptime =
-    monitors.length > 0
-      ? uptimes.reduce((acc, uptime) => acc + uptime, 0) / monitors.length
-      : 100;
-
-  const avgResponseTime =
-    monitors.length > 0
-      ? Math.round(
-          responseTimes.reduce((acc, time) => acc + time, 0) / monitors.length,
-        )
-      : 0;
+  const health = summarizeHealth(
+    monitors.map((monitor, index) =>
+      monitor.isActive ? latestResults[index]?.status : "pending",
+    ),
+  );
+  const measurements = dashboardMeasurements(checks);
+  const HealthIcon =
+    health === "up"
+      ? CheckCircle2
+      : health === "pending"
+        ? CircleHelp
+        : TriangleAlert;
+  const basePath = isPublic
+    ? `/shared/${dashboard.slug}`
+    : `/dashboards/${dashboardId}`;
+  const HealthHeading = isPublic ? "h1" : "h2";
+  const title = {
+    up: "All systems operational",
+    down: "Some services are down",
+    degraded: "Some services are degraded",
+    pending: "Awaiting service checks",
+  }[health];
 
   return (
-    <div className="space-y-6">
-      {/* Active Incidents Banner */}
-      {activeIncidents.length > 0 && (
-        <div className="p-4 rounded-lg border border-red-500/30 bg-red-500/5">
-          <p className="text-xs font-medium text-red-700 dark:text-red-400 mb-2">
-            {activeIncidents.length} active incident
-            {activeIncidents.length > 1 ? "s" : ""}
+    <div className="page-stack">
+      <section
+        className="flex items-center gap-3 flex-wrap"
+        aria-label="Current service health"
+      >
+        <span className="status-pill p-3" data-status={health}>
+          <HealthIcon className="h-6 w-6" />
+        </span>
+        <div>
+          <HealthHeading className="page-title">{title}</HealthHeading>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {monitors.length} monitored{" "}
+            {monitors.length === 1 ? "service" : "services"}
+            {activeIncidents.length
+              ? ` · ${activeIncidents.length} active ${activeIncidents.length === 1 ? "incident" : "incidents"}`
+              : ""}
           </p>
-          <IncidentsTimeline dashboardId={dashboardId} showResolved={false} />
         </div>
-      )}
-
-      {/* Overall Status */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatsCard
-          title="status"
-          value={allUp ? "operational" : "degraded"}
-          trend={allUp ? "up" : "down"}
-        />
-        <StatsCard title="uptime" value={`${overallUptime.toFixed(1)}%`} />
-        <StatsCard
-          title="latency"
-          value={`${avgResponseTime}ms`}
-          description="avg"
-        />
-        <StatsCard
-          title="monitors"
-          value={monitors.length.toString()}
-          description="active"
-        />
-      </div>
-
-      {/* Announcements */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
-            announcements
-          </h3>
-          {!isPublic && (
-            <Link
-              href={`/dashboards/${dashboardId}/announcements`}
-              className="text-[10px] text-muted-foreground hover:text-foreground"
-            >
-              view all
-            </Link>
-          )}
+        <div className="ml-auto shrink-0">
+          <TimeRangePicker />
         </div>
-        <AnnouncementsList dashboardId={dashboardId} limit={3} />
-      </div>
-
-      {/* Maintenance Schedule */}
-      <MaintenanceSchedule dashboardId={dashboardId} />
-
-      {/* SLA Status */}
-      {dashboard.slaTarget && (
-        <SLAStatus dashboardId={dashboardId} timeRange={timeRange} />
-      )}
-
-      <div className="space-y-2">
-        <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
-          system status
-        </h3>
-        {monitors.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 border border-dashed rounded-lg">
-            <p className="text-muted-foreground text-xs">
-              No monitors in this dashboard
-            </p>
+      </section>
+      <MetricStrip>
+        <dl className="contents">
+          <div>
+            <dt className="metric-label">Availability</dt>
+            <dd className="metric-value">
+              {measurements.uptime === null
+                ? "—"
+                : `${measurements.uptime.toFixed(2)}%`}
+            </dd>
           </div>
+          <div>
+            <dt className="metric-label">Average response</dt>
+            <dd className="metric-value">
+              {measurements.responseTime === null
+                ? "—"
+                : `${measurements.responseTime} ms`}
+            </dd>
+          </div>
+          <div>
+            <dt className="metric-label">Recorded checks</dt>
+            <dd className="metric-value">
+              {measurements.checkCount.toLocaleString()}
+            </dd>
+          </div>
+          <div>
+            <dt className="metric-label">Current status</dt>
+            <dd className="metric-value text-sm font-sans tracking-normal">
+              {healthLabels[health]}
+            </dd>
+          </div>
+        </dl>
+      </MetricStrip>
+      {activeIncidents.length > 0 && (
+        <section className="space-y-3">
+          <SectionHeading
+            title="Active incidents"
+            actions={
+              <Link
+                className="text-sm text-muted-foreground hover:text-foreground"
+                href={`${basePath}/incidents`}
+              >
+                Incident history
+              </Link>
+            }
+          />
+          <IncidentsTimeline dashboardId={dashboardId} showResolved={false} />
+        </section>
+      )}
+      <section className="space-y-3">
+        <SectionHeading
+          title="Service status"
+          description="Bars show the worst recorded state per display period. Inspect a period for checks; the sparkline shows every interval."
+        />
+        {monitors.length === 0 ? (
+          <EmptyState
+            title="No services configured"
+            description="This dashboard has no monitors yet."
+          />
         ) : (
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="panel divide-y divide-border px-4">
             {monitors.map((monitor) => (
               <UptimeBars
                 key={monitor.id}
@@ -152,80 +168,116 @@ export async function DashboardView({
                 monitorName={monitor.name}
                 timeRange={timeRange}
                 interval={interval}
-                showLabels={true}
+                showLabels
               />
             ))}
           </div>
         )}
-      </div>
-
-      {/* Response time charts */}
-      {monitors.length > 0 && (
-        <div className="space-y-2">
-          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
-            response times
-          </h3>
-          <div className="grid gap-4 md:grid-cols-2">
-            {monitors.map((monitor) => (
-              <div
-                key={monitor.id}
-                className="rounded-lg border border-border bg-card p-4"
-              >
-                <p className="text-xs font-mono mb-3">{monitor.name}</p>
-                <MonitorResponseChart
-                  monitorId={monitor.id}
-                  height={100}
-                  timeRange={timeRange}
-                  interval={interval}
-                />
-              </div>
-            ))}
-          </div>
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground">
+          {(["up", "degraded", "down", "pending"] as const).map((status) => (
+            <span key={status} className="inline-flex items-center gap-1.5">
+              <span
+                className="h-2 w-2 rounded-sm bg-status-pending"
+                style={{ backgroundColor: `var(--status-${status})` }}
+              />
+              {status === "pending" ? "No data" : healthLabels[status]}
+            </span>
+          ))}
         </div>
-      )}
-
-      {/* Error rate charts */}
-      {monitors.length > 0 && (
-        <div className="space-y-2">
-          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
-            error rates
-          </h3>
-          <div className="grid gap-4 md:grid-cols-2">
-            {monitors.map((monitor) => (
-              <div
-                key={monitor.id}
-                className="rounded-lg border border-border bg-card p-4"
+      </section>
+      {announcements.length > 0 && (
+        <section className="space-y-3">
+          <SectionHeading
+            title="Updates"
+            actions={
+              <Link
+                className="text-sm text-muted-foreground hover:text-foreground"
+                href={`${basePath}/announcements`}
               >
-                <p className="text-xs font-mono mb-3">{monitor.name}</p>
-                <MonitorErrorRateChart
-                  monitorId={monitor.id}
-                  height={100}
-                  timeRange={timeRange}
-                  interval={interval}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
+                View all updates
+              </Link>
+            }
+          />
+          <AnnouncementsList dashboardId={dashboardId} limit={3} />
+        </section>
       )}
-
-      {/* Incident History */}
-      {!isPublic && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
-              incident history
-            </h3>
+      <MaintenanceSchedule dashboardId={dashboardId} />
+      {dashboard.slaTarget && (
+        <SLAStatus dashboardId={dashboardId} timeRange={timeRange} />
+      )}
+      {monitors.length > 0 && (
+        <details className="performance-disclosure panel">
+          <summary>
+            <h2>Performance</h2>
+            <span className="text-xs font-normal text-muted-foreground">
+              Response times and error rates · expand to inspect
+            </span>
+          </summary>
+          <div className="space-y-5 border-t border-border p-4">
+            {measurements.checkCount === 0 ? (
+              <EmptyState
+                variant="plain"
+                title="No measurements in this period"
+                description="Choose another time range or wait for the scheduler to record checks."
+              />
+            ) : (
+              monitors.map((monitor, index) => (
+                <section key={monitor.id} className="space-y-3">
+                  <h3 className="text-sm font-medium">{monitor.name}</h3>
+                  {dashboardMeasurements([checks[index]]).checkCount ? (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <p className="mb-2 text-xs text-muted-foreground">
+                          Response time
+                        </p>
+                        <MonitorResponseChart
+                          monitorId={monitor.id}
+                          height={130}
+                          timeRange={timeRange}
+                          interval={interval}
+                        />
+                      </div>
+                      <div>
+                        <p className="mb-2 text-xs text-muted-foreground">
+                          Error rate
+                        </p>
+                        <MonitorErrorRateChart
+                          monitorId={monitor.id}
+                          height={130}
+                          timeRange={timeRange}
+                          interval={interval}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Awaiting first check in this period.
+                    </p>
+                  )}
+                </section>
+              ))
+            )}
+          </div>
+        </details>
+      )}
+      <section className="space-y-3">
+        <SectionHeading
+          title="Recent incidents"
+          actions={
             <Link
-              href={`/dashboards/${dashboardId}/incidents`}
-              className="text-[10px] text-muted-foreground hover:text-foreground"
+              className="text-sm text-muted-foreground hover:text-foreground"
+              href={`${basePath}/incidents`}
             >
-              view all
+              View incident history
             </Link>
-          </div>
-          <IncidentsTimeline dashboardId={dashboardId} limit={5} />
-        </div>
-      )}
+          }
+        />
+        <IncidentsTimeline
+          dashboardId={dashboardId}
+          limit={isPublic ? 2 : 5}
+          compactEmpty
+        />
+      </section>
     </div>
   );
 }

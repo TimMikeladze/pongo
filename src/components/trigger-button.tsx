@@ -54,7 +54,7 @@ export function TriggerButton({
       size="sm"
       onClick={handleTrigger}
       disabled={isRunning || !enabled}
-      className="h-7 text-xs"
+      className="h-8 text-xs"
     >
       {isRunning ? (
         <>
@@ -82,7 +82,7 @@ export function TriggerButton({
           <TooltipContent>Manual runs are disabled</TooltipContent>
         </Tooltip>
       )}
-      <span className="text-[10px] text-muted-foreground h-4">
+      <span className="text-xs text-muted-foreground h-4">
         {result ? (
           result.error ? (
             <span className="text-destructive">{result.error}</span>

@@ -11,7 +11,7 @@ import {
   Star,
   UserPlus,
 } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Github, Linkedin, Twitter } from "@/components/brand-icons";
 import {
   Dialog,
@@ -36,7 +36,7 @@ function BlueskyIcon({ className }: { className?: string }) {
   );
 }
 
-const shareText = "Check out pongo - open source uptime monitoring";
+const shareText = "Check out Pongo: open source uptime monitoring";
 const shareUrl = "https://pongo.sh";
 
 const sharePlatforms = [
@@ -79,6 +79,7 @@ export function SupportDialog({
   const label = isAbout ? "About" : "Support";
   const [shareExpanded, setShareExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
+  const shareContentId = useId();
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
@@ -95,43 +96,40 @@ export function SupportDialog({
             triggerClassName ??
             "hover:text-foreground transition-colors flex items-center gap-1"
           }
-          title={`${label} pongo`}
+          title={`${label} Pongo`}
+          aria-label={`${label} Pongo`}
         >
           <Icon className="h-3.5 w-3.5" />
           {showLabel && <span>{label}</span>}
         </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-sm font-mono">
-            {isAbout ? "about" : "support"}
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden sm:max-w-md">
+        <DialogHeader className="shrink-0 pr-8">
+          <DialogTitle className="text-base font-semibold">
+            {label} Pongo
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-3 pt-2">
+        <div className="min-h-0 space-y-3 overflow-y-auto pt-2">
           {isAbout ? (
             <>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                pongo is an open source uptime monitoring solution designed for
-                developers who prefer configuration as code. define your
-                monitors as simple typescript files, commit them to your
-                repository, and deploy anywhere that runs node.
+                Pongo monitors uptime using configuration as code. Define
+                monitors in TypeScript, commit them to your repository, and
+                deploy anywhere that runs Node.js.
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                track response times, uptime percentages, error rates, and
-                latency percentiles with real-time dashboards. create beautiful
-                public status pages to keep your users informed about service
-                health.
+                Track response times, availability, errors, and latency
+                percentiles. Share public status pages with your users.
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                no database required — pongo reads monitor definitions directly
-                from your filesystem. results are stored locally in sqlite,
-                making it lightweight, portable, and easy to backup.
+                Pongo reads monitor definitions from your filesystem. Check
+                history is stored in SQLite or PostgreSQL, with optional S3
+                archival.
               </p>
             </>
           ) : (
             <p className="text-xs text-muted-foreground">
-              pongo is free and open source. here are some ways you can support
-              it:
+              Pongo is free and open source. You can support it here:
             </p>
           )}
           {!isAbout && (
@@ -144,9 +142,9 @@ export function SupportDialog({
               >
                 <Star className="h-4 w-4 text-muted-foreground group-hover:text-yellow-500 transition-colors" />
                 <div>
-                  <div className="text-xs font-medium">star on github</div>
-                  <div className="text-[10px] text-muted-foreground">
-                    help others discover pongo
+                  <div className="text-xs font-medium">Star on GitHub</div>
+                  <div className="text-xs text-muted-foreground">
+                    Help others discover Pongo
                   </div>
                 </div>
               </a>
@@ -158,9 +156,9 @@ export function SupportDialog({
               >
                 <Coffee className="h-4 w-4 text-muted-foreground group-hover:text-orange-500 transition-colors" />
                 <div>
-                  <div className="text-xs font-medium">sponsor</div>
-                  <div className="text-[10px] text-muted-foreground">
-                    support ongoing development
+                  <div className="text-xs font-medium">Sponsor</div>
+                  <div className="text-xs text-muted-foreground">
+                    Support ongoing development
                   </div>
                 </div>
               </a>
@@ -168,13 +166,15 @@ export function SupportDialog({
                 <button
                   type="button"
                   onClick={() => setShareExpanded(!shareExpanded)}
+                  aria-expanded={shareExpanded}
+                  aria-controls={shareContentId}
                   className="flex items-center gap-3 p-3 w-full hover:bg-accent transition-colors group text-left"
                 >
                   <Share2 className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                   <div className="flex-1">
-                    <div className="text-xs font-medium">share us</div>
-                    <div className="text-[10px] text-muted-foreground">
-                      spread the word on social media
+                    <div className="text-xs font-medium">Share Pongo</div>
+                    <div className="text-xs text-muted-foreground">
+                      Share a link on social media
                     </div>
                   </div>
                   {shareExpanded ? (
@@ -184,6 +184,9 @@ export function SupportDialog({
                   )}
                 </button>
                 <div
+                  id={shareContentId}
+                  aria-hidden={!shareExpanded}
+                  inert={!shareExpanded}
                   className={cn(
                     "overflow-hidden transition-all duration-200",
                     shareExpanded ? "max-h-40" : "max-h-0",
@@ -192,6 +195,7 @@ export function SupportDialog({
                   <div className="relative border-t border-border">
                     <textarea
                       readOnly
+                      aria-label="Share message"
                       value={`${shareText} ${shareUrl}`}
                       className="w-full text-xs bg-muted/50 p-3 pr-10 resize-none text-muted-foreground outline-none border-none"
                       rows={3}
@@ -199,14 +203,18 @@ export function SupportDialog({
                     <button
                       type="button"
                       onClick={handleCopy}
+                      aria-label="Copy share message"
                       className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
                       title="Copy to clipboard"
                     >
                       <Copy className="h-4 w-4" />
                     </button>
                     {copied && (
-                      <span className="absolute bottom-3 right-3 text-[10px] text-green-500">
-                        copied!
+                      <span
+                        role="status"
+                        className="absolute bottom-3 right-3 text-xs text-green-500"
+                      >
+                        Copied
                       </span>
                     )}
                   </div>
@@ -225,7 +233,7 @@ export function SupportDialog({
                         title={`Share on ${platform.name}`}
                       >
                         <platform.icon className="h-3.5 w-3.5" />
-                        <span className="text-[10px]">{platform.name}</span>
+                        <span className="text-xs">{platform.name}</span>
                       </a>
                     ))}
                   </div>
@@ -236,10 +244,10 @@ export function SupportDialog({
                   <UserPlus className="h-4 w-4 text-muted-foreground" />
                   <div className="flex-1">
                     <div className="text-xs font-medium">
-                      follow the developer
+                      Follow the developer
                     </div>
-                    <div className="text-[10px] text-muted-foreground">
-                      stay updated on new features
+                    <div className="text-xs text-muted-foreground">
+                      Follow new releases and updates
                     </div>
                   </div>
                 </div>
@@ -252,7 +260,7 @@ export function SupportDialog({
                     title="Twitter"
                   >
                     <Twitter className="h-3.5 w-3.5" />
-                    <span className="text-[10px]">Twitter</span>
+                    <span className="text-xs">Twitter</span>
                   </a>
                   <a
                     href="https://bsky.app/profile/linesofcode.bsky.social"
@@ -262,7 +270,7 @@ export function SupportDialog({
                     title="Bluesky"
                   >
                     <BlueskyIcon className="h-3.5 w-3.5" />
-                    <span className="text-[10px]">Bluesky</span>
+                    <span className="text-xs">Bluesky</span>
                   </a>
                   <a
                     href="https://linkedin.com/in/tim-mikeladze"
@@ -272,7 +280,7 @@ export function SupportDialog({
                     title="LinkedIn"
                   >
                     <Linkedin className="h-3.5 w-3.5" />
-                    <span className="text-[10px]">LinkedIn</span>
+                    <span className="text-xs">LinkedIn</span>
                   </a>
                   <a
                     href="https://github.com/timmikeladze"
@@ -282,7 +290,7 @@ export function SupportDialog({
                     title="GitHub"
                   >
                     <Github className="h-3.5 w-3.5" />
-                    <span className="text-[10px]">GitHub</span>
+                    <span className="text-xs">GitHub</span>
                   </a>
                 </div>
               </div>

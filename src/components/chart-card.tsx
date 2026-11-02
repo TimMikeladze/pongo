@@ -5,36 +5,32 @@ import {
   AlertTriangle,
   CheckCircle,
   Maximize2,
-  Minimize2,
   TrendingUp,
-  X,
   Zap,
 } from "lucide-react";
-import {
-  createContext,
-  type ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, type ReactNode, useContext, useState } from "react";
 import {
   type ChartType,
   ChartTypeToggle,
 } from "@/components/chart-type-toggle";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const ChartTypeContext = createContext<ChartType>("line");
-const FullscreenContext = createContext<boolean>(false);
-
+const FullscreenContext = createContext(false);
 export function useChartType(): ChartType {
   return useContext(ChartTypeContext);
 }
-
 export function useChartFullscreen(): boolean {
   return useContext(FullscreenContext);
 }
-
 const iconMap = {
   activity: Activity,
   "alert-triangle": AlertTriangle,
@@ -43,18 +39,15 @@ const iconMap = {
   zap: Zap,
 } as const;
 
-type IconName = keyof typeof iconMap;
-
 interface ChartCardProps {
   title: string;
-  icon?: IconName;
+  icon?: keyof typeof iconMap;
   iconClassName?: string;
   children: ReactNode;
   defaultChartType?: ChartType;
   showToggle?: boolean;
   className?: string;
 }
-
 export function ChartCard({
   title,
   icon,
@@ -67,114 +60,65 @@ export function ChartCard({
   const [chartType, setChartType] = useState<ChartType>(defaultChartType);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const Icon = icon ? iconMap[icon] : null;
-
-  const handleClose = useCallback(() => {
-    setIsFullscreen(false);
-  }, []);
-
-  useEffect(() => {
-    if (!isFullscreen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        handleClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [isFullscreen, handleClose]);
-
-  const cardContent = (
-    <>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-1.5">
-          {Icon && <Icon className={cn("h-3 w-3", iconClassName)} />}
-          <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground">
+  return (
+    <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
+      <div
+        className={cn("chart-surface", isFullscreen && "invisible", className)}
+      >
+        <div className="flex justify-between items-center gap-3 mb-3">
+          <h3 className="flex items-center gap-2 text-sm font-medium">
+            {Icon && (
+              <Icon
+                className={cn("size-3.5 text-muted-foreground", iconClassName)}
+              />
+            )}
             {title}
           </h3>
-        </div>
-        <div className="flex items-center gap-1">
-          {showToggle && (
-            <ChartTypeToggle value={chartType} onChange={setChartType} />
-          )}
-          <button
-            type="button"
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-            title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-          >
-            {isFullscreen ? (
-              <Minimize2 className="h-3 w-3" />
-            ) : (
-              <Maximize2 className="h-3 w-3" />
+          <div className="flex gap-1 items-center">
+            {showToggle && (
+              <ChartTypeToggle value={chartType} onChange={setChartType} />
             )}
-          </button>
-        </div>
-      </div>
-      <ChartTypeContext.Provider value={chartType}>
-        <FullscreenContext.Provider value={isFullscreen}>
-          <div className={cn(isFullscreen && "flex-1 min-h-0")}>{children}</div>
-        </FullscreenContext.Provider>
-      </ChartTypeContext.Provider>
-    </>
-  );
-
-  if (isFullscreen) {
-    return (
-      <>
-        {/* Placeholder to maintain layout */}
-        <div
-          className={cn(
-            "border border-border rounded bg-card p-4 invisible",
-            className,
-          )}
-        >
-          {cardContent}
-        </div>
-        {/* Fullscreen overlay - positioned below the app header (h-12 = 48px) */}
-        <div className="fixed inset-x-0 top-12 bottom-0 z-40 bg-background/95 backdrop-blur-sm flex flex-col p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-1.5">
-              {Icon && <Icon className={cn("h-4 w-4", iconClassName)} />}
-              <h3 className="text-sm uppercase tracking-wider text-muted-foreground">
-                {title}
-              </h3>
-            </div>
-            <div className="flex items-center gap-2">
-              {showToggle && (
-                <ChartTypeToggle value={chartType} onChange={setChartType} />
-              )}
+            <DialogTrigger asChild>
               <button
                 type="button"
-                onClick={handleClose}
-                className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-                title="Close fullscreen (Esc)"
+                className="control-button border-transparent"
+                aria-label={`Expand ${title} chart`}
+                title="Fullscreen"
               >
-                <X className="h-4 w-4" />
+                <Maximize2 className="size-3.5" />
               </button>
-            </div>
-          </div>
-          <div className="flex-1 border border-border rounded bg-card p-6 flex flex-col min-h-0">
-            <ChartTypeContext.Provider value={chartType}>
-              <FullscreenContext.Provider value={true}>
-                <div className="flex-1 min-h-0">{children}</div>
-              </FullscreenContext.Provider>
-            </ChartTypeContext.Provider>
+            </DialogTrigger>
           </div>
         </div>
-      </>
-    );
-  }
-
-  return (
-    <div className={cn("border border-border rounded bg-card p-4", className)}>
-      {cardContent}
-    </div>
+        <ChartTypeContext.Provider value={chartType}>
+          <FullscreenContext.Provider value={false}>
+            {children}
+          </FullscreenContext.Provider>
+        </ChartTypeContext.Provider>
+      </div>
+      <DialogContent
+        className="inset-4 top-4 left-4 translate-x-0 translate-y-0 w-auto max-w-none sm:max-w-none h-[calc(100dvh-2rem)] flex flex-col p-4 sm:p-6"
+        aria-label={`${title} chart`}
+      >
+        <DialogHeader className="pr-8">
+          <DialogTitle className="text-base">{title}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Expanded performance chart. Press Escape to return.
+          </DialogDescription>
+        </DialogHeader>
+        {showToggle && (
+          <div>
+            <ChartTypeToggle value={chartType} onChange={setChartType} />
+          </div>
+        )}
+        <div className="flex-1 min-h-0">
+          <ChartTypeContext.Provider value={chartType}>
+            <FullscreenContext.Provider value={true}>
+              {children}
+            </FullscreenContext.Provider>
+          </ChartTypeContext.Provider>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

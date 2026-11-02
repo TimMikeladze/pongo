@@ -36,34 +36,39 @@ export function ThemeProvider({
   defaultTheme = "dark",
   storageKey = "theme",
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === "undefined") return defaultTheme;
-    return (localStorage.getItem(storageKey) as Theme | null) || defaultTheme;
-  });
-  const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">(() => {
-    if (typeof window === "undefined") return "dark";
-    const stored =
-      (localStorage.getItem(storageKey) as Theme | null) || defaultTheme;
-    if (stored === "system") {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
-    }
-    return stored === "light" ? "light" : "dark";
-  });
-  const [density, setDensityState] = useState<Density>(() => {
-    if (typeof window === "undefined") return "normal";
-    return (localStorage.getItem("density") as Density | null) || "normal";
-  });
-  const [fullWidth, setFullWidthState] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("fullWidth") === "true";
-  });
+  const [theme, setThemeState] = useState<Theme>(defaultTheme);
+  const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("dark");
+  const [density, setDensityState] = useState<Density>("normal");
+  const [fullWidth, setFullWidthState] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Restore after hydration so controlled inputs agree with the server HTML.
+    try {
+      const storedTheme = localStorage.getItem(storageKey);
+      const initialTheme =
+        storedTheme === "light" ||
+        storedTheme === "dark" ||
+        storedTheme === "system"
+          ? storedTheme
+          : defaultTheme;
+      setThemeState(initialTheme);
+      setResolvedTheme(
+        initialTheme === "system"
+          ? window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : initialTheme,
+      );
+      setDensityState(
+        localStorage.getItem("density") === "dense" ? "dense" : "normal",
+      );
+      setFullWidthState(localStorage.getItem("fullWidth") === "true");
+    } catch {
+      // Storage can be blocked by the browser; keep the default appearance.
+    }
     setMounted(true);
-  }, []);
+  }, [defaultTheme, storageKey]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -106,12 +111,16 @@ export function ThemeProvider({
   }, [theme]);
 
   const setTheme = (newTheme: Theme) => {
-    localStorage.setItem(storageKey, newTheme);
+    try {
+      localStorage.setItem(storageKey, newTheme);
+    } catch {}
     setThemeState(newTheme);
   };
 
   const setDensity = (newDensity: Density) => {
-    localStorage.setItem("density", newDensity);
+    try {
+      localStorage.setItem("density", newDensity);
+    } catch {}
     setDensityState(newDensity);
   };
 
@@ -121,7 +130,9 @@ export function ThemeProvider({
   };
 
   const setFullWidth = (newFullWidth: boolean) => {
-    localStorage.setItem("fullWidth", String(newFullWidth));
+    try {
+      localStorage.setItem("fullWidth", String(newFullWidth));
+    } catch {}
     setFullWidthState(newFullWidth);
   };
 

@@ -49,11 +49,13 @@ export function AlertActions({ alertId, override }: AlertActionsProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6"
+          className="h-8 w-8"
+          aria-label={`Actions for alert ${alertId}`}
+          aria-busy={isPending}
           disabled={isPending}
           onClick={(e) => e.stopPropagation()}
         >
-          <MoreHorizontal className="h-3 w-3" />
+          <MoreHorizontal className="h-3.5 w-3.5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
@@ -61,7 +63,7 @@ export function AlertActions({ alertId, override }: AlertActionsProps) {
           <DropdownMenuItem
             onClick={() => startTransition(() => unsilenceAlertAction(alertId))}
           >
-            <BellRing className="h-3 w-3 mr-2" />
+            <BellRing className="h-3.5 w-3.5 mr-2" />
             Unsilence
           </DropdownMenuItem>
         ) : (
@@ -72,7 +74,7 @@ export function AlertActions({ alertId, override }: AlertActionsProps) {
                 startTransition(() => silenceAlertAction(alertId, ms))
               }
             >
-              <BellOff className="h-3 w-3 mr-2" />
+              <BellOff className="h-3.5 w-3.5 mr-2" />
               Silence for {label}
             </DropdownMenuItem>
           ))
@@ -82,7 +84,7 @@ export function AlertActions({ alertId, override }: AlertActionsProps) {
           <DropdownMenuItem
             onClick={() => startTransition(() => enableAlertAction(alertId))}
           >
-            <Power className="h-3 w-3 mr-2" />
+            <Power className="h-3.5 w-3.5 mr-2" />
             Enable
           </DropdownMenuItem>
         ) : (
@@ -90,7 +92,7 @@ export function AlertActions({ alertId, override }: AlertActionsProps) {
             className="text-destructive"
             onClick={() => startTransition(() => disableAlertAction(alertId))}
           >
-            <PowerOff className="h-3 w-3 mr-2" />
+            <PowerOff className="h-3.5 w-3.5 mr-2" />
             Disable
           </DropdownMenuItem>
         )}
