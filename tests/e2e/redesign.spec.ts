@@ -58,7 +58,7 @@ for (const width of [390, 768, 1440]) {
       }
       const geometry = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth > innerWidth,
-        width: document.documentElement.clientWidth,
+        width: document.body.getBoundingClientRect().width,
         gutter: parseFloat(
           getComputedStyle(document.documentElement).getPropertyValue(
             "--page-gutter",

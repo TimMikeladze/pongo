@@ -65,6 +65,6 @@
 
 ### Task 5: PR and CI
 
-- [ ] Review/stage only redesign files; commit on the feature branch.
-- [ ] Push and open a PR to main describing behavior and validation.
+- [x] Review/stage only redesign files; commit on the feature branch.
+- [x] Push and open a PR to main describing behavior and validation.
 - [ ] Watch the PR checks, fix any CI failures, and report the PR URL after checks pass.

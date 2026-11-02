@@ -21,4 +21,6 @@ Support regression tests wait for the streamed page heading before interacting w
 
 ## Delivery
 
-Task 5 is in progress: final verification, commit, feature-branch push, PR to main, and CI.
+Implementation and final local checks are complete: 96 unit tests, 16 browser tests, lint, typecheck and production Next build. Both final independent reviews found no material remaining issues.
+
+[PR #27](https://github.com/TimMikeladze/pongo/pull/27) is open from `codex/pongo-ui-redesign` to main. CI exposed a cross-platform width-test assumption: Linux reserves a 6px scrollbar gutter while macOS overlays it. The expected width now uses the body’s available inline width; exact shell alignment and no-overflow assertions remain. CI results are tracked on the PR.

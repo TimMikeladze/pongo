@@ -50,7 +50,7 @@ The unit and browser tests are source-controlled. Browser tests use their isolat
 
 ## Screenshots and fixtures
 
-Local review captures are in `.impeccable/review/`, which is ignored by Git. `capture-report.json` records desktop and mobile route geometry with no overflow failures; captures include both themes and expanded alert state. The tablet width is covered by the end-to-end route checks. The capture fixture supplies synthetic monitoring history only to an isolated review database; it is separate from production data and the normal configuration.
+Local review captures are in `.impeccable/review/`, which is ignored by Git. `capture-report.json` records desktop and mobile route geometry with no overflow failures; captures include both themes and expanded alert state. The tablet width is covered by the end-to-end route checks. Width expectations use the body’s available inline width, accounting for reserved scrollbar gutters on Linux and overlay scrollbars on macOS. The capture fixture supplies synthetic monitoring history only to an isolated review database; it is separate from production data and the normal configuration.
 
 Production pages continue reading configured monitors, dashboard definitions, incident/announcement content and stored check results. Do not copy review telemetry into runtime configuration or commit the full screenshot directory. Retain only a specifically requested review artifact when a later review needs a tracked image.
 
