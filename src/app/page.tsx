@@ -323,6 +323,22 @@ export default async function OverviewPage({ searchParams }: Props) {
           </summary>
           <div className="space-y-3 pb-4 text-sm text-muted-foreground max-w-prose">
             <p>
+              Create a status page with your coding agent. Paste:{" "}
+              <code>https://pongo.sh Create a status page for Acme.</code>
+            </p>
+            <p>
+              Your agent asks for service URLs, configures Pongo, and checks the
+              running page. Read the{" "}
+              <a href="/llms.txt" className="underline">
+                agent instructions
+              </a>{" "}
+              or use the{" "}
+              <a href="/skills/create-pongo/SKILL.md" className="underline">
+                setup skill
+              </a>
+              .
+            </p>
+            <p>
               Define monitors, dashboards and alerts in TypeScript and incidents
               in Markdown. Commit configuration alongside your code.
             </p>

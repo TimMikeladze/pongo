@@ -97,6 +97,12 @@ export default async function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        <link
+          rel="alternate"
+          type="text/plain"
+          href="/llms.txt"
+          title="Pongo setup instructions for agents"
+        />
         {/* Blocking theme script - runs before paint to prevent FOUC */}
         <script
           dangerouslySetInnerHTML={{

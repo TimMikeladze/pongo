@@ -37,12 +37,12 @@ The shell applies the same width to every route and preserves theme, dense/zen a
 
 ## Verification record
 
-Local verification passed 101 unit tests, 25 end-to-end tests, lint, typecheck and a production build. Independent code and visual reviews approved the implementation after all three material findings were fixed. CI status is recorded on the PR.
+Local verification passed 103 unit tests, 26 end-to-end tests, lint, typecheck and a production build. Independent code and visual reviews approved the implementation after all three material findings were fixed. CI status is recorded on the PR.
 
 | Evidence | Coverage |
 | --- | --- |
-| `bun test src` | 101 unit tests, including health precedence and unknown measurements |
-| `bunx playwright test` | 25 tests across smoke and redesign suites |
+| `bun test src` | 103 unit tests, including health precedence and unknown measurements |
+| `bunx playwright test` | 26 tests across smoke and redesign suites |
 | `tests/e2e/redesign.spec.ts` | All 16 pages at 390px, 768px and 1440px; aligned shell width and no page overflow |
 | Redesign interaction tests | Public access/feeds, search and empty states, themes, width, zen recovery, chart focus restoration, history keyboard and touch controls, dashboard filter navigation, short-screen dialogs and range changes |
 | Production build | Completed against an isolated database during verification |
@@ -76,3 +76,5 @@ The header, public tabs and footer stay visible while main content scrolls. Navi
 README code uses Shiki syntax highlighting with high-contrast palettes for both themes. Long lines wrap inside code blocks. Main content and navigation retain scrolling without visible scrollbar tracks. The README route returns 404 when disabled, including direct requests.
 
 The dependency refresh is part of this PR: [upgrade record](../dependency-upgrades.md). All direct packages use the latest audited releases except TypeScript, which remains at 5.9.3. The update includes the original main-workspace package, lockfile and Biome changes.
+
+Prompt-based setup is included in this PR. The [agent setup guide](../agent-setup.md) documents the copyable pongo.sh prompt, follow-up questions, and optional skill installation. `/llms.txt` and `/skills/create-pongo/SKILL.md` are public even when admin login is enabled. The README, redesigned About section, and HTML discovery link point agents to those instructions. Relative README links to public files resolve at the site root; repository documentation links resolve on GitHub. Regression tests verify those links and public access.

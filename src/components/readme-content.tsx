@@ -46,6 +46,23 @@ export async function ReadmeContent({ markdown }: { markdown: string }) {
             ],
           ],
           components: {
+            a: ({ href, title, children }) => (
+              <a
+                href={
+                  href?.startsWith("public/")
+                    ? `/${href.slice(7)}`
+                    : href &&
+                        !href.startsWith("#") &&
+                        !href.startsWith("/") &&
+                        !/^[a-z][a-z\d+.-]*:/i.test(href)
+                      ? `https://github.com/TimMikeladze/pongo/blob/main/${href}`
+                      : href
+                }
+                title={title}
+              >
+                {children}
+              </a>
+            ),
             h1: ({ children }) => <h2 id={headingId(children)}>{children}</h2>,
             h2: ({ children }) => <h2 id={headingId(children)}>{children}</h2>,
             h3: ({ children }) => <h3 id={headingId(children)}>{children}</h3>,

@@ -125,6 +125,46 @@ test("public history and feeds stay accessible without a session", async ({
   ).toHaveAttribute("content", "noindex");
 });
 
+test("agent setup instructions stay public and discoverable", async ({
+  page,
+  request,
+}) => {
+  const instructions = await request.get("/llms.txt");
+  expect(instructions.status()).toBe(200);
+  expect(await instructions.text()).toContain(
+    "https://pongo.sh/skills/create-pongo/SKILL.md",
+  );
+  const skill = await request.get("/skills/create-pongo/SKILL.md");
+  expect(skill.status()).toBe(200);
+  expect(await skill.text()).toContain("name: create-pongo");
+  const admin = await request.get("/settings", { maxRedirects: 0 });
+  expect(admin.status()).toBe(307);
+  expect(admin.headers().location).toContain("/login");
+
+  await page.goto("/shared/status");
+  await expect(page.locator('head link[href="/llms.txt"]')).toHaveAttribute(
+    "type",
+    "text/plain",
+  );
+  if (process.env.SHOW_HOW_IT_WORKS !== "false") {
+    await page.goto("/shared/status/how-it-works");
+    await expect(
+      page.getByRole("heading", {
+        name: "Create a status page with an agent",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "create-pongo skill", exact: true }),
+    ).toHaveAttribute("href", "/skills/create-pongo/SKILL.md");
+    await page
+      .getByRole("link", { name: "create-pongo skill", exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/skills\/create-pongo\/SKILL\.md$/);
+    await expect(page.locator("body")).toContainText("name: create-pongo");
+  }
+});
+
 test("unknown measurements and monitor search do not imply healthy checks", async ({
   page,
 }) => {
@@ -574,7 +614,7 @@ test("How it works renders the README with working anchors and public screenshot
   await expect(page.getByTestId("shell-header")).toBeInViewport();
   await expect(page.getByTestId("shell-footer")).toBeInViewport();
   await page.setViewportSize({ width: 390, height: 844 });
-  const code = article.locator("pre").first();
+  const code = article.locator('pre[data-language="bash"]').first();
   await expect(
     code.locator('span[style*="--shiki-light"]').first(),
   ).toBeVisible();

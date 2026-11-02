@@ -16,6 +16,7 @@
 
 <p align="center">
   <a href="#quick-start">Quick Start</a> &middot;
+  <a href="#create-a-status-page-with-an-agent">Agent Setup</a> &middot;
   <a href="#monitors">Monitors</a> &middot;
   <a href="#alerts">Alerts</a> &middot;
   <a href="#dashboards">Dashboards</a> &middot;
@@ -34,6 +35,27 @@ Define monitors, dashboards, alerts, incidents, and announcements as TypeScript 
 - 🗄️ S3 archival to Parquet with day-based partitioning
 - 🔔 Smart alerting with flap detection and auto-resolve
 - 🌍 Multi-region monitoring with region-aware alert thresholds
+
+## Create a status page with an agent
+
+Paste this into your coding agent:
+
+```text
+https://pongo.sh
+Create a status page for Acme.
+```
+
+Your agent reads the [agent instructions](https://pongo.sh/llms.txt), asks which services to monitor and their URLs, then configures Pongo and verifies the running page. Supply the URLs in your prompt to skip that question:
+
+```text
+https://pongo.sh
+Create a status page for Acme monitoring https://acme.example and
+https://api.acme.example/health. Check every minute and run it locally.
+```
+
+The default is a local SQLite setup with a public status page and a separate scheduler. Request Vercel, Fly.io, Docker, or your own server when you want it deployed. Hosting access and a database are required for deployment; pongo.sh does not host new instances.
+
+See the [agent setup guide](docs/agent-setup.md) for follow-up questions and optional installation of the [create-pongo skill](public/skills/create-pongo/SKILL.md).
 
 ## Screenshots
 
@@ -62,6 +84,8 @@ bun dev
 ```
 
 Open http://localhost:3000.
+
+Monitoring also requires the scheduler described below. The bundled public status page is at http://localhost:3000/shared/status.
 
 pongo.sh uses SQLite by default, but you can use PostgreSQL instead by setting the `DATABASE_URL` environment variable:
 
@@ -198,7 +222,7 @@ export default { api, vercel };
 interval: "30s"           // every 30 seconds
 interval: "5m"            // every 5 minutes
 interval: "1h"            // every hour
-interval: "*/5 * * * *"  // cron expression
+cron: "*/5 * * * *"      // cron expression (use instead of interval)
 ```
 
 ## Alerts
@@ -319,6 +343,8 @@ import production from "./production";
 export default { production };
 ```
 
+Registry object keys are the monitor and dashboard IDs. Dashboard `monitors` entries must match the keys in `pongo/monitors/index.ts`. A file is loaded only after it is registered. Restart the scheduler after changing configuration; rebuild the web app for production.
+
 ### Status pages
 
 Public dashboards are accessible without authentication. Each includes:
@@ -401,17 +427,23 @@ All services share one database. No message queues or service mesh required.
 1. Click "Deploy with Vercel" above
 2. Set `DATABASE_URL` and `CRON_SECRET` (`openssl rand -base64 32`)
 
+Use a remote PostgreSQL or libSQL database. The included `vercel.json` invokes `/api/cron` every 30 minutes; a monitor's shorter interval does not make cron run more often. Choose a provider-supported faster schedule or an external scheduler if needed. Set the build command to the selected migration command followed by `bunx next build` (see [Database](#database)).
+
 ### Fly.io
+
+Replace the `pongo-production` app name in `fly.toml` with your own app name before deploying. The commands below use PostgreSQL; for a single-host SQLite instance, use `DATABASE_URL=file:/data/pongo.db` on the included `/data` volume. Run the selected database migration before starting the app.
 
 ```bash
 fly launch
-fly secrets set DATABASE_URL="postgres://..." ACCESS_CODE="secret"
+fly secrets set DATABASE_URL="postgres://..." ACCESS_CODE="secret" SCHEDULER_ENABLED=true
 fly deploy
 ```
 
 The included `Dockerfile` and `fly.toml` handle everything. The Docker entrypoint auto-starts the scheduler and archiver when `SCHEDULER_ENABLED=true` and `ARCHIVAL_ENABLED=true`.
 
 ### Docker Compose
+
+Run the selected database migration in a one-off container before starting the app and scheduler. The Docker entrypoint does not apply migrations. Both services must use the same database; SQLite requires a shared persistent volume.
 
 ```yaml
 services:
@@ -499,14 +531,19 @@ Auto-detected from `DATABASE_URL`:
 |---|---|---|
 | SQLite | `file:./pongo/pongo.db` (default) | WAL mode, zero config |
 | PostgreSQL | `postgres://user:pass@host:5432/pongo` | Production recommended |
+| Remote libSQL | `libsql://your-db.turso.io` | Set `TURSO_AUTH_TOKEN`; use a `turso` migration config |
 
-Migrations run automatically on build. Manual:
+Run migrations explicitly for the selected backend:
 
 ```bash
 bun run db:pg:migrate     # PostgreSQL
 bun run db:sqlite:migrate # SQLite
 bun run db:pg:studio      # Open Drizzle Studio
 ```
+
+The current `bun run build` script chooses SQLite migrations only for a `DATABASE_URL` starting with `sqlite`; it incorrectly chooses PostgreSQL for `file:`/`libsql:` URLs or an unset URL. After running the correct migration, build with `bunx next build` and start with `bun start`. Docker also needs an explicit migration before startup.
+
+For remote libSQL, the bundled SQLite migration config does not pass `TURSO_AUTH_TOKEN`. Use a Drizzle config with `dialect: "turso"`, the SQLite schema and migrations directory, and `dbCredentials` containing `url` and `authToken`; see the [setup skill](public/skills/create-pongo/SKILL.md#migrate-and-run) for the configuration and command.
 
 ## Authentication
 
@@ -524,7 +561,7 @@ When `ACCESS_CODE` is set:
 - Sessions are stored as encrypted cookies (iron-session) and last 7 days by default
 - Adjust session duration with `EXPIRY_DAYS`
 
-**Public routes** (always accessible, even with auth enabled): `/`, `/shared/*`, `/login`, `/api/*`
+**Public routes** (always accessible, even with auth enabled): `/`, `/shared/*`, `/login`, `/api/*`, `/llms.txt`, `/skills/create-pongo/SKILL.md`. API endpoints enforce their own authentication where required.
 
 ## Environment Variables
 
@@ -576,7 +613,8 @@ When `ACCESS_CODE` is set:
 | Command | Description |
 |---|---|
 | `bun dev` | Start Next.js dev server |
-| `bun run build` | Build for production (auto-runs migrations) |
+| `bunx next build` | Build for production after explicit database migrations |
+| `bun run build` | Migrate and build; see the database-selection limitation above |
 | `bun start` | Start production server |
 | `bun scheduler` | Start scheduler service |
 | `bun archiver` | Start archiver service |

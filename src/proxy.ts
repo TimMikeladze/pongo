@@ -28,6 +28,8 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/login") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
+    pathname === "/llms.txt" ||
+    pathname === "/skills/create-pongo/SKILL.md" ||
     pathname === "/favicon.ico" ||
     pathname === "/logo.png";
 

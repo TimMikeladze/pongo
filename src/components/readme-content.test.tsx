@@ -31,4 +31,19 @@ describe("README rendering", () => {
     expect(html).not.toContain("onerror");
     expect(html).not.toContain("alert(");
   });
+
+  test("resolves setup resources while retaining page anchors and external URLs", async () => {
+    const html = renderToStaticMarkup(
+      await ReadmeContent({
+        markdown:
+          "[Skill](public/skills/create-pongo/SKILL.md)\n\n[Setup guide](docs/agent-setup.md)\n\n[Quick Start](#quick-start)\n\n[Instructions](https://pongo.sh/llms.txt)",
+      }),
+    );
+    expect(html).toContain('href="/skills/create-pongo/SKILL.md"');
+    expect(html).toContain(
+      'href="https://github.com/TimMikeladze/pongo/blob/main/docs/agent-setup.md"',
+    );
+    expect(html).toContain('href="#quick-start"');
+    expect(html).toContain('href="https://pongo.sh/llms.txt"');
+  });
 });
