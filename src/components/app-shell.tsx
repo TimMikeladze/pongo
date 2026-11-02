@@ -308,6 +308,15 @@ export function AppShell({
                 <PopoverContent
                   align="end"
                   side="top"
+                  onCloseAutoFocus={(event) => {
+                    const bounds =
+                      optionsTrigger.current?.getBoundingClientRect();
+                    if (
+                      bounds &&
+                      (bounds.bottom <= 0 || bounds.top >= window.innerHeight)
+                    )
+                      event.preventDefault();
+                  }}
                   className="w-64 max-h-[var(--radix-popover-content-available-height)] overflow-y-auto p-2 data-[state=closed]:animate-none"
                 >
                   <div className="page-options">

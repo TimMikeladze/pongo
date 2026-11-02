@@ -357,6 +357,7 @@ test("support sharing stays within a short viewport and excludes collapsed field
   await expect(
     page.getByRole("button", { name: "Page options", exact: true }),
   ).toHaveAttribute("aria-expanded", "false");
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 });
 
 test("mobile history can be inspected with large period controls", async ({
