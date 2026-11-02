@@ -74,3 +74,5 @@ The footer caption links to `NEXT_PUBLIC_GITHUB_URL`, falling back to `https://g
 The header, public tabs and footer stay visible while main content scrolls. Navigation to a different page resets main scroll; reporting-range changes preserve it. Zen mode still hides the shell and keeps its recovery controls. `SHOW_HOW_IT_WORKS` gates the public README page and tab: development defaults on and production defaults off, with explicit `true` or `false` overriding either. The README is included in the serverless trace; its screenshots are served from `public/readme/`.
 
 README code uses Shiki syntax highlighting with high-contrast palettes for both themes. Long lines wrap inside code blocks. Main content and navigation retain scrolling without visible scrollbar tracks. The README route returns 404 when disabled, including direct requests.
+
+The dependency refresh is part of this PR: [upgrade record](../dependency-upgrades.md). All direct packages use the latest audited releases except TypeScript, which remains at 5.9.3. The update includes the original main-workspace package, lockfile and Biome changes.
