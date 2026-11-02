@@ -540,9 +540,11 @@ When `ACCESS_CODE` is set:
 | `S3_SECRET_ACCESS_KEY` | S3 secret key | - |
 | `S3_PREFIX` | S3 key prefix | - |
 | `NEXT_PUBLIC_URL` | Public URL for SEO/metadata | - |
-| `NEXT_PUBLIC_SITE_NAME` | Custom site name (metadata, page titles, footer) | `pongo.sh` |
-| `NEXT_PUBLIC_HIDE_GITHUB` | Hide GitHub in Page options | - |
-| `NEXT_PUBLIC_HIDE_DOCS` | Hide the docs link in the appbar | - |
+| `NEXT_PUBLIC_SITE_NAME` | Custom site name (header, metadata, page titles, footer) | `pongo.sh` |
+| `NEXT_PUBLIC_HEADER_CAPTION` | Secondary line beneath the header brand | `Demo deployment` |
+| `NEXT_PUBLIC_GITHUB_URL` | Repository URL shown as a GitHub link in the footer; omitted when unset | - |
+| `NEXT_PUBLIC_HIDE_GITHUB` | Set to `true` to hide the configured footer GitHub link | - |
+| `NEXT_PUBLIC_HIDE_DOCS` | Hide Documentation in Page options | - |
 | `NEXT_PUBLIC_HIDE_SUPPORT` | Hide Support in Page options | - |
 | `NEXT_PUBLIC_FAVICON` | Custom favicon image URL (e.g. `/custom-favicon.png`) | `/logo.png` |
 | `NEXT_PUBLIC_FOOTER_LOGO` | Custom footer logo image URL (e.g. `/custom-logo.png`) | pongo logo |

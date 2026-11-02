@@ -25,7 +25,6 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { logout } from "@/app/login/actions";
 import { Github } from "@/components/brand-icons";
 import { PongoLogo } from "@/components/pongo-logo";
-import { usePublicHeader } from "@/components/public-header-provider";
 import { SupportDialog } from "@/components/support-dialog";
 import { useTheme } from "@/components/theme-provider";
 import {
@@ -54,7 +53,6 @@ export function AppShell({
   isAuthenticated?: boolean;
 }) {
   const pathname = usePathname();
-  const { headerInfo } = usePublicHeader();
   const {
     density,
     toggleDensity,
@@ -87,12 +85,11 @@ export function AppShell({
     { label: "Maintenance", suffix: "/maintenance" },
     { label: "Updates", suffix: "/announcements" },
   ];
-  const name = process.env.NEXT_PUBLIC_SITE_NAME ?? "pongo.";
-  const context = shared
-    ? (headerInfo?.name ?? "Service status")
-    : operator
-      ? "Monitoring"
-      : "System status";
+  const name = process.env.NEXT_PUBLIC_SITE_NAME ?? "pongo.sh";
+  const context = process.env.NEXT_PUBLIC_HEADER_CAPTION ?? "Demo deployment";
+  const githubUrl = process.env.NEXT_PUBLIC_GITHUB_URL?.trim();
+  const showGithub =
+    githubUrl && process.env.NEXT_PUBLIC_HIDE_GITHUB !== "true";
 
   useEffect(() => {
     if (!zen) return;
@@ -287,6 +284,17 @@ export function AppShell({
             </span>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            {showGithub && (
+              <a
+                href={githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="control-button"
+              >
+                <Github className="size-3.5" aria-hidden="true" />
+                GitHub
+              </a>
+            )}
             {publicBase && (
               <Link
                 href={`${publicBase}/feed.xml`}
@@ -361,15 +369,6 @@ export function AppShell({
                         rel="noopener noreferrer"
                       >
                         <BookOpen className="size-4" /> Documentation
-                      </a>
-                    )}
-                    {!process.env.NEXT_PUBLIC_HIDE_GITHUB && (
-                      <a
-                        href="https://github.com/TimMikeladze/pongo"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Github className="size-4" /> GitHub
                       </a>
                     )}
                     {!process.env.NEXT_PUBLIC_HIDE_SUPPORT && (

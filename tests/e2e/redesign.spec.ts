@@ -252,7 +252,7 @@ test("monitor filters remain shareable after a reload", async ({ page }) => {
   ).toHaveAttribute("aria-pressed", "true");
 });
 
-test("long public dashboard names fit the mobile header", async ({ page }) => {
+test("long header captions fit the mobile header", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/shared/status");
   await page
@@ -395,4 +395,28 @@ test("mobile history can be inspected with large period controls", async ({
   expect((bounds?.x ?? 0) + (bounds?.width ?? 0)).toBeLessThanOrEqual(390);
   await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
+});
+
+test("header copy and footer repository link follow public configuration", async ({
+  page,
+}) => {
+  await page.goto("/shared/status");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  const header = page.getByTestId("shell-header");
+  await expect(header.locator(".brand-name")).toHaveText(
+    process.env.NEXT_PUBLIC_SITE_NAME ?? "pongo.sh",
+  );
+  await expect(header.locator(".brand-context")).toHaveText(
+    process.env.NEXT_PUBLIC_HEADER_CAPTION ?? "Demo deployment",
+  );
+  const github = page
+    .getByTestId("shell-footer")
+    .getByRole("link", { name: "GitHub", exact: true });
+  const repository = process.env.NEXT_PUBLIC_GITHUB_URL?.trim();
+  if (repository && process.env.NEXT_PUBLIC_HIDE_GITHUB !== "true") {
+    await expect(github).toHaveAttribute("href", repository);
+    await expect(github).toHaveAttribute("rel", "noopener noreferrer");
+  } else {
+    await expect(github).toHaveCount(0);
+  }
 });

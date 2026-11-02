@@ -203,7 +203,7 @@ The root remains (16px), so the standard extra-small utility resolves to a reada
 
 Header, main, public tabs and footer use one centered container: `min(calc(100% - 2 * gutter), content-width)`. The normal maximum is (1120px), with gutters of (24px) and mobile gutters of (16px). Full width changes the shared maximum to (100%) while preserving those gutters. The shell fills at least the dynamic viewport height and reserves scrollbar space.
 
-The header has a minimum height of (64px). Its identity block pairs a (32px) logo with an (18px) wordmark and a (12px) context label below it. The context uses typography rather than a vertical divider; long names truncate within the same bounded block. Header controls are (36px), increasing to (44px) on mobile. Main content has top padding of (24px) and bottom padding of (36px). The normal section gap is (24px); mobile and dense mode use (20px). Footer content has a minimum height of (64px). Numeric strips distribute metrics into columns with a minimum of (140px), becoming two columns on mobile.
+The header has a minimum height of (64px). Its identity block pairs a (32px) logo with an (18px) wordmark and a (12px) context label below it. The secondary line defaults to `Demo deployment` and can be set with `NEXT_PUBLIC_HEADER_CAPTION`. It uses typography rather than a vertical divider; long names truncate within the same bounded block. Header controls are (36px), increasing to (44px) on mobile. Main content has top padding of (24px) and bottom padding of (36px). The normal section gap is (24px); mobile and dense mode use (20px). Footer content has a minimum height of (64px). Numeric strips distribute metrics into columns with a minimum of (140px), becoming two columns on mobile.
 
 At widths up to (900px), brand and controls remain on the first row and operator navigation wraps below with horizontal overflow. At widths up to (640px), navigation icons disappear, nav labels use (12px) with inline padding of (8px), headings wrap, monitor search fills its row, and monitor table rows become compact groups with visible numeric labels. Alert rows also reflow into labeled groups with visible state, time, duration and rule actions. Other wide tables scroll within their container.
 
@@ -241,7 +241,7 @@ Panels hold existing content without changing its width. Dedicated empty pages u
 
 ### Disclosures and charts
 
-Public status pages lead with service state and inspectable history. Performance charts remain behind a disclosure with a rotating chevron. Footer Page options gathers labeled view, documentation, support and authentication controls. Operator overview and monitor pages lead with health, alerts and the monitor list before detailed charts. Incident summaries expose date, state, impact and duration before expansion. Charts retain their existing range and expansion controls; dialogs return focus when closed.
+Public status pages lead with service state and inspectable history. Performance charts remain behind a disclosure with a rotating chevron. Footer Page options gathers labeled view, documentation, support and authentication controls. A direct GitHub link appears beside the footer controls when `NEXT_PUBLIC_GITHUB_URL` is configured. Operator overview and monitor pages lead with health, alerts and the monitor list before detailed charts. Incident summaries expose date, state, impact and duration before expansion. Charts retain their existing range and expansion controls; dialogs return focus when closed.
 
 ## Do's and Don'ts
 

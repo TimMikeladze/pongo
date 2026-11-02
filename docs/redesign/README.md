@@ -36,17 +36,17 @@ The shell applies the same width to every route and preserves theme, dense/zen a
 
 ## Verification record
 
-Local verification passed 96 unit tests, 16 end-to-end tests, lint, typecheck and a production build. Independent code and visual reviews approved the implementation after all three material findings were fixed. CI status is recorded on the PR.
+Local verification passed 96 unit tests, 17 end-to-end tests, lint, typecheck and a production build. Independent code and visual reviews approved the implementation after all three material findings were fixed. CI status is recorded on the PR.
 
 | Evidence | Coverage |
 | --- | --- |
 | `bun test src` | 96 unit tests, including health precedence and unknown measurements |
-| `bunx playwright test` | 16 tests across smoke and redesign suites |
+| `bunx playwright test` | 17 tests across smoke and redesign suites |
 | `tests/e2e/redesign.spec.ts` | All 15 pages at 390px, 768px and 1440px; aligned shell width and no page overflow |
 | Redesign interaction tests | Public access/feeds, search and empty states, themes, width, zen recovery, chart focus restoration, history keyboard and touch controls, dashboard filter navigation, short-screen dialogs and range changes |
 | Production build | Completed against an isolated database during verification |
 
-The unit and browser tests are source-controlled. Browser tests use their isolated SQLite database and test access code from `playwright.config.ts`. Select a free `E2E_PORT` when the default test port is occupied; do not stop an existing application to run the suite.
+The unit and browser tests are source-controlled. Browser tests use their isolated SQLite database and test access code from `playwright.config.ts`. The test configuration loads the same local environment files as Next.js, so branding expectations match the running app. Select a free `E2E_PORT` when the default test port is occupied; do not stop an existing application to run the suite.
 
 ## Screenshots and fixtures
 
@@ -56,8 +56,12 @@ Production pages continue reading configured monitors, dashboard definitions, in
 
 History bars combine long ranges into at most 90 contiguous display periods. Tooltips retain the underlying date bounds, measured checks, weighted availability and missing intervals. The sparkline keeps every selected aggregation interval. This prevents narrow-screen histories from collapsing to zero width.
 
-Monitor search and status filters are stored in the URL with shallow updates, so reload, sharing and back/forward navigation preserve the visible selection. Long dashboard labels truncate within the header; their full text remains available to assistive technology and the native title tooltip.
+Monitor search and status filters are stored in the URL with shallow updates, so reload, sharing and back/forward navigation preserve the visible selection. Long site names and deployment captions truncate within the header; their full text remains available to assistive technology and the native title tooltip.
 
 The maintenance provider currently returns no windows, so the maintenance page shows its empty state. This redesign does not add a maintenance storage or scheduling backend.
 
 Dashboard search and visibility filters use URL-backed state and server filtering. Empty Updates sections are omitted from overview pages; the dedicated Updates route remains available. Mobile history inspection provides a period slider and large Previous/Next controls.
+
+The header defaults to `pongo.sh` with `Demo deployment` beneath it. `NEXT_PUBLIC_HEADER_CAPTION` changes the secondary line. Set `NEXT_PUBLIC_GITHUB_URL` to show a direct footer repository link; leaving it unset omits the link. `NEXT_PUBLIC_HIDE_GITHUB=true` hides a configured link. These options are documented in `.env.example`.
+
+The local Next.js development indicator is disabled so it does not cover footer actions on narrow screens.

@@ -852,6 +852,12 @@
 
   .performance-disclosure.panel > summary {
     padding: 16px;
+    border-radius: 9px;
+  }
+
+  .performance-disclosure.panel[open] > summary {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
   }
 
   .performance-disclosure > summary::-webkit-details-marker {
