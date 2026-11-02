@@ -17,42 +17,28 @@ export function ChartTypeToggle({
   className,
 }: ChartTypeToggleProps) {
   return (
-    <div
-      className={cn(
-        "flex items-center gap-0.5 bg-secondary/50 rounded p-0.5",
-        className,
-      )}
+    <fieldset
+      aria-label="Chart type"
+      className={cn("chart-view-toggle", className)}
     >
       <button
         type="button"
         onClick={() => onChange("line")}
-        className={cn(
-          "min-h-8 min-w-8 p-1 rounded transition-colors",
-          value === "line"
-            ? "bg-background text-foreground shadow-sm"
-            : "text-muted-foreground hover:text-foreground",
-        )}
         title="Line chart"
         aria-label="Line chart"
         aria-pressed={value === "line"}
       >
-        <LineChart className="h-3 w-3" />
+        <LineChart className="size-3.5" aria-hidden="true" />
       </button>
       <button
         type="button"
         onClick={() => onChange("bar")}
-        className={cn(
-          "min-h-8 min-w-8 p-1 rounded transition-colors",
-          value === "bar"
-            ? "bg-background text-foreground shadow-sm"
-            : "text-muted-foreground hover:text-foreground",
-        )}
         title="Bar chart"
         aria-label="Bar chart"
         aria-pressed={value === "bar"}
       >
-        <BarChart3 className="h-3 w-3" />
+        <BarChart3 className="size-3.5" aria-hidden="true" />
       </button>
-    </div>
+    </fieldset>
   );
 }

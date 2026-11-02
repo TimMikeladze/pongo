@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type React from "react";
 import "./globals.css";
@@ -6,7 +7,19 @@ import { AppShell } from "@/components/app-shell";
 import { PublicHeaderProvider } from "@/components/public-header-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { isAuthEnabled, isAuthenticated } from "@/lib/auth";
+import { isHowItWorksEnabled } from "@/lib/how-it-works";
 import { UmamiScript } from "@/lib/umami";
+
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist-sans",
+  display: "swap",
+});
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+  display: "swap",
+});
 
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "pongo.sh";
 const faviconUrl = process.env.NEXT_PUBLIC_FAVICON || "/logo.png";
@@ -91,7 +104,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body>
+      <body className={`${geist.variable} ${geistMono.variable}`}>
         {/* Structured data for search engines - using JSON.stringify with static data is safe */}
         <script
           type="application/ld+json"
@@ -105,6 +118,7 @@ export default async function RootLayout({
           <ThemeProvider defaultTheme="dark" storageKey="pongo-theme">
             <PublicHeaderProvider>
               <AppShell
+                showHowItWorks={isHowItWorksEnabled()}
                 headerLogo={headerLogo}
                 authEnabled={authEnabled}
                 isAuthenticated={authenticated}

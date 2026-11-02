@@ -44,35 +44,35 @@ colors:
   light-bar: "#3e9976"
 typography:
   headline:
-    fontFamily: "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"
+    fontFamily: "Geist, sans-serif"
     fontSize: "26px"
     fontWeight: 620
     lineHeight: 1.25
     letterSpacing: "-0.035em"
   title:
-    fontFamily: "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"
+    fontFamily: "Geist, sans-serif"
     fontSize: "15px"
     fontWeight: 600
     letterSpacing: "-0.015em"
   body:
-    fontFamily: "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"
+    fontFamily: "Geist, sans-serif"
     fontSize: "14px"
     fontWeight: 400
     lineHeight: 1.5
   description:
-    fontFamily: "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"
+    fontFamily: "Geist, sans-serif"
     fontSize: "13px"
   label:
-    fontFamily: "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"
+    fontFamily: "Geist, sans-serif"
     fontSize: "12px"
   measurement:
-    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    fontFamily: "Geist Mono, monospace"
     fontSize: "25px"
     fontWeight: 500
     lineHeight: 1.3
     letterSpacing: "-0.035em"
   table-number:
-    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    fontFamily: "Geist Mono, monospace"
     fontSize: "12px"
 rounded:
   pill: "5px"

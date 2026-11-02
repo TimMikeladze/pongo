@@ -33,6 +33,9 @@ const publicRoutes = [
   "/shared/status/incidents",
   "/shared/status/maintenance",
   "/shared/status/announcements",
+  ...(process.env.SHOW_HOW_IT_WORKS === "false"
+    ? []
+    : ["/shared/status/how-it-works"]),
 ];
 
 for (const width of [390, 768, 1440]) {
@@ -66,6 +69,18 @@ for (const width of [390, 768, 1440]) {
         ),
       }));
       expect(geometry.overflow, `${route} has page overflow`).toBe(false);
+      const header = page.getByTestId("shell-header").locator("..");
+      await expect(header.locator("+ div.shell-container")).toHaveCount(0);
+      if (route === "/" || route === "/monitors") {
+        const toolbar = await page
+          .locator(".monitor-toolbar:visible")
+          .boundingBox();
+        const table = await page.locator(".table-scroll:visible").boundingBox();
+        expect(
+          (table?.y ?? 0) - ((toolbar?.y ?? 0) + (toolbar?.height ?? 0)),
+          `${route} filter spacing`,
+        ).toBeGreaterThanOrEqual(16);
+      }
       expect(bounds[0]?.width, route).toBe(
         Math.min(1120, geometry.width - geometry.gutter * 2),
       );
@@ -353,7 +368,13 @@ test("support sharing stays within a short viewport and excludes collapsed field
   await expect(dialog.getByRole("textbox")).toHaveCount(0);
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
-  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(
+    page.getByRole("button", { name: "Support Pongo", exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("Escape");
+  await page.getByTestId("shell-main").evaluate((element) => {
+    element.scrollTop = 0;
+  });
   await expect(
     page.getByRole("button", { name: "Page options", exact: true }),
   ).toHaveAttribute("aria-expanded", "false");
@@ -413,10 +434,163 @@ test("header copy and footer repository link follow public configuration", async
     .getByTestId("shell-footer")
     .getByRole("link", { name: "GitHub", exact: true });
   const repository = process.env.NEXT_PUBLIC_GITHUB_URL?.trim();
+  const caption = page.getByTestId("shell-footer").getByRole("link", {
+    name:
+      process.env.NEXT_PUBLIC_FOOTER_CAPTION ?? "Open-source uptime monitoring",
+    exact: true,
+  });
+  await expect(caption).toHaveAttribute(
+    "href",
+    repository || "https://github.com/TimMikeladze/pongo",
+  );
+  await expect(caption).toHaveAttribute("rel", "noopener noreferrer");
   if (repository && process.env.NEXT_PUBLIC_HIDE_GITHUB !== "true") {
     await expect(github).toHaveAttribute("href", repository);
     await expect(github).toHaveAttribute("rel", "noopener noreferrer");
   } else {
     await expect(github).toHaveCount(0);
   }
+});
+
+for (const width of [320, 390, 768, 1440]) {
+  test(`service charts keep labeled metrics and stable views at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/shared/status");
+    await page.evaluate(() => document.fonts.ready);
+    expect(
+      await page
+        .locator("body")
+        .evaluate((el) => getComputedStyle(el).fontFamily),
+    ).toContain("Geist");
+    const bars = page.getByRole("group", {
+      name: "Availability history for Vercel",
+      exact: true,
+    });
+    const historyHeight = (await bars.boundingBox())?.height;
+    const row = bars.locator("..");
+    await expect(row.getByText("Availability", { exact: true })).toBeVisible();
+    await expect(row.getByText("Avg. response", { exact: true })).toBeVisible();
+    const toggle = page.getByRole("group", {
+      name: "History view for Vercel",
+      exact: true,
+    });
+    const trendButton = toggle.getByRole("button", {
+      name: "Availability sparkline for Vercel",
+      exact: true,
+    });
+    await trendButton.click();
+    await expect(trendButton).toHaveAttribute("aria-pressed", "true");
+    const trend = page.getByRole("img", { name: /Vercel availability trend/ });
+    await expect(trend).toBeVisible();
+    expect((await trend.boundingBox())?.height).toBe(historyHeight);
+    await toggle
+      .getByRole("button", {
+        name: "Availability bars for Vercel",
+        exact: true,
+      })
+      .click();
+    await expect(bars).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth,
+      ),
+    ).toBe(false);
+  });
+}
+
+for (const width of [390, 768, 1440]) {
+  test(`header and footer remain visible while content scrolls at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await signIn(page);
+    for (const route of ["/monitors/vercel", "/shared/status"]) {
+      await page.goto(route);
+      const header = page.getByTestId("shell-header");
+      const footer = page.getByTestId("shell-footer");
+      const main = page.getByTestId("shell-main");
+      await expect(header).toBeInViewport();
+      await expect(footer).toBeInViewport();
+      const start = {
+        header: await header.boundingBox(),
+        footer: await footer.boundingBox(),
+      };
+      await main.evaluate((element) => {
+        element.scrollTop = element.scrollHeight;
+      });
+      await expect(header).toBeInViewport();
+      await expect(footer).toBeInViewport();
+      expect(await header.boundingBox()).toEqual(start.header);
+      expect(await footer.boundingBox()).toEqual(start.footer);
+      const scroll = await main.evaluate((element) => ({
+        top: element.scrollTop,
+        max: element.scrollHeight - element.clientHeight,
+      }));
+      expect(scroll.max).toBeGreaterThan(0);
+      expect(scroll.top).toBeGreaterThanOrEqual(scroll.max - 1);
+      if (route.startsWith("/shared/")) {
+        await expect(
+          page.getByRole("navigation", { name: "Status page navigation" }),
+        ).toBeInViewport();
+        await page
+          .getByRole("link", { name: "Maintenance", exact: true })
+          .click();
+        await expect(
+          page.getByRole("heading", { name: "Maintenance", exact: true }),
+        ).toBeInViewport();
+      }
+    }
+  });
+}
+
+test("How it works renders the README with working anchors and public screenshots", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/shared/status");
+  const tab = page.getByRole("link", { name: "How it works", exact: true });
+  if (process.env.SHOW_HOW_IT_WORKS === "false") {
+    await expect(tab).toHaveCount(0);
+    expect((await request.get("/shared/status/how-it-works")).status()).toBe(
+      404,
+    );
+    return;
+  }
+  await tab.click();
+  await expect(tab).toHaveAttribute("aria-current", "page");
+  await expect(
+    page.getByRole("heading", { name: "How it works", exact: true }),
+  ).toBeVisible();
+  const article = page.locator(".readme-content");
+  await expect(
+    article.getByRole("heading", { name: "Quick Start", exact: true }),
+  ).toBeVisible();
+  await article.getByRole("link", { name: "Quick Start", exact: true }).click();
+  await expect(
+    article.getByRole("heading", { name: "Quick Start", exact: true }),
+  ).toBeInViewport();
+  await expect(page.getByTestId("shell-header")).toBeInViewport();
+  await expect(page.getByTestId("shell-footer")).toBeInViewport();
+  await page.setViewportSize({ width: 390, height: 844 });
+  const code = article.locator("pre").first();
+  await expect(
+    code.locator('span[style*="--shiki-light"]').first(),
+  ).toBeVisible();
+  expect(
+    await code.evaluate((element) => element.scrollWidth > element.clientWidth),
+  ).toBe(false);
+  await expect(
+    page.getByRole("navigation", { name: "Status page navigation" }),
+  ).toHaveCSS("overflow-y", "hidden");
+  await expect(page.getByTestId("shell-main")).toHaveCSS(
+    "scrollbar-width",
+    "none",
+  );
+  expect((await request.get("/readme/overview-dark.png")).status()).toBe(200);
+  await page.goto("/shared/does-not-exist/how-it-works");
+  await expect(
+    page.getByRole("heading", { name: "Page not found", exact: true }),
+  ).toBeVisible();
 });

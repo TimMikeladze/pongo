@@ -4,7 +4,7 @@ The implementation follows the approved HTML mockups from the design review and 
 
 ## Route inventory
 
-All 14 existing page routes use the shared shell. Public maintenance is the fifteenth page, backed by the existing maintenance provider.
+All 14 original page routes use the shared shell. Public maintenance adds a fifteenth page, backed by the existing maintenance provider. The environment-gated README is the sixteenth page.
 
 | Route | Page |
 | --- | --- |
@@ -23,6 +23,7 @@ All 14 existing page routes use the shared shell. Public maintenance is the fift
 | `/shared/[slug]/incidents` | Public incident history and disclosures |
 | `/shared/[slug]/maintenance` | Public maintenance schedule |
 | `/shared/[slug]/announcements` | Public updates |
+| `/shared/[slug]/how-it-works` | README with highlighted code, enabled by `SHOW_HOW_IT_WORKS` |
 
 Shared pages retain Status, Incidents, Maintenance and Updates navigation, branding, and feed access. RSS, Atom, status JSON and image/API routes remain functional. Missing shared slugs use the not-found presentation.
 
@@ -36,13 +37,13 @@ The shell applies the same width to every route and preserves theme, dense/zen a
 
 ## Verification record
 
-Local verification passed 96 unit tests, 17 end-to-end tests, lint, typecheck and a production build. Independent code and visual reviews approved the implementation after all three material findings were fixed. CI status is recorded on the PR.
+Local verification passed 101 unit tests, 25 end-to-end tests, lint, typecheck and a production build. Independent code and visual reviews approved the implementation after all three material findings were fixed. CI status is recorded on the PR.
 
 | Evidence | Coverage |
 | --- | --- |
-| `bun test src` | 96 unit tests, including health precedence and unknown measurements |
-| `bunx playwright test` | 17 tests across smoke and redesign suites |
-| `tests/e2e/redesign.spec.ts` | All 15 pages at 390px, 768px and 1440px; aligned shell width and no page overflow |
+| `bun test src` | 101 unit tests, including health precedence and unknown measurements |
+| `bunx playwright test` | 25 tests across smoke and redesign suites |
+| `tests/e2e/redesign.spec.ts` | All 16 pages at 390px, 768px and 1440px; aligned shell width and no page overflow |
 | Redesign interaction tests | Public access/feeds, search and empty states, themes, width, zen recovery, chart focus restoration, history keyboard and touch controls, dashboard filter navigation, short-screen dialogs and range changes |
 | Production build | Completed against an isolated database during verification |
 
@@ -65,3 +66,11 @@ Dashboard search and visibility filters use URL-backed state and server filterin
 The header defaults to `pongo.sh` with `Demo deployment` beneath it. `NEXT_PUBLIC_HEADER_CAPTION` changes the secondary line. Set `NEXT_PUBLIC_GITHUB_URL` to show a direct footer repository link; leaving it unset omits the link. `NEXT_PUBLIC_HIDE_GITHUB=true` hides a configured link. These options are documented in `.env.example`.
 
 The local Next.js development indicator is disabled so it does not cover footer actions on narrow screens.
+
+Geist is the shared interface and chart font; Geist Mono is reserved for code and existing monospaced data. Both are served locally by Next.js. Service history labels availability and response time separately, provides named History/Trend controls, and uses a fixed 0–100% trend scale. Missing periods stay disconnected. Chart icons are centered with selected and keyboard focus states.
+
+The footer caption links to `NEXT_PUBLIC_GITHUB_URL`, falling back to `https://github.com/TimMikeladze/pongo`. Operator pages use one header divider. Monitor filters have 16px of space before the table. README screenshots are saved under `public/readme/` and show illustrative local review data.
+
+The header, public tabs and footer stay visible while main content scrolls. Navigation to a different page resets main scroll; reporting-range changes preserve it. Zen mode still hides the shell and keeps its recovery controls. `SHOW_HOW_IT_WORKS` gates the public README page and tab: development defaults on and production defaults off, with explicit `true` or `false` overriding either. The README is included in the serverless trace; its screenshots are served from `public/readme/`.
+
+README code uses Shiki syntax highlighting with high-contrast palettes for both themes. Long lines wrap inside code blocks. Main content and navigation retain scrolling without visible scrollbar tracks. The README route returns 404 when disabled, including direct requests.

@@ -87,7 +87,7 @@ export function ResponseTimeChart({
             border: `1px solid ${colors.grid}`,
             borderRadius: "4px",
             fontSize: "10px",
-            fontFamily: "monospace",
+            fontFamily: "var(--font-geist-sans), sans-serif",
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
@@ -126,7 +126,7 @@ export function ResponseTimeChart({
             border: `1px solid ${colors.grid}`,
             borderRadius: "4px",
             fontSize: "10px",
-            fontFamily: "monospace",
+            fontFamily: "var(--font-geist-sans), sans-serif",
           }}
           labelStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}
           itemStyle={{ color: isDark ? "#e5e5e5" : "#1a1a1a" }}

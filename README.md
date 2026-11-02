@@ -35,6 +35,21 @@ Define monitors, dashboards, alerts, incidents, and announcements as TypeScript 
 - 🔔 Smart alerting with flap detection and auto-resolve
 - 🌍 Multi-region monitoring with region-aware alert thresholds
 
+## Screenshots
+
+Local review data shown for illustration.
+
+### Operator overview
+
+![Dark operator overview with monitor filters, availability, response times, and firing alerts](public/readme/overview-dark.png)
+
+<details>
+  <summary>Public status page · light theme</summary>
+
+![Public status page with service history, availability metrics, and History/Trend controls](public/readme/status-light.png)
+
+</details>
+
 ## Quick Start
 
 ```bash
@@ -541,6 +556,7 @@ When `ACCESS_CODE` is set:
 | `S3_PREFIX` | S3 key prefix | - |
 | `NEXT_PUBLIC_URL` | Public URL for SEO/metadata | - |
 | `NEXT_PUBLIC_SITE_NAME` | Custom site name (header, metadata, page titles, footer) | `pongo.sh` |
+| `SHOW_HOW_IT_WORKS` | Show the README tab and page; set `true` on the Pongo Vercel production deployment, or `false` to hide it in development | `true` in development; `false` in production |
 | `NEXT_PUBLIC_HEADER_CAPTION` | Secondary line beneath the header brand | `Demo deployment` |
 | `NEXT_PUBLIC_GITHUB_URL` | Repository URL shown as a GitHub link in the footer; omitted when unset | - |
 | `NEXT_PUBLIC_HIDE_GITHUB` | Set to `true` to hide the configured footer GitHub link | - |

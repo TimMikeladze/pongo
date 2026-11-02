@@ -10,6 +10,7 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
   XAxis,
+  YAxis,
 } from "recharts";
 import { DualTime } from "@/components/dual-time";
 import { useTheme } from "@/components/theme-provider";
@@ -103,7 +104,7 @@ export function UptimeDisplay({
 
   const colors = useMemo(() => {
     return {
-      up: isDark ? "#4ade80" : "#16a34a",
+      up: "var(--status-up)",
       grid: isDark ? "#1a1a1a" : "#e5e5e5",
       text: isDark ? "#a3a3a3" : "#666",
     };
@@ -121,55 +122,49 @@ export function UptimeDisplay({
   return (
     <TooltipProvider delayDuration={0}>
       <div className="py-4">
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <span className="text-sm font-medium">{monitorName}</span>
-          <div className="flex flex-wrap items-center gap-3">
-            <span
-              className="font-mono text-xs tabular-nums"
-              title="Availability"
-            >
-              {uptime === null ? "—" : `${uptime.toFixed(2)}%`}
-            </span>
-            <span
-              className="hidden font-mono text-xs tabular-nums text-muted-foreground sm:inline"
-              title="Average response"
-            >
-              {responseTime === null ? "—" : `${responseTime} ms`}
-            </span>
-            <div className="flex items-center gap-0.5 bg-secondary/50 rounded p-0.5">
-              <button
-                type="button"
-                onClick={() => setMode("bars")}
-                className={cn(
-                  "min-h-8 min-w-8 rounded transition-colors",
-                  mode === "bars"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-                aria-label={`Availability bars for ${monitorName}`}
-                aria-pressed={mode === "bars"}
-              >
-                <BarChart3 className="h-3 w-3" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("sparkline")}
-                className={cn(
-                  "min-h-8 min-w-8 rounded transition-colors",
-                  mode === "sparkline"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-                aria-label={`Availability sparkline for ${monitorName}`}
-                aria-pressed={mode === "sparkline"}
-              >
-                <TrendingUp className="h-3 w-3" />
-              </button>
+        <div className="service-history-header">
+          <span className="text-sm font-semibold break-words min-w-0">
+            {monitorName}
+          </span>
+          <span className="status-pill shrink-0" data-status={currentStatus}>
+            <span className="status-dot" aria-hidden="true" />
+            {paused ? "Paused" : statusLabels[currentStatus]}
+          </span>
+        </div>
+        <div className="service-history-toolbar">
+          <dl className="service-history-metrics">
+            <div>
+              <dt>Availability</dt>
+              <dd>{uptime === null ? "—" : `${uptime.toFixed(2)}%`}</dd>
             </div>
-            <span className="status-pill text-xs" data-status={currentStatus}>
-              {paused ? "Paused" : statusLabels[currentStatus]}
-            </span>
-          </div>
+            <div>
+              <dt>Avg. response</dt>
+              <dd>{responseTime === null ? "—" : `${responseTime} ms`}</dd>
+            </div>
+          </dl>
+          <fieldset
+            className="chart-view-toggle"
+            aria-label={`History view for ${monitorName}`}
+          >
+            <button
+              type="button"
+              onClick={() => setMode("bars")}
+              aria-label={`Availability bars for ${monitorName}`}
+              aria-pressed={mode === "bars"}
+            >
+              <BarChart3 className="size-3.5" aria-hidden="true" />
+              History
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("sparkline")}
+              aria-label={`Availability sparkline for ${monitorName}`}
+              aria-pressed={mode === "sparkline"}
+            >
+              <TrendingUp className="size-3.5" aria-hidden="true" />
+              Trend
+            </button>
+          </fieldset>
         </div>
 
         {mode === "bars" ? (
@@ -211,7 +206,7 @@ export function UptimeDisplay({
                     }}
                     aria-label={`${monitorName}, ${bucket.label}: ${bucket.checks === 0 ? "No data" : `${bucket.uptime}% availability, ${bucket.checks} checks`}`}
                     className={cn(
-                      "min-w-0 flex-1 h-6 rounded-[2px] hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2",
+                      "min-w-0 flex-1 h-8 rounded-[2px] hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2",
                       statusColors[bucket.status],
                       bucket.status === "up" && "opacity-90",
                     )}
@@ -267,50 +262,70 @@ export function UptimeDisplay({
             ))}
           </fieldset>
         ) : (
-          <div className="h-8">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={sparklineData}
-                margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-              >
-                <defs>
-                  <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={colors.up} stopOpacity={0.3} />
-                    <stop offset="100%" stopColor={colors.up} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="time" hide />
-                <RechartsTooltip
-                  contentStyle={{
-                    backgroundColor: isDark ? "#0a0a0a" : "#fafafa",
-                    border: `1px solid ${colors.grid}`,
-                    borderRadius: "4px",
-                    fontSize: "12px",
-                    fontFamily: "monospace",
-                  }}
-                  // biome-ignore lint/suspicious/noExplicitAny: recharts type issue
-                  formatter={(value: any) => [
-                    value !== null ? `${value}%` : "No data",
-                    "uptime",
-                  ]}
-                  labelFormatter={(_label, payload) => {
-                    const ts = payload?.[0]?.payload?._ts;
-                    if (!ts) return _label;
-                    const d = new Date(ts);
-                    return `UTC ${formatInTimeZone(d, "UTC", "MMM d, HH:mm")}\nLocal ${format(d, "MMM d, HH:mm")}`;
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="uptime"
-                  stroke={colors.up}
-                  strokeWidth={1.5}
-                  fill={`url(#${gradientId})`}
-                  dot={false}
-                  connectNulls={false}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div
+            className="h-8"
+            role="img"
+            aria-label={`${monitorName} availability trend, 0 to 100 percent; gaps indicate no data`}
+          >
+            {sparklineData.every((point) => point.uptime === null) ? (
+              <p className="flex h-full items-center justify-center text-xs text-muted-foreground">
+                No measurements in this period
+              </p>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={sparklineData}
+                  margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="0%"
+                        stopColor={colors.up}
+                        stopOpacity={0.3}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor={colors.up}
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="time" hide />
+                  <YAxis hide domain={[0, 100]} />
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: isDark ? "#0a0a0a" : "#fafafa",
+                      border: `1px solid ${colors.grid}`,
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      fontFamily: "var(--font-geist-sans), sans-serif",
+                    }}
+                    // biome-ignore lint/suspicious/noExplicitAny: recharts type issue
+                    formatter={(value: any) => [
+                      value !== null ? `${value}%` : "No data",
+                      "uptime",
+                    ]}
+                    labelFormatter={(_label, payload) => {
+                      const ts = payload?.[0]?.payload?._ts;
+                      if (!ts) return _label;
+                      const d = new Date(ts);
+                      return `UTC ${formatInTimeZone(d, "UTC", "MMM d, HH:mm")}\nLocal ${format(d, "MMM d, HH:mm")}`;
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="uptime"
+                    stroke={colors.up}
+                    strokeWidth={1.5}
+                    isAnimationActive={false}
+                    fill={`url(#${gradientId})`}
+                    dot={false}
+                    connectNulls={false}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
         )}
 
@@ -322,7 +337,7 @@ export function UptimeDisplay({
             )}
           >
             {showLabels && (
-              <span className="min-w-0 text-xs text-muted-foreground font-mono">
+              <span className="min-w-0 text-xs text-muted-foreground tabular-nums">
                 {startLabel}
               </span>
             )}
@@ -440,7 +455,7 @@ export function UptimeDisplay({
               </Popover>
             )}
             {showLabels && (
-              <span className="min-w-0 text-right text-xs text-muted-foreground font-mono">
+              <span className="min-w-0 text-right text-xs text-muted-foreground tabular-nums">
                 {endLabel}
               </span>
             )}

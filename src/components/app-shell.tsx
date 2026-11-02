@@ -46,13 +46,27 @@ export function AppShell({
   headerLogo,
   authEnabled = false,
   isAuthenticated = false,
+  showHowItWorks = false,
 }: {
   children: ReactNode;
   headerLogo?: string;
   authEnabled?: boolean;
   isAuthenticated?: boolean;
+  showHowItWorks?: boolean;
 }) {
   const pathname = usePathname();
+  const mainRef = useRef<HTMLElement>(null);
+  const publicNavRef = useRef<HTMLElement>(null);
+  const previousPath = useRef(pathname);
+  useEffect(() => {
+    if (previousPath.current !== pathname) {
+      mainRef.current?.scrollTo(0, 0);
+      previousPath.current = pathname;
+    }
+    publicNavRef.current
+      ?.querySelector<HTMLElement>('[aria-current="page"]')
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [pathname]);
   const {
     density,
     toggleDensity,
@@ -84,6 +98,9 @@ export function AppShell({
     { label: "Incidents", suffix: "/incidents" },
     { label: "Maintenance", suffix: "/maintenance" },
     { label: "Updates", suffix: "/announcements" },
+    ...(showHowItWorks
+      ? [{ label: "How it works", suffix: "/how-it-works" }]
+      : []),
   ];
   const name = process.env.NEXT_PUBLIC_SITE_NAME ?? "pongo.sh";
   const context = process.env.NEXT_PUBLIC_HEADER_CAPTION ?? "Demo deployment";
@@ -233,6 +250,7 @@ export function AppShell({
       </header>
       {shared && publicBase && (
         <nav
+          ref={publicNavRef}
           className="public-nav shell-container"
           aria-label="Status page navigation"
         >
@@ -249,8 +267,8 @@ export function AppShell({
           ))}
         </nav>
       )}
-      {!shared && <div className="shell-container border-b border-border" />}
       <main
+        ref={mainRef}
         id="main-content"
         className="app-main shell-container"
         data-testid="shell-main"
@@ -278,10 +296,15 @@ export function AppShell({
                 process.env.NEXT_PUBLIC_SITE_NAME ??
                 "pongo.sh"}
             </span>
-            <span className="hidden sm:inline border-l border-border pl-3 ml-1">
+            <a
+              href={githubUrl || "https://github.com/TimMikeladze/pongo"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline border-l border-border pl-3 ml-1 hover:text-foreground hover:underline"
+            >
               {process.env.NEXT_PUBLIC_FOOTER_CAPTION ??
                 "Open-source uptime monitoring"}
-            </span>
+            </a>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {showGithub && (
