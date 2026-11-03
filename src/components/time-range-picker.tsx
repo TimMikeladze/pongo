@@ -52,7 +52,8 @@ function TimeRangePickerFallback({
   showTooltip?: boolean;
 }) {
   const button = (
-    <button
+    <Button
+      variant="outline"
       type="button"
       className={cn(
         "control-button",
@@ -62,7 +63,7 @@ function TimeRangePickerFallback({
     >
       <CalendarIcon className="h-3 w-3" />
       <span>Last 24h</span>
-    </button>
+    </Button>
   );
 
   if (showTooltip) {
@@ -141,7 +142,8 @@ function TimeRangePickerInner() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
+        <Button
+          variant="outline"
           type="button"
           aria-label="Reporting period"
           className={cn(
@@ -154,7 +156,7 @@ function TimeRangePickerInner() {
           <span className="text-muted-foreground/50">|</span>
           <Clock className="h-3 w-3" />
           <span>{formatIntervalLabel(interval)}</span>
-        </button>
+        </Button>
       </PopoverTrigger>
       <PopoverContent
         className="w-auto max-w-[calc(100vw-2rem)] max-h-[var(--radix-popover-content-available-height)] overflow-y-auto p-0"

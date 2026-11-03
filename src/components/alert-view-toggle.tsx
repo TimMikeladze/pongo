@@ -2,6 +2,7 @@
 
 import { List, Table } from "lucide-react";
 import { useQueryState } from "nuqs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 
 export type AlertView = "timeline" | "table";
@@ -13,14 +14,17 @@ export function AlertViewToggle() {
   });
 
   return (
-    <fieldset
+    <ToggleGroup
+      type="single"
+      value={view}
+      onValueChange={(next) => {
+        if (next) setView(next as AlertView);
+      }}
       className="flex items-center border border-border rounded-md overflow-hidden"
       aria-label="Alert history view"
     >
-      <button
-        type="button"
-        onClick={() => setView("timeline")}
-        aria-pressed={view === "timeline"}
+      <ToggleGroupItem
+        value="timeline"
         className={cn(
           "flex items-center gap-1.5 min-h-8 px-3 py-1.5 text-xs",
           view === "timeline"
@@ -30,11 +34,9 @@ export function AlertViewToggle() {
       >
         <List className="h-3.5 w-3.5" />
         Timeline
-      </button>
-      <button
-        type="button"
-        onClick={() => setView("table")}
-        aria-pressed={view === "table"}
+      </ToggleGroupItem>
+      <ToggleGroupItem
+        value="table"
         className={cn(
           "flex items-center gap-1.5 min-h-8 px-3 py-1.5 text-xs",
           view === "table"
@@ -44,7 +46,7 @@ export function AlertViewToggle() {
       >
         <Table className="h-3.5 w-3.5" />
         Table
-      </button>
-    </fieldset>
+      </ToggleGroupItem>
+    </ToggleGroup>
   );
 }

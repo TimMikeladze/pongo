@@ -9,6 +9,7 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
+        status: "status-pill gap-1.5 rounded-md border-transparent",
         default:
           "border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
         secondary:

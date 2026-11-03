@@ -753,27 +753,6 @@
     min-width: 180px;
   }
 
-  .monitor-search input {
-    width: 100%;
-    height: 34px;
-    padding: 6px 10px 6px 34px;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    background: var(--card);
-    font-size: 13px;
-  }
-
-  .monitor-search svg {
-    position: absolute;
-    top: 50%;
-    left: 11px;
-    width: 15px;
-    height: 15px;
-    transform: translateY(-50%);
-    color: var(--muted-foreground);
-    pointer-events: none;
-  }
-
   .filter-group {
     display: flex;
     gap: 3px;
@@ -793,12 +772,12 @@
 
   .filter-group button:hover,
   .filter-group button[aria-pressed="true"],
-  .filter-group button[data-state="active"] {
+  .filter-group button[data-state="on"] {
     background: var(--accent);
     color: var(--foreground);
   }
 
-  .monitor-toolbar select {
+  .monitor-toolbar [data-slot="select-trigger"] {
     height: 34px;
     max-width: 100%;
     padding: 6px 10px;
@@ -830,7 +809,7 @@
     border-top: 1px solid var(--border);
   }
 
-  .performance-disclosure > summary {
+  .performance-disclosure .performance-trigger {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -842,47 +821,34 @@
     font-weight: 600;
   }
 
-  .performance-disclosure > summary::before {
-    content: "";
-    flex: 0 0 7px;
-    width: 7px;
-    height: 7px;
-    margin-right: 3px;
-    border-right: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
-    transform: rotate(-45deg);
-    transition: transform 150ms ease;
-    color: var(--muted-foreground);
+  .performance-disclosure[data-state="open"] .performance-trigger > svg {
+    transform: rotate(90deg);
   }
 
-  .performance-disclosure[open] > summary::before {
-    transform: rotate(45deg);
-  }
-
-  .performance-disclosure > summary > h2 {
+  .performance-disclosure .disclosure-title {
     margin-right: auto;
   }
 
-  .performance-disclosure > summary:hover {
+  .performance-disclosure .performance-trigger:hover {
     color: var(--foreground);
     background: var(--secondary);
   }
 
-  .performance-disclosure.panel > summary {
+  .performance-disclosure.panel .performance-trigger {
     padding: 16px;
     border-radius: 9px;
   }
 
-  .performance-disclosure.panel[open] > summary {
+  .performance-disclosure.panel[data-state="open"] .performance-trigger {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
   }
 
-  .performance-disclosure > summary::-webkit-details-marker {
+  .performance-disclosure .performance-trigger::-webkit-details-marker {
     display: none;
   }
 
-  .performance-disclosure > summary > span:last-child {
+  .performance-disclosure .performance-trigger > span:last-child {
     color: var(--muted-foreground);
     font-size: 12px;
     font-weight: 400;
@@ -994,7 +960,7 @@
 
     .filter-group {
       max-width: 100%;
-      overflow-x: auto;
+      flex-wrap: wrap;
     }
 
     .table-scroll:has(.monitor-table) {
@@ -1067,12 +1033,45 @@
       min-width: 44px;
     }
 
-    .performance-disclosure > summary {
+    .performance-disclosure .performance-trigger {
       align-items: center;
     }
 
-    .performance-disclosure > summary > span:last-child {
+    .performance-disclosure .performance-trigger > span:last-child {
       text-align: right;
+    }
+  }
+}
+
+@layer utilities {
+  @media (pointer: coarse) {
+    button[data-slot]:not([data-history-bar]):not([data-day]),
+    a[data-slot="button"],
+    [data-slot="select-item"],
+    [data-slot="dropdown-menu-item"],
+    [data-slot="dropdown-menu-radio-item"],
+    [data-slot="dropdown-menu-checkbox-item"] {
+      min-width: 44px;
+      min-height: 44px;
+    }
+
+    [data-slot="input"],
+    [data-slot="input-group"],
+    [data-slot="input-group-control"] {
+      min-height: 44px;
+    }
+
+    [data-slot="dialog-close"] {
+      top: 4px;
+      right: 4px;
+      display: grid;
+      place-items: center;
+    }
+
+    .monitor-table td:first-child > a {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
     }
   }
 }
@@ -1309,11 +1308,11 @@
       color 120ms;
   }
   .chart-view-toggle button:hover,
-  .chart-view-toggle button[aria-pressed="true"] {
+  .chart-view-toggle button[data-state="on"] {
     background: var(--card);
     color: var(--foreground);
   }
-  .chart-view-toggle button[aria-pressed="true"] {
+  .chart-view-toggle button[data-state="on"] {
     outline: 1px solid var(--border);
     outline-offset: -1px;
   }

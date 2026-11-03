@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EmptyState, PageHeading } from "@/components/page-layout";
+import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
@@ -14,9 +15,11 @@ export default function NotFound() {
           title="Check the address or return to your status pages"
           description="A dashboard may have been removed or made private."
         >
-          <Link href="/" className="control-button">
-            Return to overview
-          </Link>
+          <Button asChild variant="outline">
+            <Link href="/" className="control-button">
+              Return to overview
+            </Link>
+          </Button>
         </EmptyState>
       </div>
     </div>

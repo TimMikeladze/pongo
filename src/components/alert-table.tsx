@@ -7,6 +7,16 @@ import { formatInTimeZone } from "date-fns-tz";
 import { BellOff, ChevronDown, ChevronRight, PowerOff } from "lucide-react";
 import Link from "next/link";
 import { Fragment, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { AlertOverride } from "@/db";
 import type { AlertEventWithMonitor } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -64,39 +74,48 @@ export function AlertTable({
 
   return (
     <div className="panel overflow-x-auto alert-table-container">
-      <table className="data-table alert-table w-full text-xs" role="table">
-        <caption className="sr-only">
+      <Table className="data-table alert-table w-full text-xs" role="table">
+        <TableCaption className="sr-only">
           Alert events, monitor, state, trigger time, resolution, and duration
-        </caption>
-        <thead role="rowgroup">
-          <tr className="bg-secondary/50 text-muted-foreground" role="row">
-            <th scope="col" className="text-left px-3 py-3 font-medium w-10">
+        </TableCaption>
+        <TableHeader role="rowgroup">
+          <TableRow
+            className="bg-secondary/50 text-muted-foreground"
+            role="row"
+          >
+            <TableHead
+              scope="col"
+              className="text-left px-3 py-3 font-medium w-10"
+            >
               <span className="sr-only">Snapshot</span>
-            </th>
-            <th scope="col" className="text-left px-3 py-3 font-medium">
+            </TableHead>
+            <TableHead scope="col" className="text-left px-3 py-3 font-medium">
               Alert
-            </th>
-            <th scope="col" className="text-left px-3 py-3 font-medium">
+            </TableHead>
+            <TableHead scope="col" className="text-left px-3 py-3 font-medium">
               Monitor
-            </th>
-            <th scope="col" className="text-left px-3 py-3 font-medium">
+            </TableHead>
+            <TableHead scope="col" className="text-left px-3 py-3 font-medium">
               Status
-            </th>
-            <th scope="col" className="text-left px-3 py-3 font-medium">
+            </TableHead>
+            <TableHead scope="col" className="text-left px-3 py-3 font-medium">
               Triggered
-            </th>
-            <th scope="col" className="text-left px-3 py-3 font-medium">
+            </TableHead>
+            <TableHead scope="col" className="text-left px-3 py-3 font-medium">
               Resolved
-            </th>
-            <th scope="col" className="text-left px-3 py-3 font-medium">
+            </TableHead>
+            <TableHead scope="col" className="text-left px-3 py-3 font-medium">
               Duration
-            </th>
-            <th scope="col" className="text-left px-3 py-3 font-medium w-10">
+            </TableHead>
+            <TableHead
+              scope="col"
+              className="text-left px-3 py-3 font-medium w-10"
+            >
               <span className="sr-only">Actions</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody role="rowgroup">
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody role="rowgroup">
           {events.map((event) => {
             const isFiring = event.eventType === "fired" && !event.resolvedAt;
             const isExpanded = expandedRows.has(event.id);
@@ -109,20 +128,21 @@ export function AlertTable({
 
             return (
               <Fragment key={event.id}>
-                <tr
+                <TableRow
                   role="row"
                   className={cn(
                     "alert-event-row border-t border-border hover:bg-secondary/30",
                     isFiring && "bg-red-500/5",
                   )}
                 >
-                  <td
+                  <TableCell
                     role="cell"
                     className="alert-snapshot-toggle"
                     data-empty={!event.snapshot}
                   >
                     {event.snapshot ? (
-                      <button
+                      <Button
+                        variant="ghost"
                         type="button"
                         className="alert-snapshot-button flex items-center justify-center rounded hover:bg-secondary"
                         aria-label={`${isExpanded ? "Hide" : "Show"} snapshot for ${event.alertName}`}
@@ -138,10 +158,13 @@ export function AlertTable({
                         <span className="alert-snapshot-label">
                           {isExpanded ? "Hide snapshot" : "Show snapshot"}
                         </span>
-                      </button>
+                      </Button>
                     ) : null}
-                  </td>
-                  <td role="cell" className="alert-name">
+                  </TableCell>
+                  <TableCell
+                    role="cell"
+                    className="alert-name max-sm:whitespace-normal"
+                  >
                     <div className="flex items-center gap-1.5">
                       <span className="font-medium">
                         {event.alertName || event.alertId}
@@ -160,10 +183,10 @@ export function AlertTable({
                         />
                       )}
                     </div>
-                  </td>
-                  <td
+                  </TableCell>
+                  <TableCell
                     role="cell"
-                    className="alert-monitor text-muted-foreground"
+                    className="alert-monitor text-muted-foreground max-sm:whitespace-normal"
                     data-label="Monitor"
                   >
                     <Link
@@ -172,8 +195,12 @@ export function AlertTable({
                     >
                       {event.monitorName}
                     </Link>
-                  </td>
-                  <td role="cell" className="alert-state" data-label="Status">
+                  </TableCell>
+                  <TableCell
+                    role="cell"
+                    className="alert-state"
+                    data-label="Status"
+                  >
                     {isFiring ? (
                       <span className="text-red-700 dark:text-red-400 flex items-center gap-1">
                         Firing
@@ -183,8 +210,8 @@ export function AlertTable({
                         Resolved
                       </span>
                     )}
-                  </td>
-                  <td
+                  </TableCell>
+                  <TableCell
                     role="cell"
                     className="alert-triggered text-muted-foreground"
                     data-label="Triggered"
@@ -203,8 +230,8 @@ export function AlertTable({
                     <span className="text-muted-foreground">
                       {format(event.triggeredAt, "h:mm a")} Local
                     </span>
-                  </td>
-                  <td
+                  </TableCell>
+                  <TableCell
                     role="cell"
                     className="alert-resolved text-muted-foreground"
                     data-label="Resolved"
@@ -230,8 +257,8 @@ export function AlertTable({
                     ) : (
                       "—"
                     )}
-                  </td>
-                  <td
+                  </TableCell>
+                  <TableCell
                     role="cell"
                     className="alert-duration text-muted-foreground"
                     data-label="Duration"
@@ -239,19 +266,19 @@ export function AlertTable({
                     {isFiring
                       ? formatOngoingDuration(event.triggeredAt)
                       : formatDuration(event.duration)}
-                  </td>
-                  <td role="cell" className="alert-actions">
+                  </TableCell>
+                  <TableCell role="cell" className="alert-actions">
                     <AlertActions alertId={event.alertId} override={override} />
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
                 {isExpanded && event.snapshot && (
-                  <tr
+                  <TableRow
                     role="row"
                     id={`alert-snapshot-${event.id}`}
                     className="alert-snapshot-row bg-secondary/20"
                   >
-                    <td role="cell" className="alert-snapshot-spacer" />
-                    <td
+                    <TableCell role="cell" className="alert-snapshot-spacer" />
+                    <TableCell
                       role="cell"
                       colSpan={7}
                       className="alert-snapshot-content"
@@ -264,14 +291,14 @@ export function AlertTable({
                           {JSON.stringify(event.snapshot, null, 2)}
                         </pre>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
               </Fragment>
             );
           })}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

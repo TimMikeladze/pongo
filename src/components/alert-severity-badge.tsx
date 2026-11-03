@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { AlertSeverity } from "@/scheduler/alerts/types";
 
@@ -13,13 +14,14 @@ const severityStyles: Record<AlertSeverity, string> = {
 
 export function AlertSeverityBadge({ severity }: AlertSeverityBadgeProps) {
   return (
-    <span
+    <Badge
+      variant="outline"
       className={cn(
-        "text-xs px-2 py-0.5 rounded font-medium",
+        "text-xs px-2 py-0.5 rounded font-medium border-transparent",
         severityStyles[severity],
       )}
     >
       {severity}
-    </span>
+    </Badge>
   );
 }

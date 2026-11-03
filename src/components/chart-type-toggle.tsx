@@ -1,6 +1,7 @@
 "use client";
 
 import { BarChart3, LineChart } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 
 export type ChartType = "line" | "bar";
@@ -17,28 +18,21 @@ export function ChartTypeToggle({
   className,
 }: ChartTypeToggleProps) {
   return (
-    <fieldset
+    <ToggleGroup
+      type="single"
+      value={value}
+      onValueChange={(next) => {
+        if (next) onChange(next as ChartType);
+      }}
       aria-label="Chart type"
       className={cn("chart-view-toggle", className)}
     >
-      <button
-        type="button"
-        onClick={() => onChange("line")}
-        title="Line chart"
-        aria-label="Line chart"
-        aria-pressed={value === "line"}
-      >
+      <ToggleGroupItem value="line" title="Line chart" aria-label="Line chart">
         <LineChart className="size-3.5" aria-hidden="true" />
-      </button>
-      <button
-        type="button"
-        onClick={() => onChange("bar")}
-        title="Bar chart"
-        aria-label="Bar chart"
-        aria-pressed={value === "bar"}
-      >
+      </ToggleGroupItem>
+      <ToggleGroupItem value="bar" title="Bar chart" aria-label="Bar chart">
         <BarChart3 className="size-3.5" aria-hidden="true" />
-      </button>
-    </fieldset>
+      </ToggleGroupItem>
+    </ToggleGroup>
   );
 }

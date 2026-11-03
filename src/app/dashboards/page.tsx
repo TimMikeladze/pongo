@@ -3,6 +3,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ListFilter } from "@/components/list-filter";
 import { EmptyState, PageHeading } from "@/components/page-layout";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { getDashboards, getLatestCheckResult, getMonitors } from "@/lib/data";
 import { healthLabels, summarizeHealth } from "@/lib/health";
 
@@ -83,27 +93,27 @@ export default async function DashboardsPage({ searchParams }: Props) {
         />
       ) : (
         <div className="panel overflow-x-auto">
-          <table className="data-table w-full text-left text-sm">
-            <caption className="sr-only">
+          <Table className="data-table w-full text-left text-sm">
+            <TableCaption className="sr-only">
               Status dashboards and current service health
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Dashboard</th>
-                <th scope="col">Visibility</th>
-                <th scope="col">Status</th>
-                <th scope="col" className="text-right">
+            </TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead scope="col">Dashboard</TableHead>
+                <TableHead scope="col">Visibility</TableHead>
+                <TableHead scope="col">Status</TableHead>
+                <TableHead scope="col" className="text-right">
                   Services
-                </th>
-                <th scope="col">
+                </TableHead>
+                <TableHead scope="col">
                   <span className="sr-only">Public page</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {rows.map(({ dashboard, monitorCount, health }) => (
-                <tr key={dashboard.id}>
-                  <td>
+                <TableRow key={dashboard.id}>
+                  <TableCell>
                     <Link
                       href={`/dashboards/${dashboard.id}`}
                       className="inline-flex min-h-8 flex-col justify-center font-medium hover:underline"
@@ -113,8 +123,8 @@ export default async function DashboardsPage({ searchParams }: Props) {
                         /{dashboard.slug}
                       </span>
                     </Link>
-                  </td>
-                  <td>
+                  </TableCell>
+                  <TableCell>
                     <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                       {dashboard.isPublic ? (
                         <Globe className="h-3.5 w-3.5" />
@@ -123,16 +133,20 @@ export default async function DashboardsPage({ searchParams }: Props) {
                       )}
                       {dashboard.isPublic ? "Public" : "Private"}
                     </span>
-                  </td>
-                  <td>
-                    <span className="status-pill" data-status={health}>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="status"
+                      className="status-pill"
+                      data-status={health}
+                    >
                       {healthLabels[health]}
-                    </span>
-                  </td>
-                  <td className="text-right font-mono tabular-nums">
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right font-mono tabular-nums">
                     {monitorCount}
-                  </td>
-                  <td>
+                  </TableCell>
+                  <TableCell>
                     {dashboard.isPublic && (
                       <Link
                         href={`/shared/${dashboard.slug}`}
@@ -144,11 +158,11 @@ export default async function DashboardsPage({ searchParams }: Props) {
                         <ExternalLink className="h-4 w-4" />
                       </Link>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

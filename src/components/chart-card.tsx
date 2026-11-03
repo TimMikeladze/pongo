@@ -13,6 +13,7 @@ import {
   type ChartType,
   ChartTypeToggle,
 } from "@/components/chart-type-toggle";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -79,14 +80,15 @@ export function ChartCard({
               <ChartTypeToggle value={chartType} onChange={setChartType} />
             )}
             <DialogTrigger asChild>
-              <button
+              <Button
+                variant="outline"
                 type="button"
                 className="control-button border-transparent"
                 aria-label={`Expand ${title} chart`}
                 title="Fullscreen"
               >
                 <Maximize2 className="size-3.5" />
-              </button>
+              </Button>
             </DialogTrigger>
           </div>
         </div>

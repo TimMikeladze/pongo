@@ -2,6 +2,7 @@ import { formatDistanceStrict } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import Link from "next/link";
 import { EmptyState, SectionHeading } from "@/components/page-layout";
+import { Badge } from "@/components/ui/badge";
 import { getMonitors, getUpcomingMaintenance } from "@/lib/data";
 
 interface MaintenanceScheduleProps {
@@ -47,9 +48,13 @@ export async function MaintenanceSchedule({
             <article key={window.id} className="panel space-y-3 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="text-sm font-medium">{window.title}</h3>
-                <span className="status-pill" data-status="pending">
+                <Badge
+                  variant="status"
+                  className="status-pill"
+                  data-status="pending"
+                >
                   {start.getTime() <= Date.now() ? "In progress" : "Scheduled"}
-                </span>
+                </Badge>
               </div>
               <dl className="flex flex-wrap gap-x-8 gap-y-3 text-xs">
                 <div>

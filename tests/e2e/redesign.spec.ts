@@ -207,8 +207,11 @@ test("theme, full width, zen and chart expansion preserve recovery controls", as
   await page.getByRole("button", { name: "Switch to light theme" }).click();
   await expect(page.locator("html")).toHaveClass(/light/);
   await page.goto("/settings");
-  await expect(page.getByLabel("Theme", { exact: true })).toHaveValue("light");
-  await page.getByLabel("Content width", { exact: true }).selectOption("full");
+  await expect(page.getByLabel("Theme", { exact: true })).toContainText(
+    "Light",
+  );
+  await page.getByLabel("Content width", { exact: true }).click();
+  await page.getByRole("option", { name: "Full width", exact: true }).click();
   const fullWidth =
     (await page.getByTestId("shell-main").boundingBox())?.width ?? 0;
   expect(fullWidth).toBeGreaterThan(1120);
@@ -231,9 +234,9 @@ test("theme, full width, zen and chart expansion preserve recovery controls", as
   await expect(page.getByTestId("shell-header")).toBeVisible();
   await page.goto("/");
   await page
-    .locator("details.performance-disclosure")
+    .locator(".performance-disclosure")
     .first()
-    .locator("summary")
+    .locator('[data-slot="collapsible-trigger"]')
     .click();
   await page
     .getByRole("button", { name: "Expand Response time chart", exact: true })
@@ -289,7 +292,7 @@ test("monitor filters remain shareable after a reload", async ({ page }) => {
   await expect(
     page.getByText("Showing 1 of 3 monitors", { exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: /Needs attention/ }).click();
+  await page.getByRole("radio", { name: /Needs attention/ }).click();
   await expect(page).toHaveURL(/filter=attention/);
   await page
     .getByRole("button", { name: "Clear filters", exact: true })
@@ -303,8 +306,8 @@ test("monitor filters remain shareable after a reload", async ({ page }) => {
   await page.goBack();
   await expect(page.getByLabel("Search monitors")).toHaveValue("vercel");
   await expect(
-    page.getByRole("button", { name: /Needs attention/ }),
-  ).toHaveAttribute("aria-pressed", "true");
+    page.getByRole("radio", { name: /Needs attention/ }),
+  ).toHaveAttribute("aria-checked", "true");
 });
 
 test("long header captions fit the mobile header", async ({ page }) => {
@@ -355,7 +358,7 @@ test("dashboard filters restore after reload and browser navigation", async ({
   });
   const searchBounds = await search.boundingBox();
   const filterBounds = await page
-    .getByRole("group", { name: "Filter dashboards", exact: true })
+    .getByRole("radiogroup", { name: "Filter dashboards", exact: true })
     .boundingBox();
   expect(
     (searchBounds?.y ?? 0) + (searchBounds?.height ?? 0),
@@ -364,15 +367,15 @@ test("dashboard filters restore after reload and browser navigation", async ({
   await expect(page).toHaveURL(/q=status/);
   await page.reload();
   await expect(search).toHaveValue("status");
-  await page.getByRole("button", { name: /^Public/ }).click();
+  await page.getByRole("radio", { name: /^Public/ }).click();
   await expect(page).toHaveURL(/filter=public/);
   await page.getByRole("button", { name: "Clear search", exact: true }).click();
   await expect(search).toHaveValue("");
   await expect(page).not.toHaveURL(/[?&]q=/);
   await page.goBack();
   await expect(search).toHaveValue("status");
-  await expect(page.getByRole("button", { name: /^Public/ })).toHaveAttribute(
-    "aria-pressed",
+  await expect(page.getByRole("radio", { name: /^Public/ })).toHaveAttribute(
+    "aria-checked",
     "true",
   );
 });
@@ -439,15 +442,18 @@ test("mobile history can be inspected with large period controls", async ({
     name: "Vercel history period",
     exact: true,
   });
-  const initialPeriod = await slider.inputValue();
+  const initialPeriod = await slider.getAttribute("aria-valuenow");
   await inspector
     .getByRole("button", { name: "Previous period for Vercel", exact: true })
     .click();
-  await expect(slider).toHaveValue(String(Number(initialPeriod) - 1));
+  await expect(slider).toHaveAttribute(
+    "aria-valuenow",
+    String(Number(initialPeriod) - 1),
+  );
   await inspector
     .getByRole("button", { name: "Next period for Vercel", exact: true })
     .click();
-  await expect(slider).toHaveValue(initialPeriod);
+  await expect(slider).toHaveAttribute("aria-valuenow", initialPeriod ?? "");
   await expect(
     inspector.getByText("First interval", { exact: true }),
   ).toBeVisible();
@@ -512,21 +518,21 @@ for (const width of [320, 390, 768, 1440]) {
     const row = bars.locator("..");
     await expect(row.getByText("Availability", { exact: true })).toBeVisible();
     await expect(row.getByText("Avg. response", { exact: true })).toBeVisible();
-    const toggle = page.getByRole("group", {
+    const toggle = page.getByRole("radiogroup", {
       name: "History view for Vercel",
       exact: true,
     });
-    const trendButton = toggle.getByRole("button", {
+    const trendButton = toggle.getByRole("radio", {
       name: "Availability sparkline for Vercel",
       exact: true,
     });
     await trendButton.click();
-    await expect(trendButton).toHaveAttribute("aria-pressed", "true");
+    await expect(trendButton).toHaveAttribute("aria-checked", "true");
     const trend = page.getByRole("img", { name: /Vercel availability trend/ });
     await expect(trend).toBeVisible();
     expect((await trend.boundingBox())?.height).toBe(historyHeight);
     await toggle
-      .getByRole("button", {
+      .getByRole("radio", {
         name: "Availability bars for Vercel",
         exact: true,
       })
@@ -633,4 +639,262 @@ test("How it works renders the README with working anchors and public screenshot
   await expect(
     page.getByRole("heading", { name: "Page not found", exact: true }),
   ).toBeVisible();
+});
+
+test("monitor sort uses a themed menu with keyboard selection", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.goto("/monitors");
+  const sort = page.getByRole("combobox", { name: "Sort monitors" });
+  await expect(sort).toHaveAttribute("data-slot", "select-trigger");
+  await sort.focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(page.getByRole("listbox")).toBeVisible();
+  await expect(
+    page.getByRole("option", { name: "Status first" }),
+  ).toBeFocused();
+  await page.keyboard.press("End");
+  await expect(
+    page.getByRole("option", { name: "Slowest first" }),
+  ).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(sort).toContainText("Slowest first");
+  await expect(sort).toBeFocused();
+  await sort.click();
+  await page.getByRole("option", { name: "Name A–Z" }).click();
+  const names = await page
+    .getByRole("table")
+    .locator("tbody tr td:first-child > a")
+    .allTextContents();
+  expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
+  await sort.click();
+  await page.keyboard.press("Escape");
+  await expect(sort).toBeFocused();
+  await page.getByRole("button", { name: "Switch to light theme" }).click();
+  await sort.click();
+  await expect(page.locator('[data-slot="select-content"]')).toBeVisible();
+  await expect(page.locator("html")).toHaveClass(/light/);
+});
+
+test("appearance selectors persist choices and retain zen recovery", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.goto("/settings");
+  const theme = page.getByRole("combobox", { name: "Theme", exact: true });
+  await theme.click();
+  await page.getByRole("option", { name: "Light", exact: true }).click();
+  await page.reload();
+  await expect(theme).toContainText("Light");
+  await expect(page.locator("html")).toHaveClass(/light/);
+  const width = page.getByRole("combobox", {
+    name: "Content width",
+    exact: true,
+  });
+  await width.click();
+  await page.getByRole("option", { name: "Full width", exact: true }).click();
+  await page.reload();
+  await expect(width).toContainText("Full width");
+  await page.getByRole("combobox", { name: "View mode", exact: true }).click();
+  await page.getByRole("option", { name: "Zen mode", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Exit zen mode", exact: true }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("shell-header")).toBeVisible();
+  await expect(
+    page.getByRole("combobox", { name: "View mode", exact: true }),
+  ).toContainText("Standard");
+  await expect(page.locator("select:visible")).toHaveCount(0);
+});
+
+test("status badges distinguish healthy, degraded and down states in both themes", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.goto("/monitors");
+  const pill = page.locator('.monitor-table [data-slot="badge"]').first();
+  for (const theme of ["dark", "light"]) {
+    const colors = [];
+    for (const status of ["up", "degraded", "down"]) {
+      colors.push(
+        await pill.evaluate((element, value) => {
+          element.setAttribute("data-status", value);
+          const style = getComputedStyle(element);
+          return `${style.color}/${style.backgroundColor}`;
+        }, status),
+      );
+    }
+    expect(new Set(colors).size, `${theme} status colors`).toBe(3);
+    if (theme === "dark")
+      await page.getByRole("button", { name: "Switch to light theme" }).click();
+  }
+});
+
+test("long monitor names wrap inside mobile table cells", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await signIn(page);
+  await page.goto("/monitors");
+  const cell = page.locator(".monitor-table tbody tr td:first-child").first();
+  await cell.locator("a").evaluate((element) => {
+    element.textContent =
+      "Production monitoring gateway with a long regional service name";
+  });
+  await cell.locator(".monitor-subtitle").evaluate((element) => {
+    element.textContent =
+      "production-monitoring-gateway-west-coast-primary-region.ts";
+  });
+  expect(
+    await cell.evaluate(
+      (element) => element.scrollWidth <= element.clientWidth,
+    ),
+  ).toBe(true);
+});
+
+test("monitor sorting survives reload and browser navigation", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.goto("/monitors?q=vercel&preset=7d");
+  const sort = page.getByRole("combobox", { name: "Sort monitors" });
+  await sort.click();
+  await page.getByRole("option", { name: "Name A–Z", exact: true }).click();
+  await expect(page).toHaveURL(/sort=name/);
+  await page.reload();
+  await expect(sort).toContainText("Name A–Z");
+  await expect(
+    page.getByRole("searchbox", { name: "Search monitors" }),
+  ).toHaveValue("vercel");
+  await sort.click();
+  await page
+    .getByRole("option", { name: "Slowest first", exact: true })
+    .click();
+  await expect(page).toHaveURL(/sort=latency/);
+  await page.goBack();
+  await expect(sort).toContainText("Name A–Z");
+  await expect(page).toHaveURL(/preset=7d/);
+  await page.goto("/monitors?sort=invalid&filter=invalid");
+  await expect(sort).toContainText("Status first");
+  await expect(page.getByRole("radio", { name: /^All/ })).toBeChecked();
+});
+
+test("shared search clears without losing filters or moving controls", async ({
+  page,
+}) => {
+  await signIn(page);
+  for (const config of [
+    {
+      route: "/monitors?filter=attention&sort=name",
+      name: "Search monitors",
+      filter: "attention",
+    },
+    {
+      route: "/dashboards?filter=public",
+      name: "Search dashboards",
+      filter: "public",
+    },
+  ]) {
+    await page.goto(config.route);
+    const search = page.getByRole("searchbox", {
+      name: config.name,
+      exact: true,
+    });
+    const before = await search.boundingBox();
+    await search.fill("nothing-matches");
+    await expect(page).toHaveURL(/q=nothing-matches/);
+    await expect(
+      page.getByRole("button", { name: "Clear search", exact: true }),
+    ).toBeVisible();
+    expect((await search.boundingBox())?.width).toBe(before?.width);
+    await page
+      .getByRole("button", { name: "Clear search", exact: true })
+      .click();
+    await expect(search).toHaveValue("");
+    await expect(search).toBeFocused();
+    await expect(page).toHaveURL(new RegExp(`filter=${config.filter}`));
+    await search.fill("another-search");
+    await search.press("Escape");
+    await expect(search).toHaveValue("");
+    await expect(search).toBeFocused();
+    await expect(page).not.toHaveURL(/[?&]q=/);
+  }
+});
+
+test.describe("touch controls", () => {
+  test.use({ hasTouch: true, isMobile: true });
+  test("pages and the date picker fit a narrow touch screen", async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    await page.setViewportSize({ width: 320, height: 844 });
+    await signIn(page);
+    for (const route of [...operatorRoutes, ...publicRoutes]) {
+      expect((await page.goto(route))?.status(), route).toBe(200);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth > innerWidth,
+        ),
+        route,
+      ).toBe(false);
+    }
+    await page.goto("/shared/status");
+    expect(
+      (await page.locator("[data-history-bar]").first().boundingBox())?.width,
+    ).toBeLessThan(44);
+    await page
+      .getByRole("button", { name: "Reporting period", exact: true })
+      .tap();
+    const picker = page.getByRole("dialog");
+    await expect(picker).toBeVisible();
+    expect(
+      await picker.evaluate(
+        (element) => element.scrollWidth <= element.clientWidth,
+      ),
+    ).toBe(true);
+    await expect(page.locator('[data-slot="calendar"]')).toBeVisible();
+  });
+  for (const width of [320, 390]) {
+    test(`search, filters and menu items have touch targets at ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 844 });
+      await signIn(page);
+      await page.goto("/monitors");
+      const controls = [
+        page.getByRole("searchbox", { name: "Search monitors" }),
+        page.getByRole("radio", { name: /^All/ }),
+        page.getByRole("radio", { name: /Needs attention/ }),
+        page.getByRole("combobox", { name: "Sort monitors" }),
+      ];
+      for (const control of controls)
+        expect((await control.boundingBox())?.height).toBeGreaterThanOrEqual(
+          44,
+        );
+      await page.getByRole("combobox", { name: "Sort monitors" }).tap();
+      await expect
+        .poll(
+          async () =>
+            (await page.getByRole("option", { name: "Name A–Z" }).boundingBox())
+              ?.height ?? 0,
+        )
+        .toBeGreaterThanOrEqual(44);
+      await page.getByRole("option", { name: "Name A–Z" }).tap();
+      await page
+        .getByRole("searchbox", { name: "Search monitors" })
+        .fill("vercel");
+      const clear = page.getByRole("button", {
+        name: "Clear search",
+        exact: true,
+      });
+      const bounds = await clear.boundingBox();
+      expect(bounds?.height).toBeGreaterThanOrEqual(44);
+      expect(bounds?.width).toBeGreaterThanOrEqual(44);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth > innerWidth,
+        ),
+      ).toBe(false);
+    });
+  }
 });

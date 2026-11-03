@@ -37,12 +37,12 @@ The shell applies the same width to every route and preserves theme, dense/zen a
 
 ## Verification record
 
-Local verification passed 103 unit tests, 26 end-to-end tests, lint, typecheck and a production build. Independent code and visual reviews approved the implementation after all three material findings were fixed. CI status is recorded on the PR.
+Local verification passed 103 unit tests, 35 end-to-end tests, lint, typecheck and a production build. Independent code and visual reviews approved the implementation after all three material findings were fixed. CI status is recorded on the PR.
 
 | Evidence | Coverage |
 | --- | --- |
 | `bun test src` | 103 unit tests, including health precedence and unknown measurements |
-| `bunx playwright test` | 26 tests across smoke and redesign suites |
+| `bunx playwright test` | 35 tests across smoke and redesign suites |
 | `tests/e2e/redesign.spec.ts` | All 16 pages at 390px, 768px and 1440px; aligned shell width and no page overflow |
 | Redesign interaction tests | Public access/feeds, search and empty states, themes, width, zen recovery, chart focus restoration, history keyboard and touch controls, dashboard filter navigation, short-screen dialogs and range changes |
 | Production build | Completed against an isolated database during verification |
@@ -57,7 +57,7 @@ Production pages continue reading configured monitors, dashboard definitions, in
 
 History bars combine long ranges into at most 90 contiguous display periods. Tooltips retain the underlying date bounds, measured checks, weighted availability and missing intervals. The sparkline keeps every selected aggregation interval. This prevents narrow-screen histories from collapsing to zero width.
 
-Monitor search and status filters are stored in the URL with shallow updates, so reload, sharing and back/forward navigation preserve the visible selection. Long site names and deployment captions truncate within the header; their full text remains available to assistive technology and the native title tooltip.
+Monitor search, status filters and sorting are stored in the URL with shallow updates, so reload, sharing and back/forward navigation preserve the visible selection. Long site names and deployment captions truncate within the header; their full text remains available to assistive technology and the native title tooltip.
 
 The maintenance provider currently returns no windows, so the maintenance page shows its empty state. This redesign does not add a maintenance storage or scheduling backend.
 
@@ -78,3 +78,9 @@ README code uses Shiki syntax highlighting with high-contrast palettes for both 
 The dependency refresh is part of this PR: [upgrade record](../dependency-upgrades.md). All direct packages use the latest audited releases except TypeScript, which remains at 5.9.3. The update includes the original main-workspace package, lockfile and Biome changes.
 
 Prompt-based setup is included in this PR. The [agent setup guide](../agent-setup.md) documents the copyable pongo.sh prompt, follow-up questions, and optional skill installation. `/llms.txt` and `/skills/create-pongo/SKILL.md` are public even when admin login is enabled. The README, redesigned About section, and HTML discovery link point agents to those instructions. Relative README links to public files resolve at the site root; repository documentation links resolve on GitHub. Regression tests verify those links and public access.
+
+Shared controls now use the existing shadcn/ui library: buttons and action links, search fields, themed selectors, single-choice groups, tables, status badges, disclosures and the mobile history slider. Monitor sorting and appearance menus render within the page theme. Single-choice groups expose radio semantics with arrow-key navigation; filters retain their URL state. See [the control migration record](shadcn-controls.md).
+
+Monitor and dashboard search share the shadcn InputGroup field, a reserved clear button and Escape-to-clear behavior. Clearing keeps the active filter and restores input focus. Touch actions, selectors and menu items have 44px targets; calendar dates and history bars keep their compact grids. See [search and touch verification](search-and-touch.md).
+
+The original mockups and their review captures are retained in `public/ui-mockups/` and `docs/ui-mockups/`. Consolidating them into the PR adds nine non-failing CSS specificity warnings from the original study styles; application CSS retains its two existing warnings. All 35 browser tests pass with the CI single-worker setting.

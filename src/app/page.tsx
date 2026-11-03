@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { ChartCard } from "@/components/chart-card";
 import { dashboardMeasurements } from "@/components/dashboard-measurements";
+import { Disclosure } from "@/components/disclosure";
 import { ErrorRateChart } from "@/components/error-rate-chart";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
 import { LatencyPercentilesChart } from "@/components/latency-percentiles-chart";
@@ -26,6 +27,7 @@ import { StatsCard } from "@/components/stats-card";
 import { StatusDistributionChart } from "@/components/status-distribution-chart";
 import { ThroughputChart } from "@/components/throughput-chart";
 import { TimeRangePicker } from "@/components/time-range-picker";
+import { Button } from "@/components/ui/button";
 import { UptimeChart } from "@/components/uptime-chart";
 import { isAuthEnabled, isAuthenticated } from "@/lib/auth";
 import {
@@ -120,10 +122,12 @@ export default async function OverviewPage({ searchParams }: Props) {
         actions={
           <>
             <TimeRangePicker />
-            <Link href="/dashboards" className="control-button">
-              Status pages
-              <ArrowUpRight className="size-3.5" />
-            </Link>
+            <Button asChild variant="outline">
+              <Link href="/dashboards" className="control-button">
+                Status pages
+                <ArrowUpRight className="size-3.5" />
+              </Link>
+            </Button>
           </>
         }
       />
@@ -163,23 +167,25 @@ export default async function OverviewPage({ searchParams }: Props) {
                   : "No services are currently reporting an issue."}
           </p>
         </div>
-        <Link
-          href={
-            affected.length
-              ? `/monitors/${affected[0].id}`
+        <Button asChild variant="outline">
+          <Link
+            href={
+              affected.length
+                ? `/monitors/${affected[0].id}`
+                : health === "pending"
+                  ? "/settings"
+                  : "/alerts"
+            }
+            className="control-button"
+          >
+            {affected.length
+              ? "Investigate"
               : health === "pending"
-                ? "/settings"
-                : "/alerts"
-          }
-          className="control-button"
-        >
-          {affected.length
-            ? "Investigate"
-            : health === "pending"
-              ? "View setup"
-              : "View alerts"}
-          <ArrowUpRight className="size-3.5" />
-        </Link>
+                ? "View setup"
+                : "View alerts"}
+            <ArrowUpRight className="size-3.5" />
+          </Link>
+        </Button>
       </section>
       <MetricStrip>
         <StatsCard
@@ -245,18 +251,19 @@ export default async function OverviewPage({ searchParams }: Props) {
               title="No monitors configured"
               description="Define monitors in pongo/monitors/ and run the scheduler to collect checks."
             >
-              <Link href="/settings" className="control-button">
-                Configuration
-              </Link>
+              <Button asChild variant="outline">
+                <Link href="/settings" className="control-button">
+                  Configuration
+                </Link>
+              </Button>
             </EmptyState>
           </div>
         )}
       </section>
-      <details className="performance-disclosure">
-        <summary>
-          <h2>Performance</h2>
-          <span>Response times, availability and check volume</span>
-        </summary>
+      <Disclosure
+        title="Performance"
+        description="Response times, availability and check volume"
+      >
         <div className="page-stack">
           <div className="grid gap-4 md:grid-cols-2">
             <ChartCard
@@ -299,7 +306,7 @@ export default async function OverviewPage({ searchParams }: Props) {
             selected period. Charts use the selected aggregation interval.
           </p>
         </div>
-      </details>
+      </Disclosure>
       <section>
         <SectionHeading
           title="Recent incidents"
@@ -316,11 +323,10 @@ export default async function OverviewPage({ searchParams }: Props) {
         <IncidentsTimeline limit={3} compactEmpty />
       </section>
       {process.env.SHOW_ABOUT === "true" && (
-        <details className="performance-disclosure">
-          <summary>
-            <h2>About Pongo</h2>
-            <span>Configuration and deployment</span>
-          </summary>
+        <Disclosure
+          title="About Pongo"
+          description="Configuration and deployment"
+        >
           <div className="space-y-3 pb-4 text-sm text-muted-foreground max-w-prose">
             <p>
               Create a status page with your coding agent. Paste:{" "}
@@ -356,7 +362,7 @@ export default async function OverviewPage({ searchParams }: Props) {
               Read the configuration guide
             </a>
           </div>
-        </details>
+        </Disclosure>
       )}
     </div>
   );

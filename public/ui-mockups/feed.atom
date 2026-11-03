@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Pongo UI study — example status updates</title>
+  <id>urn:pongo:ui-study:feed</id>
+  <updated>2026-11-02T16:41:00Z</updated>
+  <author><name>Pongo UI study</name></author>
+  <subtitle>Illustrative records. This is not live monitoring data.</subtitle>
+  <entry>
+    <id>urn:pongo:ui-study:alarms-38</id>
+    <title>Resolved: Notifications delayed by up to 38 minutes</title>
+    <updated>2026-10-14T02:15:00Z</updated>
+    <content type="text">Example incident. The delivery queue is clear. Notifications are being delivered on time.</content>
+  </entry>
+</feed>

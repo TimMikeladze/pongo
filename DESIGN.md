@@ -223,7 +223,7 @@ Panels, chart surfaces, notices and empty states share rounded corners and a uni
 
 ### Buttons and fields
 
-Primary, outline and ghost buttons preserve their existing component variants. Standard library buttons are (36px) tall; small and shell controls have a minimum height of (32px). Shell controls use an outlined neutral surface, selected/hover fill, and compact text. Search fields are (34px) tall with a leading search icon. Filters use a bordered group with (28px) inner buttons and a filled selected state.
+Primary, outline and ghost buttons preserve their existing component variants. Standard library buttons are (36px) tall; small and shell controls have a minimum height of (32px). Shell controls use an outlined neutral surface, selected/hover fill, and compact text. Search fields use the shared shadcn InputGroup, a leading icon and reserved space for a clear action. They are (36px) tall on desktop and at least (44px) on touch devices. Filters use a bordered group and a filled selected state; mobile groups can wrap. On coarse pointers, actions, selectors and menu items have (44px) targets. Calendar dates and history bars retain compact grid cells.
 
 The global focus treatment is a ring-colored outline (2px) offset by (3px). Library fields and buttons retain their own focus border/ring states and invalid/disabled styling. Every icon-only action needs an accessible name. The skip link becomes visible on keyboard focus and targets the main region.
 
@@ -258,3 +258,7 @@ Public status pages lead with service state and inspectable history. Performance
 - Don't turn missing results into healthy uptime or zero latency.
 - Don't add nested width containers that narrow individual pages.
 - Don't reduce all text globally when density changes.
+
+Application controls use the shadcn/ui primitives in `src/components/ui`. Select renders monitor sorting and appearance menus in the active theme. ToggleGroup represents single-choice filters and chart views, with radio roles and arrow-key navigation. Table retains the existing responsive row layouts. Disclosure composes Collapsible and Button for performance and About sections; incident updates use the same primitives. Mobile history uses Slider with a named thumb and period value text. Badge's status variant preserves the status color tokens. Native HTML within the shared primitives and rendered Markdown remains unchanged.
+
+Search clearing preserves the current filter and returns keyboard focus to the field. Escape clears a nonempty search before the shell handles Escape. Monitor sort, search and filter selections are URL-backed; invalid sort/filter values use the default selection.

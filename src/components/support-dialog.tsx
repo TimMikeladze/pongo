@@ -13,6 +13,12 @@ import {
 } from "lucide-react";
 import { useId, useState } from "react";
 import { Github, Linkedin, Twitter } from "@/components/brand-icons";
+import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +26,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 function BlueskyIcon({ className }: { className?: string }) {
@@ -90,18 +97,20 @@ export function SupportDialog({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button
+        <Button
+          variant="ghost"
           type="button"
-          className={
+          className={cn(
+            "justify-start",
             triggerClassName ??
-            "hover:text-foreground transition-colors flex items-center gap-1"
-          }
+              "hover:text-foreground transition-colors flex items-center gap-1",
+          )}
           title={`${label} Pongo`}
           aria-label={`${label} Pongo`}
         >
           <Icon className="h-3.5 w-3.5" />
           {showLabel && <span>{label}</span>}
-        </button>
+        </Button>
       </DialogTrigger>
       <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden sm:max-w-md">
         <DialogHeader className="shrink-0 pr-8">
@@ -162,45 +171,44 @@ export function SupportDialog({
                   </div>
                 </div>
               </a>
-              <div className="rounded border border-border overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setShareExpanded(!shareExpanded)}
-                  aria-expanded={shareExpanded}
-                  aria-controls={shareContentId}
-                  className="flex items-center gap-3 p-3 w-full hover:bg-accent transition-colors group text-left"
-                >
-                  <Share2 className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                  <div className="flex-1">
-                    <div className="text-xs font-medium">Share Pongo</div>
-                    <div className="text-xs text-muted-foreground">
-                      Share a link on social media
+              <Collapsible
+                open={shareExpanded}
+                onOpenChange={setShareExpanded}
+                className="rounded border border-border overflow-hidden"
+              >
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    type="button"
+                    aria-expanded={shareExpanded}
+                    aria-controls={shareContentId}
+                    className="h-auto whitespace-normal justify-start flex items-center gap-3 p-3 w-full hover:bg-accent transition-colors group text-left"
+                  >
+                    <Share2 className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <div className="flex-1">
+                      <div className="text-xs font-medium">Share Pongo</div>
+                      <div className="text-xs text-muted-foreground">
+                        Share a link on social media
+                      </div>
                     </div>
-                  </div>
-                  {shareExpanded ? (
-                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </button>
-                <div
-                  id={shareContentId}
-                  aria-hidden={!shareExpanded}
-                  inert={!shareExpanded}
-                  className={cn(
-                    "overflow-hidden transition-all duration-200",
-                    shareExpanded ? "max-h-40" : "max-h-0",
-                  )}
-                >
+                    {shareExpanded ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent id={shareContentId}>
                   <div className="relative border-t border-border">
-                    <textarea
+                    <Textarea
                       readOnly
                       aria-label="Share message"
                       value={`${shareText} ${shareUrl}`}
                       className="w-full text-xs bg-muted/50 p-3 pr-10 resize-none text-muted-foreground outline-none border-none"
                       rows={3}
                     />
-                    <button
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={handleCopy}
                       aria-label="Copy share message"
@@ -208,7 +216,7 @@ export function SupportDialog({
                       title="Copy to clipboard"
                     >
                       <Copy className="h-4 w-4" />
-                    </button>
+                    </Button>
                     {copied && (
                       <span
                         role="status"
@@ -237,8 +245,8 @@ export function SupportDialog({
                       </a>
                     ))}
                   </div>
-                </div>
-              </div>
+                </CollapsibleContent>
+              </Collapsible>
               <div className="rounded border border-border overflow-hidden">
                 <div className="flex items-center gap-3 p-3">
                   <UserPlus className="h-4 w-4 text-muted-foreground" />

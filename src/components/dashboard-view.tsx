@@ -2,6 +2,7 @@ import { CheckCircle2, CircleHelp, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { AnnouncementsList } from "@/components/announcements-list";
 import { dashboardMeasurements } from "@/components/dashboard-measurements";
+import { Disclosure } from "@/components/disclosure";
 import { IncidentsTimeline } from "@/components/incidents-timeline";
 import { MaintenanceSchedule } from "@/components/maintenance-schedule";
 import { MonitorErrorRateChart } from "@/components/monitor-error-rate-chart";
@@ -13,6 +14,7 @@ import {
 } from "@/components/page-layout";
 import { SLAStatus } from "@/components/sla-status";
 import { TimeRangePicker } from "@/components/time-range-picker";
+import { Badge } from "@/components/ui/badge";
 import { UptimeBars } from "@/components/uptime-bars";
 import {
   getActiveIncidents,
@@ -84,9 +86,13 @@ export async function DashboardView({
         className="flex items-center gap-3 flex-wrap"
         aria-label="Current service health"
       >
-        <span className="status-pill p-3" data-status={health}>
+        <Badge
+          variant="status"
+          className="status-pill p-3"
+          data-status={health}
+        >
           <HealthIcon className="h-6 w-6" />
-        </span>
+        </Badge>
         <div>
           <HealthHeading className="page-title">{title}</HealthHeading>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -206,13 +212,11 @@ export async function DashboardView({
         <SLAStatus dashboardId={dashboardId} timeRange={timeRange} />
       )}
       {monitors.length > 0 && (
-        <details className="performance-disclosure panel">
-          <summary>
-            <h2>Performance</h2>
-            <span className="text-xs font-normal text-muted-foreground">
-              Response times and error rates · expand to inspect
-            </span>
-          </summary>
+        <Disclosure
+          title="Performance"
+          description="Response times and error rates · expand to inspect"
+          className="panel"
+        >
           <div className="space-y-5 border-t border-border p-4">
             {measurements.checkCount === 0 ? (
               <EmptyState
@@ -258,7 +262,7 @@ export async function DashboardView({
               ))
             )}
           </div>
-        </details>
+        </Disclosure>
       )}
       <section className="space-y-3">
         <SectionHeading

@@ -14,11 +14,15 @@ import {
 } from "recharts";
 import { DualTime } from "@/components/dual-time";
 import { useTheme } from "@/components/theme-provider";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Tooltip,
   TooltipContent,
@@ -126,10 +130,14 @@ export function UptimeDisplay({
           <span className="text-sm font-semibold break-words min-w-0">
             {monitorName}
           </span>
-          <span className="status-pill shrink-0" data-status={currentStatus}>
+          <Badge
+            variant="status"
+            className="status-pill shrink-0"
+            data-status={currentStatus}
+          >
             <span className="status-dot" aria-hidden="true" />
             {paused ? "Paused" : statusLabels[currentStatus]}
-          </span>
+          </Badge>
         </div>
         <div className="service-history-toolbar">
           <dl className="service-history-metrics">
@@ -142,29 +150,30 @@ export function UptimeDisplay({
               <dd>{responseTime === null ? "—" : `${responseTime} ms`}</dd>
             </div>
           </dl>
-          <fieldset
+          <ToggleGroup
+            type="single"
+            value={mode}
+            onValueChange={(value) => {
+              if (value) setMode(value as DisplayMode);
+            }}
             className="chart-view-toggle"
             aria-label={`History view for ${monitorName}`}
           >
-            <button
-              type="button"
-              onClick={() => setMode("bars")}
+            <ToggleGroupItem
+              value="bars"
               aria-label={`Availability bars for ${monitorName}`}
-              aria-pressed={mode === "bars"}
             >
               <BarChart3 className="size-3.5" aria-hidden="true" />
               History
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode("sparkline")}
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="sparkline"
               aria-label={`Availability sparkline for ${monitorName}`}
-              aria-pressed={mode === "sparkline"}
             >
               <TrendingUp className="size-3.5" aria-hidden="true" />
               Trend
-            </button>
-          </fieldset>
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
 
         {mode === "bars" ? (
@@ -175,8 +184,10 @@ export function UptimeDisplay({
             {history.map((bucket, index) => (
               <Tooltip key={bucket.timestamp}>
                 <TooltipTrigger asChild>
-                  <button
+                  <Button
+                    variant="ghost"
                     type="button"
+                    data-history-bar
                     tabIndex={index === selectedIndex ? 0 : -1}
                     onFocus={() => setFocusIndex(index)}
                     onKeyDown={(event) => {
@@ -206,7 +217,7 @@ export function UptimeDisplay({
                     }}
                     aria-label={`${monitorName}, ${bucket.label}: ${bucket.checks === 0 ? "No data" : `${bucket.uptime}% availability, ${bucket.checks} checks`}`}
                     className={cn(
-                      "min-w-0 flex-1 h-8 rounded-[2px] hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2",
+                      "p-0 hover:bg-transparent min-w-0 flex-1 h-8 rounded-[2px] hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2",
                       statusColors[bucket.status],
                       bucket.status === "up" && "opacity-90",
                     )}
@@ -344,13 +355,14 @@ export function UptimeDisplay({
             {selectedBucket && (
               <Popover>
                 <PopoverTrigger asChild>
-                  <button
+                  <Button
+                    variant="ghost"
                     type="button"
                     className="min-h-11 shrink-0 rounded px-2 text-xs text-muted-foreground hover:text-foreground sm:hidden"
                     aria-label={`Inspect history for ${monitorName}`}
                   >
                     Inspect history
-                  </button>
+                  </Button>
                 </PopoverTrigger>
                 <PopoverContent
                   aria-label={`${monitorName} history inspection`}
@@ -383,12 +395,13 @@ export function UptimeDisplay({
                       />
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span
+                      <Badge
+                        variant="status"
                         className="status-pill"
                         data-status={selectedBucket.status}
                       >
                         {statusLabels[selectedBucket.status]}
-                      </span>
+                      </Badge>
                       <span className="font-mono">
                         {selectedBucket.checks === 0
                           ? "No availability data"
@@ -414,23 +427,23 @@ export function UptimeDisplay({
                     >
                       Period {selectedIndex + 1} of {history.length}
                     </label>
-                    <input
-                      id={historyId}
-                      type="range"
+                    <Slider
                       min={0}
                       max={Math.max(0, history.length - 1)}
-                      value={selectedIndex}
+                      value={[selectedIndex]}
                       disabled={history.length < 2}
-                      onChange={(event) =>
-                        setFocusIndex(Number(event.currentTarget.value))
-                      }
-                      aria-label={`${monitorName} history period`}
-                      aria-valuetext={`Period ${selectedIndex + 1} of ${history.length}: ${selectedBucket.label}`}
-                      className="min-h-11 w-full accent-[var(--status-up)]"
+                      onValueChange={([value]) => setFocusIndex(value)}
+                      thumbProps={{
+                        id: historyId,
+                        "aria-label": `${monitorName} history period`,
+                        "aria-valuetext": `Period ${selectedIndex + 1} of ${history.length}: ${selectedBucket.label}`,
+                      }}
+                      className="min-h-11 w-full"
                     />
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <button
+                    <Button
+                      variant="outline"
                       type="button"
                       className="control-button min-h-11 min-w-11 disabled:opacity-50"
                       disabled={selectedIndex === 0}
@@ -439,8 +452,9 @@ export function UptimeDisplay({
                     >
                       <ChevronLeft className="size-4" />
                       Previous
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="outline"
                       type="button"
                       className="control-button min-h-11 min-w-11 disabled:opacity-50"
                       disabled={selectedIndex === history.length - 1}
@@ -449,7 +463,7 @@ export function UptimeDisplay({
                     >
                       Next
                       <ChevronRight className="size-4" />
-                    </button>
+                    </Button>
                   </div>
                 </PopoverContent>
               </Popover>

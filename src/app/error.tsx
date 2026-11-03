@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { EmptyState, PageHeading } from "@/components/page-layout";
+import { Button } from "@/components/ui/button";
 
 export default function ErrorPage({
   reset,
@@ -21,12 +22,19 @@ export default function ErrorPage({
           title="Try loading the page again"
           description="If the problem continues, check your database connection and server logs."
         >
-          <button type="button" className="control-button" onClick={reset}>
+          <Button
+            variant="outline"
+            type="button"
+            className="control-button"
+            onClick={reset}
+          >
             Try again
-          </button>
-          <Link href="/" className="control-button">
-            Return to overview
-          </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/" className="control-button">
+              Return to overview
+            </Link>
+          </Button>
         </EmptyState>
       </div>
     </div>

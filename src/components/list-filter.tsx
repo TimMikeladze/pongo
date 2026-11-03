@@ -1,8 +1,9 @@
 "use client";
 
-import { Search, X } from "lucide-react";
 import { parseAsString, useQueryStates } from "nuqs";
 import { useTransition } from "react";
+import { SearchField } from "@/components/search-field";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface FilterOption {
   value: string;
@@ -39,49 +40,35 @@ export function ListFilter({
   return (
     <div className="monitor-toolbar" aria-busy={isPending}>
       {showSearch && (
-        <div className="list-search flex items-center gap-1">
-          <label className="monitor-search min-w-0">
-            <Search aria-hidden="true" />
-            <input
-              type="search"
-              value={search}
-              onChange={(event) =>
-                setQuery({ [searchParamName]: event.target.value })
-              }
-              placeholder={placeholder}
-              aria-label={placeholder.replace(/\.+$/, "")}
-            />
-          </label>
-          {search && (
-            <button
-              type="button"
-              className="control-button"
-              aria-label="Clear search"
-              onClick={() => setQuery({ [searchParamName]: "" })}
-            >
-              <X className="size-4" />
-            </button>
-          )}
-        </div>
+        <SearchField
+          className="list-search monitor-search min-w-0"
+          value={search}
+          onValueChange={(value) => setQuery({ [searchParamName]: value })}
+          placeholder={placeholder}
+          label={placeholder.replace(/[.…]+$/, "")}
+        />
       )}
       {filterOptions.length > 0 && (
-        <fieldset className="filter-group" aria-label="Filter dashboards">
+        <ToggleGroup
+          type="single"
+          value={filter}
+          onValueChange={(value) => {
+            if (value) setQuery({ [filterParamName]: value });
+          }}
+          className="filter-group"
+          aria-label="Filter dashboards"
+        >
           {filterOptions.map((option) => (
-            <button
-              type="button"
-              key={option.value}
-              onClick={() => setQuery({ [filterParamName]: option.value })}
-              aria-pressed={filter === option.value}
-            >
+            <ToggleGroupItem value={option.value} key={option.value}>
               {option.label}
               {option.count !== undefined && (
                 <span className="ml-1 text-muted-foreground">
                   {option.count}
                 </span>
               )}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </fieldset>
+        </ToggleGroup>
       )}
     </div>
   );

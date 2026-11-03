@@ -3,6 +3,7 @@
 import { formatDistanceToNow } from "date-fns";
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Badge } from "@/components/ui/badge";
 import { getLatestCheckResult, getMonitor } from "@/lib/data";
 
 export async function generateMetadata({
@@ -109,12 +110,13 @@ export default async function MonitorDetailPage({
         }
       />
       <div className="flex flex-wrap items-center gap-3">
-        <span
+        <Badge
+          variant="status"
           className="status-pill"
           data-status={monitor.isActive ? status : "pending"}
         >
           {monitor.isActive ? healthLabels[status] : "Paused"}
-        </span>
+        </Badge>
         <span className="text-sm text-muted-foreground">
           {!monitor.isActive
             ? "Scheduled checks are paused."

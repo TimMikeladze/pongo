@@ -1,10 +1,30 @@
 "use client";
 
-import { ChevronRight, Search, X } from "lucide-react";
+import { ChevronRight, X } from "lucide-react";
 import Link from "next/link";
-import { parseAsString, useQueryStates } from "nuqs";
-import { useMemo, useState } from "react";
+import { parseAsString, parseAsStringLiteral, useQueryStates } from "nuqs";
+import { useMemo } from "react";
 import { EmptyState } from "@/components/page-layout";
+import { SearchField } from "@/components/search-field";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { healthLabels } from "@/lib/health";
 import type { MonitorStatus } from "@/lib/types";
 
@@ -24,6 +44,8 @@ const rank: Record<MonitorStatus, number> = {
   pending: 2,
   up: 3,
 };
+const sortValues = ["status", "name", "latency"] as const;
+const filterValues = ["all", "attention", "active", "paused"] as const;
 
 export function MonitorTableView({
   rows,
@@ -32,14 +54,14 @@ export function MonitorTableView({
   rows: MonitorRow[];
   showFilters?: boolean;
 }) {
-  const [{ q: search, filter }, setFilters] = useQueryStates(
+  const [{ q: search, filter, sort }, setFilters] = useQueryStates(
     {
       q: parseAsString.withDefault(""),
-      filter: parseAsString.withDefault("all"),
+      filter: parseAsStringLiteral(filterValues).withDefault("all"),
+      sort: parseAsStringLiteral(sortValues).withDefault("status"),
     },
     { shallow: true, history: "push" },
   );
-  const [sort, setSort] = useState("status");
   const attentionCount = rows.filter(
     (row) => row.active && (row.status === "down" || row.status === "degraded"),
   ).length;
@@ -98,72 +120,79 @@ export function MonitorTableView({
     <div>
       {showFilters && (
         <div className="monitor-toolbar">
-          <label className="monitor-search">
-            <Search aria-hidden="true" />
-            <input
-              type="search"
-              value={search}
-              onChange={(event) => setFilters({ q: event.target.value })}
-              placeholder="Search monitors…"
-              aria-label="Search monitors"
-            />
-          </label>
-          <fieldset className="filter-group" aria-label="Filter monitors">
+          <SearchField
+            className="monitor-search"
+            value={search}
+            onValueChange={(value) => setFilters({ q: value })}
+            placeholder="Search monitors…"
+            label="Search monitors"
+          />
+          <ToggleGroup
+            type="single"
+            value={filter}
+            onValueChange={(value) => {
+              if (value)
+                setFilters({ filter: value as (typeof filterValues)[number] });
+            }}
+            className="filter-group"
+            aria-label="Filter monitors"
+          >
             {filters.map((option) => (
-              <button
-                type="button"
-                key={option.value}
-                onClick={() => setFilters({ filter: option.value })}
-                aria-pressed={filter === option.value}
-              >
+              <ToggleGroupItem value={option.value} key={option.value}>
                 {option.label}{" "}
                 <span className="ml-1 text-muted-foreground">
                   {option.count}
                 </span>
-              </button>
+              </ToggleGroupItem>
             ))}
-          </fieldset>
-          <select
+          </ToggleGroup>
+          <Select
             value={sort}
-            onChange={(event) => setSort(event.target.value)}
-            aria-label="Sort monitors"
+            onValueChange={(value) =>
+              setFilters({ sort: value as (typeof sortValues)[number] })
+            }
           >
-            <option value="status">Status first</option>
-            <option value="name">Name A–Z</option>
-            <option value="latency">Slowest first</option>
-          </select>
+            <SelectTrigger aria-label="Sort monitors" className="min-w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="status">Status first</SelectItem>
+              <SelectItem value="name">Name A–Z</SelectItem>
+              <SelectItem value="latency">Slowest first</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       )}
       <div className="panel table-scroll">
-        <table className="data-table monitor-table">
-          <caption className="sr-only">
+        <Table className="data-table monitor-table">
+          <TableCaption className="sr-only">
             Monitors and their current health and selected-period measurements
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Monitor</th>
-              <th scope="col">Status</th>
-              <th scope="col" className="number">
+          </TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead scope="col">Monitor</TableHead>
+              <TableHead scope="col">Status</TableHead>
+              <TableHead scope="col" className="number">
                 Availability
-              </th>
-              <th scope="col" className="number">
+              </TableHead>
+              <TableHead scope="col" className="number">
                 Avg. response
-              </th>
-              <th scope="col" className="number">
+              </TableHead>
+              <TableHead scope="col" className="number">
                 Interval
-              </th>
-              <th scope="col" className="number">
+              </TableHead>
+              <TableHead scope="col" className="number">
                 Last check
-              </th>
-              <th scope="col">
+              </TableHead>
+              <TableHead scope="col">
                 <span className="sr-only">Details</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {visible.length ? (
               visible.map((row) => (
-                <tr
+                <TableRow
                   key={row.id}
                   className={
                     row.active &&
@@ -172,7 +201,7 @@ export function MonitorTableView({
                       : undefined
                   }
                 >
-                  <td>
+                  <TableCell className="max-sm:whitespace-normal">
                     <Link
                       href={`/monitors/${row.id}`}
                       className="font-medium hover:underline break-words"
@@ -180,27 +209,31 @@ export function MonitorTableView({
                       {row.name}
                     </Link>
                     <div className="monitor-subtitle">{row.id}.ts</div>
-                  </td>
-                  <td>
-                    <span className="status-pill" data-status={row.status}>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="status"
+                      className="status-pill"
+                      data-status={row.status}
+                    >
                       <span className="status-dot" />
                       {row.active
                         ? row.status === "up"
                           ? "Operational"
                           : healthLabels[row.status]
                         : "Paused"}
-                    </span>
-                  </td>
-                  <td className="number" data-label="Availability">
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="number" data-label="Availability">
                     {row.uptime === null ? "—" : `${row.uptime.toFixed(3)}%`}
-                  </td>
-                  <td className="number" data-label="Avg. response">
+                  </TableCell>
+                  <TableCell className="number" data-label="Avg. response">
                     {row.responseTime === null ? "—" : `${row.responseTime} ms`}
-                  </td>
-                  <td className="number" data-label="Interval">
+                  </TableCell>
+                  <TableCell className="number" data-label="Interval">
                     {row.interval}
-                  </td>
-                  <td className="number" data-label="Last check">
+                  </TableCell>
+                  <TableCell className="number" data-label="Last check">
                     {row.checkedAt ? (
                       <time
                         dateTime={row.checkedAt}
@@ -212,21 +245,23 @@ export function MonitorTableView({
                     ) : (
                       "Never"
                     )}
-                  </td>
-                  <td className="monitor-arrow">
-                    <Link
-                      href={`/monitors/${row.id}`}
-                      aria-label={`Inspect ${row.name}`}
-                      className="control-button border-0"
-                    >
-                      <ChevronRight className="size-4" />
-                    </Link>
-                  </td>
-                </tr>
+                  </TableCell>
+                  <TableCell className="monitor-arrow">
+                    <Button asChild variant="outline">
+                      <Link
+                        href={`/monitors/${row.id}`}
+                        aria-label={`Inspect ${row.name}`}
+                        className="control-button border-0"
+                      >
+                        <ChevronRight className="size-4" />
+                      </Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))
             ) : (
-              <tr>
-                <td colSpan={7}>
+              <TableRow>
+                <TableCell colSpan={7}>
                   <EmptyState
                     variant="plain"
                     title={
@@ -236,7 +271,8 @@ export function MonitorTableView({
                     }
                     description="Clear your filters to see all configured monitors."
                   >
-                    <button
+                    <Button
+                      variant="outline"
                       type="button"
                       className="control-button"
                       onClick={() => {
@@ -245,13 +281,13 @@ export function MonitorTableView({
                     >
                       <X className="size-3.5" />
                       Clear filters
-                    </button>
+                    </Button>
                   </EmptyState>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
       <div
         className="flex justify-between gap-4 mt-3 text-xs text-muted-foreground"

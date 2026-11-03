@@ -27,6 +27,7 @@ import { Github } from "@/components/brand-icons";
 import { PongoLogo } from "@/components/pongo-logo";
 import { SupportDialog } from "@/components/support-dialog";
 import { useTheme } from "@/components/theme-provider";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
@@ -124,7 +125,8 @@ export function AppShell({
   }, [zen, toggleDensity]);
 
   const themeControl = (
-    <button
+    <Button
+      variant="outline"
       type="button"
       className="control-button"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
@@ -136,7 +138,7 @@ export function AppShell({
       ) : (
         <Sun className="size-4" />
       )}
-    </button>
+    </Button>
   );
 
   return (
@@ -201,14 +203,15 @@ export function AppShell({
             {shared && publicBase && (
               <Popover>
                 <PopoverTrigger asChild>
-                  <button
+                  <Button
+                    variant="outline"
                     type="button"
                     className="control-button"
                     aria-label="Get status updates"
                   >
                     <Rss className="size-3.5" />
                     <span className="hidden sm:inline">Get updates</span>
-                  </button>
+                  </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-72">
                   <h2 className="text-sm font-semibold">
@@ -218,19 +221,23 @@ export function AppShell({
                     Add a feed to your reader. No account required.
                   </p>
                   <div className="flex gap-2">
-                    <Link
-                      href={`${publicBase}/feed.xml`}
-                      className="control-button"
-                    >
-                      <Rss className="size-3.5" />
-                      RSS feed
-                    </Link>
-                    <Link
-                      href={`${publicBase}/feed.atom`}
-                      className="control-button"
-                    >
-                      Atom feed
-                    </Link>
+                    <Button asChild variant="outline">
+                      <Link
+                        href={`${publicBase}/feed.xml`}
+                        className="control-button"
+                      >
+                        <Rss className="size-3.5" />
+                        RSS feed
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <Link
+                        href={`${publicBase}/feed.atom`}
+                        className="control-button"
+                      >
+                        Atom feed
+                      </Link>
+                    </Button>
                   </div>
                 </PopoverContent>
               </Popover>
@@ -240,10 +247,12 @@ export function AppShell({
               authEnabled &&
               !isAuthenticated &&
               pathname !== "/login" && (
-                <Link href="/login" className="control-button">
-                  <LogIn className="size-3.5" />
-                  Sign in
-                </Link>
+                <Button asChild variant="outline">
+                  <Link href="/login" className="control-button">
+                    <LogIn className="size-3.5" />
+                    Sign in
+                  </Link>
+                </Button>
               )}
           </div>
         </div>
@@ -308,37 +317,42 @@ export function AppShell({
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {showGithub && (
-              <a
-                href={githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="control-button"
-              >
-                <Github className="size-3.5" aria-hidden="true" />
-                GitHub
-              </a>
+              <Button asChild variant="outline">
+                <a
+                  href={githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="control-button"
+                >
+                  <Github className="size-3.5" aria-hidden="true" />
+                  GitHub
+                </a>
+              </Button>
             )}
             {publicBase && (
-              <Link
-                href={`${publicBase}/feed.xml`}
-                className="control-button"
-                aria-label="RSS feed"
-              >
-                <Rss className="size-3.5" />
-                RSS
-              </Link>
+              <Button asChild variant="outline">
+                <Link
+                  href={`${publicBase}/feed.xml`}
+                  className="control-button"
+                  aria-label="RSS feed"
+                >
+                  <Rss className="size-3.5" />
+                  RSS
+                </Link>
+              </Button>
             )}
             {!zen && (
               <Popover open={optionsOpen} onOpenChange={setOptionsOpen}>
                 <PopoverTrigger asChild>
-                  <button
+                  <Button
+                    variant="outline"
                     ref={optionsTrigger}
                     type="button"
                     className="control-button"
                   >
                     <SlidersHorizontal className="size-3.5" />
                     Page options
-                  </button>
+                  </Button>
                 </PopoverTrigger>
                 <PopoverContent
                   align="end"
@@ -358,7 +372,9 @@ export function AppShell({
                     <p className="px-2 py-1 text-xs text-muted-foreground">
                       View
                     </p>
-                    <button
+                    <Button
+                      variant="ghost"
+                      className="justify-start"
                       type="button"
                       onClick={() => {
                         setOptionsOpen(false);
@@ -374,8 +390,10 @@ export function AppShell({
                       {mounted && fullWidth
                         ? "Constrain width"
                         : "Use full width"}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="justify-start"
                       type="button"
                       onClick={() => {
                         setOptionsOpen(false);
@@ -383,7 +401,7 @@ export function AppShell({
                       }}
                     >
                       <Check className="size-4" /> Enter zen mode
-                    </button>
+                    </Button>
                     <div className="my-1 border-t border-border" />
                     {!process.env.NEXT_PUBLIC_HIDE_DOCS && (
                       <a
@@ -403,9 +421,14 @@ export function AppShell({
                     />
                     {authEnabled &&
                       (isAuthenticated ? (
-                        <button type="button" onClick={() => logout()}>
+                        <Button
+                          variant="ghost"
+                          className="justify-start"
+                          type="button"
+                          onClick={() => logout()}
+                        >
                           <LogOut className="size-4" /> Sign out
-                        </button>
+                        </Button>
                       ) : (
                         <Link
                           href="/login"
@@ -432,16 +455,18 @@ export function AppShell({
           role="toolbar"
           aria-label="Zen mode controls"
         >
-          <button
+          <Button
+            variant="outline"
             type="button"
             className="control-button"
             onClick={toggleDensity}
             aria-label="Exit zen mode"
           >
             Exit zen <span className="text-muted-foreground">Esc</span>
-          </button>
+          </Button>
           {themeControl}
-          <button
+          <Button
+            variant="outline"
             type="button"
             className="control-button"
             onClick={toggleFullWidth}
@@ -452,7 +477,7 @@ export function AppShell({
             ) : (
               <Maximize className="size-4" />
             )}
-          </button>
+          </Button>
         </div>
       )}
     </div>
