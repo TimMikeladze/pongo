@@ -146,7 +146,7 @@ export default async function MonitorDetailPage({
             title="Availability history"
             description="Recorded checks in the selected time range."
           />
-          <div className="panel p-4">
+          <div className="panel p-3">
             <UptimeBars
               monitorId={id}
               monitorName={monitor.name}
@@ -197,7 +197,7 @@ export default async function MonitorDetailPage({
             title="Configuration"
             description={`Defined in pongo/monitors/${id}.ts. Edit the file and restart the scheduler to apply changes.`}
           />
-          <div className="panel grid grid-cols-2 md:grid-cols-3 gap-4 p-4 text-sm">
+          <div className="panel grid grid-cols-2 md:grid-cols-3 gap-3 p-3 text-sm">
             <div>
               <span className="text-muted-foreground">
                 {monitor.cron ? "schedule" : "interval"}
@@ -316,7 +316,7 @@ async function MonitorCharts({
   ]);
 
   return (
-    <div className="grid md:grid-cols-2 gap-4">
+    <div className="grid md:grid-cols-2 gap-3">
       <ChartCard
         title="response time"
         icon="activity"
@@ -359,7 +359,7 @@ async function MonitorRecentChecks({
           description="Select a wider range or start the scheduler to record checks."
         />
       ) : null}
-      <div className="panel px-4">
+      <div className="panel px-3">
         <div className="space-y-1">
           {results.slice(0, 10).map((result) => (
             <div
@@ -385,7 +385,7 @@ async function MonitorRecentChecks({
                   {result.errorMessage || result.status}
                 </span>
               </div>
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span>{result.responseTimeMs}ms</span>
                 <span>
                   {formatDistanceToNow(new Date(result.checkedAt), {
@@ -485,7 +485,7 @@ async function MonitorAlerts({
           {alerts.map((alert) => (
             <div
               key={alert.id}
-              className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+              className="flex flex-wrap items-center justify-between gap-3 px-3 py-2"
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium">{alert.name}</span>

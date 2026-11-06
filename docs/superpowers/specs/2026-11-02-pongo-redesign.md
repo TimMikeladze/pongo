@@ -6,7 +6,7 @@ Keep Pongo's actual data, configuration-as-code, authentication, range selection
 
 The visual reference is the approved status, incidents, maintenance and operator HTML mockups from the design review. Preserve their neutral surfaces, system sans typography, restrained green/amber/red status vocabulary, shared navigation, compact incident summaries and task-first operator layout. Monospace is reserved for measurement and code.
 
-Use one 1120px maximum content width and 24px desktop / 16px mobile gutters for header, main and footer. Dense default: 64px header, 24px section separation, 12–16px table/service rows and 20–24px history bars. Body text is 14px; supporting labels should normally be at least 12px. Keep a 32px minimum control height and accessible names/focus. Preserve the optional full-width and zen controls, applied consistently to the whole shell. Reserve scrollbar space so routes do not move sideways. No decorative rails, dotted background or glow effects.
+Use one 1120px maximum content width and 20px desktop / 16px mobile gutters for header, main and footer. Dense default: 48px header, 40px footer, 16px section separation, 8–12px table/service row padding and 20–24px history bars. Body text is 14px; supporting labels should normally be at least 12px. Keep 32px buttons and inputs (28px shell controls, 44px on touch) and accessible names/focus. Preserve the optional full-width and zen controls, applied consistently to the whole shell. Reserve scrollbar space so routes do not move sideways. No decorative rails, dotted background or glow effects.
 
 ## Page coverage
 

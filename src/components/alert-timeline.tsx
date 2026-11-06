@@ -82,7 +82,7 @@ export function AlertTimeline({
         const isDisabled = override?.disabled;
 
         return (
-          <div key={`${alertId}-${latestEvent.id}`} className="panel p-4">
+          <div key={`${alertId}-${latestEvent.id}`} className="panel p-3">
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex flex-wrap items-center gap-2">

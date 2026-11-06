@@ -290,7 +290,7 @@ export function MonitorTableView({
         </Table>
       </div>
       <div
-        className="flex justify-between gap-4 mt-3 text-xs text-muted-foreground"
+        className="flex justify-between gap-3 mt-3 text-xs text-muted-foreground"
         aria-live="polite"
       >
         <span>

@@ -65,7 +65,7 @@ export function IncidentCard({
   );
   if (!showUpdates)
     return (
-      <article className="flex flex-wrap items-center gap-3 border-b border-border py-4">
+      <article className="flex flex-wrap items-center gap-3 border-b border-border py-2.5">
         {summary}
       </article>
     );
@@ -77,7 +77,7 @@ export function IncidentCard({
       <CollapsibleTrigger asChild>
         <Button
           variant="ghost"
-          className="h-auto w-full justify-start whitespace-normal flex-wrap gap-3 px-1 py-4 text-left"
+          className="h-auto w-full justify-start whitespace-normal flex-wrap gap-3 px-1 py-2.5 text-left"
         >
           {summary}
           <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />

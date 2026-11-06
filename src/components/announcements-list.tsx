@@ -47,7 +47,7 @@ export async function AnnouncementsList({
         return (
           <div
             key={announcement.id}
-            className="panel flex items-start gap-3 p-4"
+            className="panel flex items-start gap-3 p-3"
           >
             <Icon
               className={`h-4 w-4 mt-0.5 shrink-0 ${typeStyles[announcement.type]}`}

@@ -265,7 +265,7 @@ export default async function OverviewPage({ searchParams }: Props) {
         description="Response times, availability and check volume"
       >
         <div className="page-stack">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             <ChartCard
               title="Response time"
               icon="activity"
@@ -281,7 +281,7 @@ export default async function OverviewPage({ searchParams }: Props) {
               <UptimeChart data={uptimeData} height={160} />
             </ChartCard>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             <ChartCard title="Error rate" icon="alert-triangle">
               <ErrorRateChart data={errorRateData} height={150} />
             </ChartCard>
@@ -289,7 +289,7 @@ export default async function OverviewPage({ searchParams }: Props) {
               <LatencyPercentilesChart data={latencyData} height={150} />
             </ChartCard>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             <ChartCard title="Check throughput" icon="zap">
               <ThroughputChart data={throughputData} height={150} />
             </ChartCard>

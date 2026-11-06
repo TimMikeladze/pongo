@@ -45,7 +45,7 @@ colors:
 typography:
   headline:
     fontFamily: "Geist, sans-serif"
-    fontSize: "26px"
+    fontSize: "22px"
     fontWeight: 620
     lineHeight: 1.25
     letterSpacing: "-0.035em"
@@ -67,7 +67,7 @@ typography:
     fontSize: "12px"
   measurement:
     fontFamily: "Geist Mono, monospace"
-    fontSize: "25px"
+    fontSize: "20px"
     fontWeight: 500
     lineHeight: 1.3
     letterSpacing: "-0.035em"
@@ -84,68 +84,68 @@ rounded:
 spacing:
   compact: "6px"
   control-gap: "8px"
-  row-gap: "12px"
-  panel-inset: "16px"
-  mobile-section: "20px"
-  section: "24px"
-  main-bottom: "36px"
+  row-gap: "10px"
+  panel-inset: "12px"
+  mobile-section: "14px"
+  section: "16px"
+  main-bottom: "24px"
 components:
   button-primary:
     backgroundColor: "{colors.dark-primary}"
     textColor: "{colors.dark-primary-foreground}"
     typography: "{typography.body}"
     rounded: "{rounded.base}"
-    padding: "8px 16px"
-    height: "36px"
+    padding: "6px 12px"
+    height: "32px"
   button-outline:
     backgroundColor: "{colors.dark-background}"
     textColor: "{colors.dark-foreground}"
     typography: "{typography.body}"
     rounded: "{rounded.base}"
-    padding: "8px 16px"
-    height: "36px"
+    padding: "6px 12px"
+    height: "32px"
   button-ghost:
     textColor: "{colors.dark-foreground}"
     typography: "{typography.body}"
     rounded: "{rounded.base}"
-    padding: "8px 16px"
-    height: "36px"
+    padding: "6px 12px"
+    height: "32px"
   shell-control:
     textColor: "{colors.dark-foreground}"
     typography: "{typography.label}"
     rounded: "{rounded.control}"
-    padding: "5px 10px"
-    height: "32px"
+    padding: "4px 8px"
+    height: "28px"
   monitor-search:
     backgroundColor: "{colors.dark-card}"
     textColor: "{colors.dark-foreground}"
     typography: "{typography.description}"
     rounded: "{rounded.control}"
     padding: "6px 10px 6px 34px"
-    height: "34px"
+    height: "32px"
   navigation-link:
     textColor: "{colors.dark-muted-foreground}"
     typography: "{typography.description}"
     rounded: "{rounded.navigation}"
-    padding: "6px 10px"
-    height: "32px"
+    padding: "4px 8px"
+    height: "28px"
   status-pill:
     backgroundColor: "{colors.dark-status-up-bg}"
     textColor: "{colors.dark-status-up}"
     typography: "{typography.label}"
     rounded: "{rounded.pill}"
-    padding: "3px 8px"
+    padding: "2px 7px"
   panel:
     backgroundColor: "{colors.dark-card}"
     textColor: "{colors.dark-foreground}"
     rounded: "{rounded.panel}"
   metric-strip:
     textColor: "{colors.dark-foreground}"
-    padding: "16px"
+    padding: "10px 14px"
   performance-disclosure:
     textColor: "{colors.dark-foreground}"
     typography: "{typography.title}"
-    padding: "15px 0"
+    padding: "10px 0"
 ---
 
 # Design System: Pongo
@@ -197,13 +197,13 @@ Background is the page canvas; card is a raised tonal surface; muted is the subt
 
 System sans is used for headings, controls and prose. System monospace is reserved for code, file names and numeric measurements. Font stacks and measured role values are in the frontmatter; no downloaded font is required.
 
-The root remains (16px), so the standard extra-small utility resolves to a readable label (12px). Body text is (14px). Page descriptions and table text are (13px); section titles are (15px). Page headings use the headline role, with a mobile size of (24px). Metric values use tabular numerals. Descriptions wrap at a maximum of (70ch), with empty-state copy limited to (60ch).
+The root remains (16px), so the standard extra-small utility resolves to a readable label (12px). Body text is (14px). Page descriptions and table text are (13px); section titles are (15px). Page headings use the headline role, with a mobile size of (20px). Metric values use tabular numerals. Descriptions wrap at a maximum of (70ch), with empty-state copy limited to (60ch).
 
 ## Layout
 
-Header, main, public tabs and footer use one centered container: `min(calc(100% - 2 * gutter), content-width)`. The normal maximum is (1120px), with gutters of (24px) and mobile gutters of (16px). Full width changes the shared maximum to (100%) while preserving those gutters. The shell fills at least the dynamic viewport height and reserves scrollbar space.
+Header, main, public tabs and footer use one centered container: `min(calc(100% - 2 * gutter), content-width)`. The normal maximum is (1120px), with gutters of (20px) and mobile gutters of (16px). Full width changes the shared maximum to (100%) while preserving those gutters. The shell fills at least the dynamic viewport height and reserves scrollbar space.
 
-The header has a minimum height of (64px). Its identity block pairs a (32px) logo with an (18px) wordmark and a (12px) context label below it. The secondary line defaults to `Demo deployment` and can be set with `NEXT_PUBLIC_HEADER_CAPTION`. It uses typography rather than a vertical divider; long names truncate within the same bounded block. Header controls are (36px), increasing to (44px) on mobile. Main content has top padding of (24px) and bottom padding of (36px). The normal section gap is (24px); mobile and dense mode use (20px). Footer content has a minimum height of (64px). Numeric strips distribute metrics into columns with a minimum of (140px), becoming two columns on mobile.
+The header has a minimum height of (48px). Its identity block pairs a (24px) logo with a (14px) wordmark and an (11px) context label below it. The secondary line defaults to `Demo deployment` and can be set with `NEXT_PUBLIC_HEADER_CAPTION`. It uses typography rather than a vertical divider; long names truncate within the same bounded block. Header controls are (32px), increasing to (44px) on mobile. Main content has top padding of (16px) and bottom padding of (24px). The normal section gap is (16px); mobile uses (14px) and dense mode (12px). Footer content has a minimum height of (40px) with a (16px) logo. Numeric strips distribute metrics into columns with a minimum of (140px), becoming two columns on mobile.
 
 At widths up to (900px), brand and controls remain on the first row and operator navigation wraps below with horizontal overflow. At widths up to (640px), navigation icons disappear, nav labels use (12px) with inline padding of (8px), headings wrap, monitor search fills its row, and monitor table rows become compact groups with visible numeric labels. Alert rows also reflow into labeled groups with visible state, time, duration and rule actions. Other wide tables scroll within their container.
 
@@ -223,13 +223,13 @@ Panels, chart surfaces, notices and empty states share rounded corners and a uni
 
 ### Buttons and fields
 
-Primary, outline and ghost buttons preserve their existing component variants. Standard library buttons are (36px) tall; small and shell controls have a minimum height of (32px). Shell controls use an outlined neutral surface, selected/hover fill, and compact text. Search fields use the shared shadcn InputGroup, a leading icon and reserved space for a clear action. They are (36px) tall on desktop and at least (44px) on touch devices. Filters use a bordered group and a filled selected state; mobile groups can wrap. On coarse pointers, actions, selectors and menu items have (44px) targets. Calendar dates and history bars retain compact grid cells.
+Primary, outline and ghost buttons preserve their existing component variants. Standard library buttons, inputs and selects are (32px) tall; small and shell controls have a minimum height of (28px). Shell controls use an outlined neutral surface, selected/hover fill, and compact text. Search fields use the shared shadcn InputGroup, a leading icon and reserved space for a clear action. They are (32px) tall on desktop and at least (44px) on touch devices. Filters use a bordered group and a filled selected state; mobile groups can wrap. On coarse pointers, actions, selectors and menu items have (44px) targets. Calendar dates and history bars retain compact grid cells.
 
 The global focus treatment is a ring-colored outline (2px) offset by (3px). Library fields and buttons retain their own focus border/ring states and invalid/disabled styling. Every icon-only action needs an accessible name. The skip link becomes visible on keyboard focus and targets the main region.
 
 ### Navigation
 
-Operator links use muted labels and a filled surface for the current route. Public Status, Incidents, Maintenance and Updates tabs use a structural bottom divider, a minimum tab height of (44px), and an active underline. The shell supplies brand, theme and feed actions.
+Operator links use muted labels and a filled surface for the current route. Public Status, Incidents, Maintenance and Updates tabs use a structural bottom divider, a minimum tab height of (36px), and an active underline. The shell supplies brand, theme and feed actions.
 
 ### Status and availability
 

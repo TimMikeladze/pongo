@@ -79,7 +79,7 @@ for (const width of [390, 768, 1440]) {
         expect(
           (table?.y ?? 0) - ((toolbar?.y ?? 0) + (toolbar?.height ?? 0)),
           `${route} filter spacing`,
-        ).toBeGreaterThanOrEqual(16);
+        ).toBeGreaterThanOrEqual(10);
       }
       expect(bounds[0]?.width, route).toBe(
         Math.min(1120, geometry.width - geometry.gutter * 2),

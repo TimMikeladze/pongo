@@ -85,31 +85,31 @@ export function AlertTable({
           >
             <TableHead
               scope="col"
-              className="text-left px-3 py-3 font-medium w-10"
+              className="text-left px-3 py-2 font-medium w-10"
             >
               <span className="sr-only">Snapshot</span>
             </TableHead>
-            <TableHead scope="col" className="text-left px-3 py-3 font-medium">
+            <TableHead scope="col" className="text-left px-3 py-2 font-medium">
               Alert
             </TableHead>
-            <TableHead scope="col" className="text-left px-3 py-3 font-medium">
+            <TableHead scope="col" className="text-left px-3 py-2 font-medium">
               Monitor
             </TableHead>
-            <TableHead scope="col" className="text-left px-3 py-3 font-medium">
+            <TableHead scope="col" className="text-left px-3 py-2 font-medium">
               Status
             </TableHead>
-            <TableHead scope="col" className="text-left px-3 py-3 font-medium">
+            <TableHead scope="col" className="text-left px-3 py-2 font-medium">
               Triggered
             </TableHead>
-            <TableHead scope="col" className="text-left px-3 py-3 font-medium">
+            <TableHead scope="col" className="text-left px-3 py-2 font-medium">
               Resolved
             </TableHead>
-            <TableHead scope="col" className="text-left px-3 py-3 font-medium">
+            <TableHead scope="col" className="text-left px-3 py-2 font-medium">
               Duration
             </TableHead>
             <TableHead
               scope="col"
-              className="text-left px-3 py-3 font-medium w-10"
+              className="text-left px-3 py-2 font-medium w-10"
             >
               <span className="sr-only">Actions</span>
             </TableHead>
@@ -287,7 +287,7 @@ export function AlertTable({
                         <p className="font-medium text-foreground">
                           Snapshot at trigger:
                         </p>
-                        <pre className="bg-secondary/50 px-3 py-3 rounded overflow-auto">
+                        <pre className="bg-secondary/50 px-3 py-2 rounded overflow-auto">
                           {JSON.stringify(event.snapshot, null, 2)}
                         </pre>
                       </div>

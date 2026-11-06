@@ -63,7 +63,7 @@ export default async function NotificationsPage({ searchParams }: PageProps) {
             {Object.entries(channels).map(([name, channel]) => (
               <div
                 key={name}
-                className="flex items-center justify-between gap-4 px-4 py-4"
+                className="flex items-center justify-between gap-3 px-3 py-2.5"
               >
                 <span className="text-sm font-medium">{name}</span>
                 <span className="text-xs text-muted-foreground">

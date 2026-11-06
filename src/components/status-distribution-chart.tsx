@@ -57,7 +57,7 @@ export function StatusDistributionChart({
   const total = chartData.reduce((acc, d) => acc + d.value, 0);
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-3">
       <ResponsiveContainer width="50%" height={height}>
         <PieChart>
           <Pie

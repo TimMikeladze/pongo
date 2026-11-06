@@ -125,7 +125,7 @@ export function UptimeDisplay({
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="py-4">
+      <div className="py-2.5">
         <div className="service-history-header">
           <span className="text-sm font-semibold break-words min-w-0">
             {monitorName}
@@ -368,7 +368,7 @@ export function UptimeDisplay({
                   aria-label={`${monitorName} history inspection`}
                   align="center"
                   collisionPadding={16}
-                  className="w-[min(22rem,calc(100vw-32px))] max-h-[min(80dvh,var(--radix-popover-content-available-height))] overflow-y-auto p-4 sm:hidden"
+                  className="w-[min(22rem,calc(100vw-32px))] max-h-[min(80dvh,var(--radix-popover-content-available-height))] overflow-y-auto p-3 sm:hidden"
                 >
                   <h3 className="text-sm font-semibold">
                     {monitorName} history

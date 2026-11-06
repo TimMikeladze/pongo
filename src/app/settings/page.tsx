@@ -23,7 +23,7 @@ export default function SettingsPage() {
         />
         <div className="panel overflow-hidden">
           <dl className="divide-y divide-border">
-            <div className="grid gap-1 px-4 py-4 sm:grid-cols-[180px_1fr]">
+            <div className="grid gap-1 px-3 py-2.5 sm:grid-cols-[180px_1fr]">
               <dt className="text-sm font-medium">Monitors</dt>
               <dd className="text-sm text-muted-foreground">
                 <code className="text-xs">pongo/monitors/</code>
@@ -32,7 +32,7 @@ export default function SettingsPage() {
                 </p>
               </dd>
             </div>
-            <div className="grid gap-1 px-4 py-4 sm:grid-cols-[180px_1fr]">
+            <div className="grid gap-1 px-3 py-2.5 sm:grid-cols-[180px_1fr]">
               <dt className="text-sm font-medium">Dashboards</dt>
               <dd className="text-sm text-muted-foreground">
                 <code className="text-xs">pongo/dashboards/</code>
@@ -41,7 +41,7 @@ export default function SettingsPage() {
                 </p>
               </dd>
             </div>
-            <div className="grid gap-1 px-4 py-4 sm:grid-cols-[180px_1fr]">
+            <div className="grid gap-1 px-3 py-2.5 sm:grid-cols-[180px_1fr]">
               <dt className="text-sm font-medium">Notifications</dt>
               <dd className="text-sm text-muted-foreground">
                 <code className="text-xs">pongo/channels.ts</code>

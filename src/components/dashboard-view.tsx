@@ -166,7 +166,7 @@ export async function DashboardView({
             description="This dashboard has no monitors yet."
           />
         ) : (
-          <div className="panel divide-y divide-border px-4">
+          <div className="panel divide-y divide-border px-3">
             {monitors.map((monitor) => (
               <UptimeBars
                 key={monitor.id}
@@ -217,7 +217,7 @@ export async function DashboardView({
           description="Response times and error rates · expand to inspect"
           className="panel"
         >
-          <div className="space-y-5 border-t border-border p-4">
+          <div className="space-y-3 border-t border-border p-3">
             {measurements.checkCount === 0 ? (
               <EmptyState
                 variant="plain"
@@ -229,7 +229,7 @@ export async function DashboardView({
                 <section key={monitor.id} className="space-y-3">
                   <h3 className="text-sm font-medium">{monitor.name}</h3>
                   {dashboardMeasurements([checks[index]]).checkCount ? (
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-3 md:grid-cols-2">
                       <div>
                         <p className="mb-2 text-xs text-muted-foreground">
                           Response time

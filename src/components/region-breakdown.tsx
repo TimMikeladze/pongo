@@ -21,7 +21,7 @@ export function RegionBreakdown({ stats }: RegionBreakdownProps) {
         title="Regions"
         description={`${healthyCount} of ${totalCount} regions operational`}
       />
-      <div className="panel px-4">
+      <div className="panel px-3">
         {stats.map((stat) => (
           <div
             key={stat.region}
@@ -31,7 +31,7 @@ export function RegionBreakdown({ stats }: RegionBreakdownProps) {
               <StatusBadge status={stat.status} size="sm" showLabel />
               <span className="text-sm">{stat.region}</span>
             </div>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <span className="tabular-nums">
                 {stat.lastCheck ? `${stat.avgResponseTime} ms` : "—"}
               </span>

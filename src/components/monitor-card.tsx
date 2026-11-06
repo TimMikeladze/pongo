@@ -32,7 +32,7 @@ export async function MonitorCard({
   const status = latestResult?.status ?? "pending";
 
   return (
-    <div className="group border border-border rounded bg-card hover:border-primary/30 transition-colors p-4">
+    <div className="group border border-border rounded bg-card hover:border-primary/30 transition-colors p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2 flex-1 min-w-0">
           <div className="mt-1">
@@ -63,7 +63,7 @@ export async function MonitorCard({
       </div>
 
       {/* Stats row */}
-      <div className="flex items-center gap-4 border-t border-border/50 text-[10px] mt-4 pt-3">
+      <div className="flex items-center gap-3 border-t border-border/50 text-[10px] mt-3 pt-2">
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground">uptime</span>
           <span

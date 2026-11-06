@@ -45,7 +45,7 @@ export async function MaintenanceSchedule({
           const start = new Date(window.scheduledStart);
           const end = new Date(window.scheduledEnd);
           return (
-            <article key={window.id} className="panel space-y-3 p-4">
+            <article key={window.id} className="panel space-y-3 p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="text-sm font-medium">{window.title}</h3>
                 <Badge

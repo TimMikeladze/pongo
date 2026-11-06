@@ -26,7 +26,7 @@ export async function SLAStatus({ dashboardId, timeRange }: SLAStatusProps) {
   const met = uptime !== null && uptime >= dashboard.slaTarget;
   return (
     <section
-      className="panel flex flex-wrap items-center justify-between gap-3 p-4"
+      className="panel flex flex-wrap items-center justify-between gap-3 p-3"
       aria-label="SLA status"
     >
       <div>

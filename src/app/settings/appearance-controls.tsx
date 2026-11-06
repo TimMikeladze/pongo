@@ -15,7 +15,7 @@ export function AppearanceControls() {
     useTheme();
   return (
     <div className="divide-y divide-border">
-      <div className="flex flex-wrap items-center justify-between gap-3 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 py-2.5">
         <div>
           <Label htmlFor="appearance-theme" className="text-sm font-medium">
             Theme
@@ -40,7 +40,7 @@ export function AppearanceControls() {
           </SelectContent>
         </Select>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-3 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 py-2.5">
         <div>
           <Label htmlFor="appearance-density" className="text-sm font-medium">
             View mode
@@ -63,7 +63,7 @@ export function AppearanceControls() {
           </SelectContent>
         </Select>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-3 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 py-2.5">
         <div>
           <Label htmlFor="appearance-width" className="text-sm font-medium">
             Content width

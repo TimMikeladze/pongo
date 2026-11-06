@@ -37,7 +37,7 @@ export function PublicDashboardsList({
             <Link
               key={dashboard.id}
               href={`/shared/${dashboard.slug}`}
-              className="flex items-center justify-between gap-3 px-4 py-4 hover:bg-muted/40"
+              className="flex items-center justify-between gap-3 px-3 py-2.5 hover:bg-muted/40"
             >
               <div>
                 <h2 className="text-sm font-medium">{dashboard.name}</h2>

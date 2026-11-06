@@ -6,7 +6,7 @@ export function AlertBanner({ firingAlerts }: { firingAlerts: FiringAlert[] }) {
   if (!firingAlerts.length) return null;
   return (
     <div
-      className="notice flex flex-wrap items-center gap-3 border border-amber-500/30 bg-amber-500/5 p-4"
+      className="notice flex flex-wrap items-center gap-3 border border-amber-500/30 bg-amber-500/5 p-3"
       role="status"
     >
       <AlertTriangle
