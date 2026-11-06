@@ -2,47 +2,36 @@ import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import type { FiringAlert } from "@/lib/data";
 
-interface AlertBannerProps {
-  firingAlerts: FiringAlert[];
-}
-
-export function AlertBanner({ firingAlerts }: AlertBannerProps) {
-  if (firingAlerts.length === 0) {
-    return null;
-  }
-
+export function AlertBanner({ firingAlerts }: { firingAlerts: FiringAlert[] }) {
+  if (!firingAlerts.length) return null;
   return (
-    <div className="bg-red-500/10 border border-red-500/30 rounded p-3 mb-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 text-red-700 dark:text-red-400" />
-          <span className="text-sm text-red-700 dark:text-red-400 font-medium">
-            {firingAlerts.length} alert{firingAlerts.length > 1 ? "s" : ""}{" "}
-            currently firing
-          </span>
-        </div>
-        <Link
-          href="#firing"
-          className="text-xs text-red-700 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
-        >
-          View
-        </Link>
+    <div
+      className="notice flex flex-wrap items-center gap-3 border border-amber-500/30 bg-amber-500/5 p-3"
+      role="status"
+    >
+      <AlertTriangle
+        className="h-4 w-4 shrink-0 text-amber-700 dark:text-amber-400"
+        aria-hidden="true"
+      />
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium">
+          {firingAlerts.length} alert{firingAlerts.length === 1 ? "" : "s"}{" "}
+          currently firing
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {firingAlerts
+            .slice(0, 3)
+            .map((alert) => alert.monitorName)
+            .join(" · ")}
+          {firingAlerts.length > 3 ? ` · +${firingAlerts.length - 3} more` : ""}
+        </p>
       </div>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {firingAlerts.slice(0, 3).map((alert) => (
-          <span
-            key={alert.alertId}
-            className="text-[10px] px-2 py-0.5 bg-red-500/20 rounded text-red-700 dark:text-red-400"
-          >
-            {alert.alertId}
-          </span>
-        ))}
-        {firingAlerts.length > 3 && (
-          <span className="text-[10px] text-red-700/70 dark:text-red-400/70">
-            +{firingAlerts.length - 3} more
-          </span>
-        )}
-      </div>
+      <Link
+        href={`/monitors/${encodeURIComponent(firingAlerts[0].monitorId)}`}
+        className="inline-flex min-h-8 items-center text-sm underline underline-offset-4"
+      >
+        Investigate
+      </Link>
     </div>
   );
 }

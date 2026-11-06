@@ -3,6 +3,7 @@
 import { Moon, Sun, SunMoon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTheme } from "@/components/theme-provider";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,20 +21,22 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <button
+      <Button
+        variant="ghost"
         type="button"
         className="p-1.5 rounded text-muted-foreground"
         title="Toggle theme"
       >
         <span className="h-3.5 w-3.5" />
-      </button>
+      </Button>
     );
   }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
+        <Button
+          variant="ghost"
           type="button"
           className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors"
           title="Toggle theme"
@@ -43,7 +46,7 @@ export function ThemeToggle() {
           ) : (
             <Sun className="h-3.5 w-3.5" />
           )}
-        </button>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[120px]">
         <DropdownMenuItem

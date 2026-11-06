@@ -3,6 +3,7 @@
 import { Maximize2, Minimize2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTheme } from "@/components/theme-provider";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function DensityToggle() {
@@ -15,17 +16,19 @@ export function DensityToggle() {
 
   if (!mounted) {
     return (
-      <button
+      <Button
+        variant="ghost"
         type="button"
         className="p-1.5 text-muted-foreground rounded hover:bg-secondary"
       >
         <Maximize2 className="h-3.5 w-3.5" />
-      </button>
+      </Button>
     );
   }
 
   return (
-    <button
+    <Button
+      variant="ghost"
       type="button"
       onClick={toggleDensity}
       className={cn(
@@ -39,6 +42,6 @@ export function DensityToggle() {
       ) : (
         <Minimize2 className="h-3.5 w-3.5" />
       )}
-    </button>
+    </Button>
   );
 }

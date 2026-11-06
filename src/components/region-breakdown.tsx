@@ -1,5 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import type { RegionStats } from "@/lib/data";
+import { SectionHeading } from "./page-layout";
 import { StatusBadge } from "./status-badge";
 
 interface RegionBreakdownProps {
@@ -15,28 +16,28 @@ export function RegionBreakdown({ stats }: RegionBreakdownProps) {
   const totalCount = stats.length;
 
   return (
-    <div className="border border-border rounded bg-card p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground">
-          regions
-        </h3>
-        <span className="text-xs text-muted-foreground">
-          {healthyCount}/{totalCount} healthy
-        </span>
-      </div>
-      <div className="space-y-2">
+    <section>
+      <SectionHeading
+        title="Regions"
+        description={`${healthyCount} of ${totalCount} regions operational`}
+      />
+      <div className="panel px-3">
         {stats.map((stat) => (
           <div
             key={stat.region}
-            className="flex items-center justify-between py-2 border-b border-border last:border-0"
+            className="flex flex-wrap items-center justify-between gap-3 py-3 border-b border-border last:border-0"
           >
             <div className="flex items-center gap-3">
-              <StatusBadge status={stat.status} size="sm" />
-              <span className="text-xs font-mono">{stat.region}</span>
+              <StatusBadge status={stat.status} size="sm" showLabel />
+              <span className="text-sm">{stat.region}</span>
             </div>
-            <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
-              <span>{stat.avgResponseTime}ms</span>
-              <span>{stat.uptime}%</span>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="tabular-nums">
+                {stat.lastCheck ? `${stat.avgResponseTime} ms` : "—"}
+              </span>
+              <span className="tabular-nums">
+                {stat.lastCheck ? `${stat.uptime}%` : "—"}
+              </span>
               <span>
                 {stat.lastCheck
                   ? formatDistanceToNow(stat.lastCheck, { addSuffix: true })
@@ -46,6 +47,6 @@ export function RegionBreakdown({ stats }: RegionBreakdownProps) {
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

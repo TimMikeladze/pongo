@@ -1,11 +1,13 @@
 import { format, formatDistanceToNow } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
-import { Bell, BellOff, PowerOff } from "lucide-react";
+import { BellOff, Circle, PowerOff } from "lucide-react";
+import Link from "next/link";
 import type { AlertOverride } from "@/db";
 import type { AlertEventWithMonitor } from "@/lib/data";
 import type { AlertSeverity } from "@/scheduler/alerts/types";
 import { AlertActions } from "./alert-actions";
 import { AlertSeverityBadge } from "./alert-severity-badge";
+import { EmptyState } from "./page-layout";
 
 interface AlertTimelineProps {
   events: AlertEventWithMonitor[];
@@ -27,7 +29,10 @@ function formatSnapshot(snapshot: Record<string, unknown> | null): string {
   if (snapshot.consecutiveFailures) {
     return `${snapshot.consecutiveFailures} consecutive failures`;
   }
-  if (snapshot.lastResponseTimeMs) {
+  if (
+    snapshot.lastResponseTimeMs !== null &&
+    snapshot.lastResponseTimeMs !== undefined
+  ) {
     return `latency: ${snapshot.lastResponseTimeMs}ms`;
   }
   if (snapshot.lastMessage) {
@@ -43,12 +48,10 @@ export function AlertTimeline({
 }: AlertTimelineProps) {
   if (events.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 border border-dashed border-border rounded">
-        <Bell className="h-6 w-6 text-muted-foreground mb-3" />
-        <p className="text-xs text-muted-foreground">
-          no alert activity in this time range
-        </p>
-      </div>
+      <EmptyState
+        title="No alert activity in this time range"
+        description="Alert events appear here when a configured rule fires or resolves."
+      />
     );
   }
 
@@ -79,35 +82,39 @@ export function AlertTimeline({
         const isDisabled = override?.disabled;
 
         return (
-          <div
-            key={`${alertId}-${latestEvent.id}`}
-            className="border border-border rounded bg-card p-4"
-          >
+          <div key={`${alertId}-${latestEvent.id}`} className="panel p-3">
             <div className="flex items-start justify-between">
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{alertId}</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium">
+                    {latestEvent.alertName || alertId}
+                  </span>
                   <AlertSeverityBadge severity={severity} />
                   {isFiring && (
-                    <span className="text-[10px] px-1.5 py-0.5 bg-red-500/20 text-red-700 dark:text-red-400 rounded">
-                      FIRING
+                    <span className="text-xs px-1.5 py-0.5 bg-red-500/10 text-red-700 dark:text-red-400 rounded">
+                      Firing
                     </span>
                   )}
                   {isSilenced && (
-                    <span className="text-[10px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded flex items-center gap-1">
+                    <span className="text-xs px-1.5 py-0.5 bg-muted text-muted-foreground rounded flex items-center gap-1">
                       <BellOff className="h-2.5 w-2.5" />
                       silenced
                     </span>
                   )}
                   {isDisabled && (
-                    <span className="text-[10px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded flex items-center gap-1">
+                    <span className="text-xs px-1.5 py-0.5 bg-muted text-muted-foreground rounded flex items-center gap-1">
                       <PowerOff className="h-2.5 w-2.5" />
                       disabled
                     </span>
                   )}
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  {latestEvent.monitorName}
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  <Link
+                    href={`/monitors/${encodeURIComponent(latestEvent.monitorId)}`}
+                    className="underline-offset-4 hover:underline"
+                  >
+                    {latestEvent.monitorName}
+                  </Link>
                 </p>
               </div>
               <AlertActions alertId={alertId} override={override} />
@@ -115,21 +122,24 @@ export function AlertTimeline({
 
             <div className="mt-3 space-y-2">
               {alertEvents.slice(0, 5).map((event) => (
-                <div
-                  key={event.id}
-                  className="flex items-start gap-2 text-[10px]"
-                >
+                <div key={event.id} className="flex items-start gap-2 text-xs">
                   {event.eventType === "fired" ? (
                     <span className="text-red-700 dark:text-red-400 mt-0.5">
-                      ●
+                      <Circle
+                        className="h-2 w-2 fill-current"
+                        aria-hidden="true"
+                      />
                     </span>
                   ) : (
                     <span className="text-green-700 dark:text-green-400 mt-0.5">
-                      ●
+                      <Circle
+                        className="h-2 w-2 fill-current"
+                        aria-hidden="true"
+                      />
                     </span>
                   )}
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span
                         className={
                           event.eventType === "fired"
@@ -149,7 +159,7 @@ export function AlertTimeline({
                         {" · "}
                         {format(event.triggeredAt, "h:mm a")} Local
                       </span>
-                      {event.duration && (
+                      {event.duration !== null && (
                         <span className="text-muted-foreground">
                           duration: {formatDuration(event.duration)}
                         </span>
@@ -164,12 +174,15 @@ export function AlertTimeline({
                 </div>
               ))}
               {!latestEvent.resolvedAt && latestEvent.eventType === "fired" && (
-                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span className="text-yellow-600 dark:text-yellow-400 mt-0.5">
-                    ●
+                    <Circle
+                      className="h-2 w-2 fill-current"
+                      aria-hidden="true"
+                    />
                   </span>
                   <span>
-                    ongoing... ({formatDistanceToNow(latestEvent.triggeredAt)})
+                    Ongoing ({formatDistanceToNow(latestEvent.triggeredAt)})
                   </span>
                 </div>
               )}

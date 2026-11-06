@@ -1,0 +1,733 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-02T17:32:43.120691Z",
+  "title": "Design System: Pongo",
+  "extensions": {
+    "colorMeta": {
+      "dark-background": {
+        "role": "neutral",
+        "displayName": "Dark background",
+        "tonalRamp": [
+          "oklch(0.150 0.0010 248.11)",
+          "oklch(0.250 0.0031 248.11)",
+          "oklch(0.370 0.0052 248.11)",
+          "oklch(0.490 0.0052 248.11)",
+          "oklch(0.610 0.0052 248.11)",
+          "oklch(0.730 0.0052 248.11)",
+          "oklch(0.850 0.0039 248.11)",
+          "oklch(0.950 0.0013 248.11)"
+        ]
+      },
+      "dark-foreground": {
+        "role": "neutral",
+        "displayName": "Dark foreground",
+        "tonalRamp": [
+          "oklch(0.150 0.0007 219.53)",
+          "oklch(0.250 0.0021 219.53)",
+          "oklch(0.370 0.0035 219.53)",
+          "oklch(0.490 0.0035 219.53)",
+          "oklch(0.610 0.0035 219.53)",
+          "oklch(0.730 0.0035 219.53)",
+          "oklch(0.850 0.0026 219.53)",
+          "oklch(0.950 0.0009 219.53)"
+        ]
+      },
+      "dark-card": {
+        "role": "neutral",
+        "displayName": "Dark card",
+        "tonalRamp": [
+          "oklch(0.150 0.0015 248.16)",
+          "oklch(0.250 0.0044 248.16)",
+          "oklch(0.370 0.0074 248.16)",
+          "oklch(0.490 0.0074 248.16)",
+          "oklch(0.610 0.0074 248.16)",
+          "oklch(0.730 0.0074 248.16)",
+          "oklch(0.850 0.0056 248.16)",
+          "oklch(0.950 0.0019 248.16)"
+        ]
+      },
+      "dark-muted": {
+        "role": "neutral",
+        "displayName": "Dark muted",
+        "tonalRamp": [
+          "oklch(0.150 0.0012 236.87)",
+          "oklch(0.250 0.0037 236.87)",
+          "oklch(0.370 0.0061 236.87)",
+          "oklch(0.490 0.0061 236.87)",
+          "oklch(0.610 0.0061 236.87)",
+          "oklch(0.730 0.0061 236.87)",
+          "oklch(0.850 0.0046 236.87)",
+          "oklch(0.950 0.0015 236.87)"
+        ]
+      },
+      "dark-muted-foreground": {
+        "role": "neutral",
+        "displayName": "Dark muted foreground",
+        "tonalRamp": [
+          "oklch(0.150 0.0031 244.79)",
+          "oklch(0.250 0.0093 244.79)",
+          "oklch(0.370 0.0154 244.79)",
+          "oklch(0.490 0.0154 244.79)",
+          "oklch(0.610 0.0154 244.79)",
+          "oklch(0.730 0.0154 244.79)",
+          "oklch(0.850 0.0116 244.79)",
+          "oklch(0.950 0.0039 244.79)"
+        ]
+      },
+      "dark-accent": {
+        "role": "neutral",
+        "displayName": "Dark accent",
+        "tonalRamp": [
+          "oklch(0.150 0.0019 248.20)",
+          "oklch(0.250 0.0057 248.20)",
+          "oklch(0.370 0.0095 248.20)",
+          "oklch(0.490 0.0095 248.20)",
+          "oklch(0.610 0.0095 248.20)",
+          "oklch(0.730 0.0095 248.20)",
+          "oklch(0.850 0.0071 248.20)",
+          "oklch(0.950 0.0024 248.20)"
+        ]
+      },
+      "dark-border": {
+        "role": "neutral",
+        "displayName": "Dark border",
+        "tonalRamp": [
+          "oklch(0.150 0.0024 243.19)",
+          "oklch(0.250 0.0073 243.19)",
+          "oklch(0.370 0.0121 243.19)",
+          "oklch(0.490 0.0121 243.19)",
+          "oklch(0.610 0.0121 243.19)",
+          "oklch(0.730 0.0121 243.19)",
+          "oklch(0.850 0.0091 243.19)",
+          "oklch(0.950 0.0030 243.19)"
+        ]
+      },
+      "dark-primary": {
+        "role": "primary",
+        "displayName": "Dark primary",
+        "tonalRamp": [
+          "oklch(0.150 0.0012 153.77)",
+          "oklch(0.250 0.0035 153.77)",
+          "oklch(0.370 0.0059 153.77)",
+          "oklch(0.490 0.0059 153.77)",
+          "oklch(0.610 0.0059 153.77)",
+          "oklch(0.730 0.0059 153.77)",
+          "oklch(0.850 0.0044 153.77)",
+          "oklch(0.950 0.0015 153.77)"
+        ]
+      },
+      "dark-primary-foreground": {
+        "role": "primary",
+        "displayName": "Dark primary foreground",
+        "tonalRamp": [
+          "oklch(0.150 0.0037 158.35)",
+          "oklch(0.250 0.0110 158.35)",
+          "oklch(0.370 0.0183 158.35)",
+          "oklch(0.490 0.0183 158.35)",
+          "oklch(0.610 0.0183 158.35)",
+          "oklch(0.730 0.0183 158.35)",
+          "oklch(0.850 0.0137 158.35)",
+          "oklch(0.950 0.0046 158.35)"
+        ]
+      },
+      "dark-status-up": {
+        "role": "primary",
+        "displayName": "Dark status up",
+        "tonalRamp": [
+          "oklch(0.150 0.0212 166.15)",
+          "oklch(0.250 0.0637 166.15)",
+          "oklch(0.370 0.1062 166.15)",
+          "oklch(0.490 0.1062 166.15)",
+          "oklch(0.610 0.1062 166.15)",
+          "oklch(0.730 0.1062 166.15)",
+          "oklch(0.850 0.0797 166.15)",
+          "oklch(0.950 0.0266 166.15)"
+        ]
+      },
+      "dark-status-up-bg": {
+        "role": "primary",
+        "displayName": "Dark status up bg",
+        "tonalRamp": [
+          "oklch(0.150 0.0078 171.28)",
+          "oklch(0.250 0.0234 171.28)",
+          "oklch(0.370 0.0391 171.28)",
+          "oklch(0.490 0.0391 171.28)",
+          "oklch(0.610 0.0391 171.28)",
+          "oklch(0.730 0.0391 171.28)",
+          "oklch(0.850 0.0293 171.28)",
+          "oklch(0.950 0.0098 171.28)"
+        ]
+      },
+      "dark-status-down": {
+        "role": "secondary",
+        "displayName": "Dark status down",
+        "tonalRamp": [
+          "oklch(0.150 0.0222 19.94)",
+          "oklch(0.250 0.0667 19.94)",
+          "oklch(0.370 0.1112 19.94)",
+          "oklch(0.490 0.1112 19.94)",
+          "oklch(0.610 0.1112 19.94)",
+          "oklch(0.730 0.1112 19.94)",
+          "oklch(0.850 0.0834 19.94)",
+          "oklch(0.950 0.0278 19.94)"
+        ]
+      },
+      "dark-status-down-bg": {
+        "role": "secondary",
+        "displayName": "Dark status down bg",
+        "tonalRamp": [
+          "oklch(0.150 0.0085 17.60)",
+          "oklch(0.250 0.0256 17.60)",
+          "oklch(0.370 0.0427 17.60)",
+          "oklch(0.490 0.0427 17.60)",
+          "oklch(0.610 0.0427 17.60)",
+          "oklch(0.730 0.0427 17.60)",
+          "oklch(0.850 0.0320 17.60)",
+          "oklch(0.950 0.0107 17.60)"
+        ]
+      },
+      "dark-status-degraded": {
+        "role": "secondary",
+        "displayName": "Dark status degraded",
+        "tonalRamp": [
+          "oklch(0.150 0.0208 78.35)",
+          "oklch(0.250 0.0623 78.35)",
+          "oklch(0.370 0.1038 78.35)",
+          "oklch(0.490 0.1038 78.35)",
+          "oklch(0.610 0.1038 78.35)",
+          "oklch(0.730 0.1038 78.35)",
+          "oklch(0.850 0.0778 78.35)",
+          "oklch(0.950 0.0259 78.35)"
+        ]
+      },
+      "dark-status-degraded-bg": {
+        "role": "secondary",
+        "displayName": "Dark status degraded bg",
+        "tonalRamp": [
+          "oklch(0.150 0.0071 78.48)",
+          "oklch(0.250 0.0212 78.48)",
+          "oklch(0.370 0.0354 78.48)",
+          "oklch(0.490 0.0354 78.48)",
+          "oklch(0.610 0.0354 78.48)",
+          "oklch(0.730 0.0354 78.48)",
+          "oklch(0.850 0.0265 78.48)",
+          "oklch(0.950 0.0088 78.48)"
+        ]
+      },
+      "dark-status-pending": {
+        "role": "secondary",
+        "displayName": "Dark status pending",
+        "tonalRamp": [
+          "oklch(0.150 0.0031 244.79)",
+          "oklch(0.250 0.0093 244.79)",
+          "oklch(0.370 0.0154 244.79)",
+          "oklch(0.490 0.0154 244.79)",
+          "oklch(0.610 0.0154 244.79)",
+          "oklch(0.730 0.0154 244.79)",
+          "oklch(0.850 0.0116 244.79)",
+          "oklch(0.950 0.0039 244.79)"
+        ]
+      },
+      "dark-status-pending-bg": {
+        "role": "secondary",
+        "displayName": "Dark status pending bg",
+        "tonalRamp": [
+          "oklch(0.150 0.0019 248.20)",
+          "oklch(0.250 0.0057 248.20)",
+          "oklch(0.370 0.0095 248.20)",
+          "oklch(0.490 0.0095 248.20)",
+          "oklch(0.610 0.0095 248.20)",
+          "oklch(0.730 0.0095 248.20)",
+          "oklch(0.850 0.0071 248.20)",
+          "oklch(0.950 0.0024 248.20)"
+        ]
+      },
+      "dark-status-scheduled": {
+        "role": "secondary",
+        "displayName": "Dark status scheduled",
+        "tonalRamp": [
+          "oklch(0.150 0.0167 271.54)",
+          "oklch(0.250 0.0500 271.54)",
+          "oklch(0.370 0.0834 271.54)",
+          "oklch(0.490 0.0834 271.54)",
+          "oklch(0.610 0.0834 271.54)",
+          "oklch(0.730 0.0834 271.54)",
+          "oklch(0.850 0.0625 271.54)",
+          "oklch(0.950 0.0208 271.54)"
+        ]
+      },
+      "dark-status-scheduled-bg": {
+        "role": "secondary",
+        "displayName": "Dark status scheduled bg",
+        "tonalRamp": [
+          "oklch(0.150 0.0080 266.25)",
+          "oklch(0.250 0.0240 266.25)",
+          "oklch(0.370 0.0400 266.25)",
+          "oklch(0.490 0.0400 266.25)",
+          "oklch(0.610 0.0400 266.25)",
+          "oklch(0.730 0.0400 266.25)",
+          "oklch(0.850 0.0300 266.25)",
+          "oklch(0.950 0.0100 266.25)"
+        ]
+      },
+      "dark-bar": {
+        "role": "secondary",
+        "displayName": "Dark bar",
+        "tonalRamp": [
+          "oklch(0.150 0.0205 165.91)",
+          "oklch(0.250 0.0614 165.91)",
+          "oklch(0.370 0.1023 165.91)",
+          "oklch(0.490 0.1023 165.91)",
+          "oklch(0.610 0.1023 165.91)",
+          "oklch(0.730 0.1023 165.91)",
+          "oklch(0.850 0.0767 165.91)",
+          "oklch(0.950 0.0256 165.91)"
+        ]
+      },
+      "light-background": {
+        "role": "neutral",
+        "displayName": "Light background",
+        "tonalRamp": [
+          "oklch(0.150 0.0002 197.14)",
+          "oklch(0.250 0.0006 197.14)",
+          "oklch(0.370 0.0011 197.14)",
+          "oklch(0.490 0.0011 197.14)",
+          "oklch(0.610 0.0011 197.14)",
+          "oklch(0.730 0.0011 197.14)",
+          "oklch(0.850 0.0008 197.14)",
+          "oklch(0.950 0.0003 197.14)"
+        ]
+      },
+      "light-foreground": {
+        "role": "neutral",
+        "displayName": "Light foreground",
+        "tonalRamp": [
+          "oklch(0.150 0.0029 166.52)",
+          "oklch(0.250 0.0088 166.52)",
+          "oklch(0.370 0.0146 166.52)",
+          "oklch(0.490 0.0146 166.52)",
+          "oklch(0.610 0.0146 166.52)",
+          "oklch(0.730 0.0146 166.52)",
+          "oklch(0.850 0.0110 166.52)",
+          "oklch(0.950 0.0037 166.52)"
+        ]
+      },
+      "light-card": {
+        "role": "neutral",
+        "displayName": "Light card",
+        "tonalRamp": [
+          "oklch(0.150 0.0000 89.88)",
+          "oklch(0.250 0.0000 89.88)",
+          "oklch(0.370 0.0000 89.88)",
+          "oklch(0.490 0.0000 89.88)",
+          "oklch(0.610 0.0000 89.88)",
+          "oklch(0.730 0.0000 89.88)",
+          "oklch(0.850 0.0000 89.88)",
+          "oklch(0.950 0.0000 89.88)"
+        ]
+      },
+      "light-muted": {
+        "role": "neutral",
+        "displayName": "Light muted",
+        "tonalRamp": [
+          "oklch(0.150 0.0007 174.48)",
+          "oklch(0.250 0.0021 174.48)",
+          "oklch(0.370 0.0035 174.48)",
+          "oklch(0.490 0.0035 174.48)",
+          "oklch(0.610 0.0035 174.48)",
+          "oklch(0.730 0.0035 174.48)",
+          "oklch(0.850 0.0026 174.48)",
+          "oklch(0.950 0.0009 174.48)"
+        ]
+      },
+      "light-muted-foreground": {
+        "role": "neutral",
+        "displayName": "Light muted foreground",
+        "tonalRamp": [
+          "oklch(0.150 0.0043 165.67)",
+          "oklch(0.250 0.0128 165.67)",
+          "oklch(0.370 0.0214 165.67)",
+          "oklch(0.490 0.0214 165.67)",
+          "oklch(0.610 0.0214 165.67)",
+          "oklch(0.730 0.0214 165.67)",
+          "oklch(0.850 0.0161 165.67)",
+          "oklch(0.950 0.0054 165.67)"
+        ]
+      },
+      "light-accent": {
+        "role": "neutral",
+        "displayName": "Light accent",
+        "tonalRamp": [
+          "oklch(0.150 0.0008 157.18)",
+          "oklch(0.250 0.0025 157.18)",
+          "oklch(0.370 0.0041 157.18)",
+          "oklch(0.490 0.0041 157.18)",
+          "oklch(0.610 0.0041 157.18)",
+          "oklch(0.730 0.0041 157.18)",
+          "oklch(0.850 0.0031 157.18)",
+          "oklch(0.950 0.0010 157.18)"
+        ]
+      },
+      "light-border": {
+        "role": "neutral",
+        "displayName": "Light border",
+        "tonalRamp": [
+          "oklch(0.150 0.0015 164.92)",
+          "oklch(0.250 0.0046 164.92)",
+          "oklch(0.370 0.0076 164.92)",
+          "oklch(0.490 0.0076 164.92)",
+          "oklch(0.610 0.0076 164.92)",
+          "oklch(0.730 0.0076 164.92)",
+          "oklch(0.850 0.0057 164.92)",
+          "oklch(0.950 0.0019 164.92)"
+        ]
+      },
+      "light-primary": {
+        "role": "primary",
+        "displayName": "Light primary",
+        "tonalRamp": [
+          "oklch(0.150 0.0081 159.66)",
+          "oklch(0.250 0.0244 159.66)",
+          "oklch(0.370 0.0407 159.66)",
+          "oklch(0.490 0.0407 159.66)",
+          "oklch(0.610 0.0407 159.66)",
+          "oklch(0.730 0.0407 159.66)",
+          "oklch(0.850 0.0305 159.66)",
+          "oklch(0.950 0.0102 159.66)"
+        ]
+      },
+      "light-primary-foreground": {
+        "role": "primary",
+        "displayName": "Light primary foreground",
+        "tonalRamp": [
+          "oklch(0.150 0.0000 89.88)",
+          "oklch(0.250 0.0000 89.88)",
+          "oklch(0.370 0.0000 89.88)",
+          "oklch(0.490 0.0000 89.88)",
+          "oklch(0.610 0.0000 89.88)",
+          "oklch(0.730 0.0000 89.88)",
+          "oklch(0.850 0.0000 89.88)",
+          "oklch(0.950 0.0000 89.88)"
+        ]
+      },
+      "light-status-up": {
+        "role": "primary",
+        "displayName": "Light status up",
+        "tonalRamp": [
+          "oklch(0.150 0.0186 161.73)",
+          "oklch(0.250 0.0559 161.73)",
+          "oklch(0.370 0.0932 161.73)",
+          "oklch(0.490 0.0932 161.73)",
+          "oklch(0.610 0.0932 161.73)",
+          "oklch(0.730 0.0932 161.73)",
+          "oklch(0.850 0.0699 161.73)",
+          "oklch(0.950 0.0233 161.73)"
+        ]
+      },
+      "light-status-up-bg": {
+        "role": "primary",
+        "displayName": "Light status up bg",
+        "tonalRamp": [
+          "oklch(0.150 0.0036 161.11)",
+          "oklch(0.250 0.0109 161.11)",
+          "oklch(0.370 0.0182 161.11)",
+          "oklch(0.490 0.0182 161.11)",
+          "oklch(0.610 0.0182 161.11)",
+          "oklch(0.730 0.0182 161.11)",
+          "oklch(0.850 0.0136 161.11)",
+          "oklch(0.950 0.0045 161.11)"
+        ]
+      },
+      "light-status-down": {
+        "role": "secondary",
+        "displayName": "Light status down",
+        "tonalRamp": [
+          "oklch(0.150 0.0305 20.91)",
+          "oklch(0.250 0.0914 20.91)",
+          "oklch(0.370 0.1524 20.91)",
+          "oklch(0.490 0.1524 20.91)",
+          "oklch(0.610 0.1524 20.91)",
+          "oklch(0.730 0.1524 20.91)",
+          "oklch(0.850 0.1143 20.91)",
+          "oklch(0.950 0.0381 20.91)"
+        ]
+      },
+      "light-status-down-bg": {
+        "role": "secondary",
+        "displayName": "Light status down bg",
+        "tonalRamp": [
+          "oklch(0.150 0.0038 5.29)",
+          "oklch(0.250 0.0113 5.29)",
+          "oklch(0.370 0.0188 5.29)",
+          "oklch(0.490 0.0188 5.29)",
+          "oklch(0.610 0.0188 5.29)",
+          "oklch(0.730 0.0188 5.29)",
+          "oklch(0.850 0.0141 5.29)",
+          "oklch(0.950 0.0047 5.29)"
+        ]
+      },
+      "light-status-degraded": {
+        "role": "secondary",
+        "displayName": "Light status degraded",
+        "tonalRamp": [
+          "oklch(0.150 0.0195 73.46)",
+          "oklch(0.250 0.0586 73.46)",
+          "oklch(0.370 0.0976 73.46)",
+          "oklch(0.490 0.0976 73.46)",
+          "oklch(0.610 0.0976 73.46)",
+          "oklch(0.730 0.0976 73.46)",
+          "oklch(0.850 0.0732 73.46)",
+          "oklch(0.950 0.0244 73.46)"
+        ]
+      },
+      "light-status-degraded-bg": {
+        "role": "secondary",
+        "displayName": "Light status degraded bg",
+        "tonalRamp": [
+          "oklch(0.150 0.0071 83.78)",
+          "oklch(0.250 0.0214 83.78)",
+          "oklch(0.370 0.0356 83.78)",
+          "oklch(0.490 0.0356 83.78)",
+          "oklch(0.610 0.0356 83.78)",
+          "oklch(0.730 0.0356 83.78)",
+          "oklch(0.850 0.0267 83.78)",
+          "oklch(0.950 0.0089 83.78)"
+        ]
+      },
+      "light-status-pending": {
+        "role": "secondary",
+        "displayName": "Light status pending",
+        "tonalRamp": [
+          "oklch(0.150 0.0043 165.67)",
+          "oklch(0.250 0.0128 165.67)",
+          "oklch(0.370 0.0214 165.67)",
+          "oklch(0.490 0.0214 165.67)",
+          "oklch(0.610 0.0214 165.67)",
+          "oklch(0.730 0.0214 165.67)",
+          "oklch(0.850 0.0161 165.67)",
+          "oklch(0.950 0.0054 165.67)"
+        ]
+      },
+      "light-status-pending-bg": {
+        "role": "secondary",
+        "displayName": "Light status pending bg",
+        "tonalRamp": [
+          "oklch(0.150 0.0007 174.48)",
+          "oklch(0.250 0.0021 174.48)",
+          "oklch(0.370 0.0035 174.48)",
+          "oklch(0.490 0.0035 174.48)",
+          "oklch(0.610 0.0035 174.48)",
+          "oklch(0.730 0.0035 174.48)",
+          "oklch(0.850 0.0026 174.48)",
+          "oklch(0.950 0.0009 174.48)"
+        ]
+      },
+      "light-status-scheduled": {
+        "role": "secondary",
+        "displayName": "Light status scheduled",
+        "tonalRamp": [
+          "oklch(0.150 0.0201 263.90)",
+          "oklch(0.250 0.0603 263.90)",
+          "oklch(0.370 0.1004 263.90)",
+          "oklch(0.490 0.1004 263.90)",
+          "oklch(0.610 0.1004 263.90)",
+          "oklch(0.730 0.1004 263.90)",
+          "oklch(0.850 0.0753 263.90)",
+          "oklch(0.950 0.0251 263.90)"
+        ]
+      },
+      "light-status-scheduled-bg": {
+        "role": "secondary",
+        "displayName": "Light status scheduled bg",
+        "tonalRamp": [
+          "oklch(0.150 0.0033 271.24)",
+          "oklch(0.250 0.0100 271.24)",
+          "oklch(0.370 0.0167 271.24)",
+          "oklch(0.490 0.0167 271.24)",
+          "oklch(0.610 0.0167 271.24)",
+          "oklch(0.730 0.0167 271.24)",
+          "oklch(0.850 0.0125 271.24)",
+          "oklch(0.950 0.0042 271.24)"
+        ]
+      },
+      "light-bar": {
+        "role": "secondary",
+        "displayName": "Light bar",
+        "tonalRamp": [
+          "oklch(0.150 0.0205 164.89)",
+          "oklch(0.250 0.0615 164.89)",
+          "oklch(0.370 0.1025 164.89)",
+          "oklch(0.490 0.1025 164.89)",
+          "oklch(0.610 0.1025 164.89)",
+          "oklch(0.730 0.1025 164.89)",
+          "oklch(0.850 0.0769 164.89)",
+          "oklch(0.950 0.0256 164.89)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page heading."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section heading."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Body text and standard controls."
+      },
+      "description": {
+        "displayName": "Description",
+        "purpose": "Supporting page and table text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Compact labels and shell controls."
+      },
+      "measurement": {
+        "displayName": "Measurement",
+        "purpose": "Large tabular metric value."
+      },
+      "table-number": {
+        "displayName": "Table number",
+        "purpose": "Aligned table measurement."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "reduced-motion-duration",
+        "value": "0.01ms",
+        "purpose": "User reduced-motion preference shortens existing animation and transition durations."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "header-wrap",
+        "value": "900px"
+      },
+      {
+        "name": "mobile-layout",
+        "value": "640px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Existing default action button used by sign-in and run controls.",
+      "html": "<button type=\"button\" class=\"ds-button ds-primary\">Sign in</button>",
+      "css": ".ds-button { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:36px; padding:8px 16px; border-radius:8px; font-family:var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif); font-size:14px; font-weight:500; white-space:nowrap; cursor:pointer; transition:all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-button:disabled { pointer-events:none; opacity:0.5; } .ds-button:focus-visible { outline:none; border-color:var(--ring); box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 50%,transparent); } @media(prefers-reduced-motion:reduce) { .ds-button { transition-duration:0.01ms; } } .ds-primary { border:1px solid transparent; background:var(--primary); color:var(--primary-foreground); } .ds-primary:hover { background:color-mix(in srgb,var(--primary) 90%,transparent); }"
+    },
+    {
+      "name": "Outline button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Existing outlined button for manual monitor runs.",
+      "html": "<button type=\"button\" class=\"ds-button ds-outline\">Run check</button>",
+      "css": ".ds-button { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:36px; padding:8px 16px; border-radius:8px; font-family:var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif); font-size:14px; font-weight:500; white-space:nowrap; cursor:pointer; transition:all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-button:disabled { pointer-events:none; opacity:0.5; } .ds-button:focus-visible { outline:none; border-color:var(--ring); box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 50%,transparent); } @media(prefers-reduced-motion:reduce) { .ds-button { transition-duration:0.01ms; } } .ds-outline { border:1px solid var(--border); background:var(--background); color:var(--foreground); box-shadow:0 1px 2px #0000000d; } .ds-outline:hover { background:var(--accent); color:var(--accent-foreground); } :host-context(.dark) .ds-outline { border-color:var(--input); background:color-mix(in srgb,var(--input) 30%,transparent); } :host-context(.dark) .ds-outline:hover { background:color-mix(in srgb,var(--input) 50%,transparent); }"
+    },
+    {
+      "name": "Ghost button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Existing quiet alert action button.",
+      "html": "<button type=\"button\" class=\"ds-button ds-ghost\">Acknowledge</button>",
+      "css": ".ds-button { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:36px; padding:8px 16px; border-radius:8px; font-family:var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif); font-size:14px; font-weight:500; white-space:nowrap; cursor:pointer; transition:all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-button:disabled { pointer-events:none; opacity:0.5; } .ds-button:focus-visible { outline:none; border-color:var(--ring); box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 50%,transparent); } @media(prefers-reduced-motion:reduce) { .ds-button { transition-duration:0.01ms; } } .ds-ghost { border:1px solid transparent; background:transparent; color:var(--foreground); } .ds-ghost:hover { background:var(--accent); color:var(--accent-foreground); } :host-context(.dark) .ds-ghost:hover { background:color-mix(in srgb,var(--accent) 50%,transparent); }"
+    },
+    {
+      "name": "Shell control",
+      "kind": "button",
+      "refersTo": "shell-control",
+      "description": "Compact outlined shell action with a minimum 32px target.",
+      "html": "<button type=\"button\" class=\"ds-control\">Full width</button>",
+      "css": ".ds-control { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:32px; min-width:32px; padding:5px 10px; border:1px solid var(--border); border-radius:7px; background:transparent; color:var(--foreground); font:500 12px var(--font-sans, sans-serif); cursor:pointer; } .ds-control:hover:not(:disabled), .ds-control[aria-pressed=\"true\"] { background:var(--accent); } .ds-control:focus-visible { outline:2px solid var(--ring); outline-offset:3px; }"
+    },
+    {
+      "name": "Monitor search",
+      "kind": "input",
+      "refersTo": "monitor-search",
+      "description": "Search field with its inline search icon and accessible name.",
+      "html": "<label class=\"ds-search\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg><input type=\"search\" aria-label=\"Search monitors\" placeholder=\"Search monitors\"/></label>",
+      "css": ".ds-search { display:block; position:relative; min-width:180px; } .ds-search svg { position:absolute; top:50%; left:11px; width:15px; height:15px; transform:translateY(-50%); color:var(--muted-foreground); pointer-events:none; } .ds-search input { width:100%; height:34px; padding:6px 10px 6px 34px; border:1px solid var(--border); border-radius:7px; background:var(--card); color:var(--foreground); font:13px var(--font-sans, sans-serif); caret-color:var(--status-up); } .ds-search input::placeholder { color:var(--faint); opacity:1; } .ds-search input:focus-visible { outline:2px solid var(--ring); outline-offset:3px; }"
+    },
+    {
+      "name": "Operator navigation",
+      "kind": "nav",
+      "refersTo": "navigation-link",
+      "description": "Current-route links with a filled selected surface.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Main navigation\"><a href=\"#overview\" aria-current=\"page\">Overview</a><a href=\"#monitors\">Monitors</a><a href=\"#alerts\">Alerts</a></nav>",
+      "css": ".ds-nav { display:flex; align-items:center; gap:4px; min-width:0; overflow-x:auto; } .ds-nav a { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:32px; padding:6px 10px; border-radius:6px; color:var(--muted-foreground); font:13px var(--font-sans, sans-serif); text-decoration:none; white-space:nowrap; } .ds-nav a:hover, .ds-nav a[aria-current=\"page\"] { background:var(--accent); color:var(--foreground); } .ds-nav a:focus-visible { outline:2px solid var(--ring); outline-offset:3px; } @media(max-width:640px) { .ds-nav a { font-size:12px; padding-inline:8px; } }"
+    },
+    {
+      "name": "Status pill",
+      "kind": "chip",
+      "refersTo": "status-pill",
+      "description": "Text-labeled service state with a matching dot and tinted surface.",
+      "html": "<span class=\"ds-pill\" data-status=\"up\"><span class=\"ds-dot\" aria-hidden=\"true\"></span>Operational</span>",
+      "css": ".ds-pill { display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border-radius:5px; color:var(--status-pending); background:var(--status-pending-bg); font:500 12px/1.5 var(--font-sans, sans-serif); white-space:nowrap; } .ds-dot { display:inline-block; flex-shrink:0; width:6px; height:6px; border-radius:50%; background:currentColor; } .ds-pill[data-status=\"up\"] { color:var(--status-up); background:var(--status-up-bg); } .ds-pill[data-status=\"down\"] { color:var(--status-down); background:var(--status-down-bg); } .ds-pill[data-status=\"degraded\"] { color:var(--status-degraded); background:var(--status-degraded-bg); } .ds-pill[data-status=\"pending\"] { color:var(--status-pending); background:var(--status-pending-bg); } .ds-pill[data-status=\"scheduled\"] { color:var(--status-scheduled); background:var(--status-scheduled-bg); }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Uniformly bordered surface for actual page content.",
+      "html": "<section class=\"ds-panel\"><div class=\"ds-panel-copy\">Service checks</div></section>",
+      "css": ".ds-panel { position:relative; min-width:0; border:1px solid var(--border); border-radius:10px; background:var(--card); color:var(--foreground); font:14px/1.5 var(--font-sans, sans-serif); } .ds-panel-copy { padding:16px; }"
+    },
+    {
+      "name": "Metric strip",
+      "kind": "custom",
+      "refersTo": "metric-strip",
+      "description": "Aligned numeric measurements with supporting labels.",
+      "html": "<dl class=\"ds-metrics\"><div><dt class=\"ds-metric-label\">Uptime</dt><dd class=\"ds-metric-value\">99.9%</dd></div><div><dt class=\"ds-metric-label\">Response time</dt><dd class=\"ds-metric-value\">120ms</dd></div></dl>",
+      "css": ".ds-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr)); margin:0; border-block:1px solid var(--border); color:var(--foreground); } .ds-metrics > div { min-width:0; padding:16px; } .ds-metrics > div + div { border-left:1px solid var(--border); } .ds-metrics > div:first-child { padding-left:0; } .ds-metric-label { color:var(--muted-foreground); font:12px var(--font-sans, sans-serif); } .ds-metric-value { margin:5px 0 0; font:500 25px/1.3 var(--font-mono, monospace); letter-spacing:-0.035em; font-variant-numeric:tabular-nums; }"
+    },
+    {
+      "name": "Performance disclosure",
+      "kind": "custom",
+      "refersTo": "performance-disclosure",
+      "description": "Native details disclosure keeps performance content available below status.",
+      "html": "<details class=\"ds-performance\"><summary>Performance<span>Charts and latency</span></summary><div class=\"ds-chart-surface\">Response time</div></details>",
+      "css": ".ds-performance { border-top:1px solid var(--border); color:var(--foreground); font-family:var(--font-sans, sans-serif); } .ds-performance > summary { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-block:15px; list-style:none; font-size:15px; font-weight:600; cursor:pointer; } .ds-performance > summary::-webkit-details-marker { display:none; } .ds-performance > summary > span { color:var(--muted-foreground); font-size:12px; font-weight:400; } .ds-performance > summary:focus-visible { outline:2px solid var(--ring); outline-offset:3px; } .ds-chart-surface { min-width:0; padding:16px; border:1px solid var(--border); border-radius:10px; background:var(--card); font-size:13px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Service status and monitor triage",
+    "overview": "Pongo uses compact neutral surfaces, system sans text and explicit service states. The same shell aligns operator pages, public status pages and authentication screens. Color identifies status or interaction; spacing and borders establish hierarchy.\n\nThe implemented direction comes from the user-approved mockups and the denser full-site brief. Configuration, live measurements and existing actions remain the content of the interface.",
+    "keyCharacteristics": [
+      "One content width across header, main and footer.",
+      "Compact rows with readable supporting labels.",
+      "Green, amber, red and neutral service states with text labels.",
+      "Dark and light themes share the same structure."
+    ],
+    "rules": [
+      {
+        "name": "The Status Meaning Rule",
+        "body": "A state color accompanies a state label. Unknown or paused service data retains its stated meaning rather than implying success or failure.",
+        "section": "colors"
+      },
+      {
+        "name": "The Shared Width Rule",
+        "body": "Header, main, public tabs and footer retain the same left edge and width on every route; page primitives do not add narrower containers.",
+        "section": "layout"
+      }
+    ],
+    "dos": [
+      "Do align every route to the shared shell, including public and authentication pages.",
+      "Do keep code and measurements in monospace and prose in system sans.",
+      "Do pair status colors with state text and preserve unknown measurements.",
+      "Do retain keyboard inspection, focus visibility and recovery controls in zen mode."
+    ],
+    "donts": [
+      "Don't add decorative rails, dotted backgrounds, status glows or halo effects.",
+      "Don't turn missing results into healthy uptime or zero latency.",
+      "Don't add nested width containers that narrow individual pages.",
+      "Don't reduce all text globally when density changes."
+    ]
+  }
+}

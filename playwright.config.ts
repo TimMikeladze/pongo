@@ -1,4 +1,7 @@
+import { loadEnvConfig } from "@next/env";
 import { defineConfig, devices } from "@playwright/test";
+
+loadEnvConfig(process.cwd(), true);
 
 const PORT = Number(process.env.E2E_PORT ?? 3100);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
@@ -31,6 +34,7 @@ export default defineConfig({
     timeout: 120_000,
     env: {
       DATABASE_URL: "file:./pongo/e2e.db",
+      PONGO_DIST_DIR: ".next-e2e",
     },
   },
 });

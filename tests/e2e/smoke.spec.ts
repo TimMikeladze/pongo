@@ -1,5 +1,12 @@
 import { expect, test } from "@playwright/test";
 
+// Each test represents a separate visitor, including independent login limits.
+test.beforeEach(async ({ context }, testInfo) => {
+  await context.setExtraHTTPHeaders({
+    "x-forwarded-for": `e2e-${testInfo.testId}`,
+  });
+});
+
 test.describe("smoke", () => {
   test("home page renders without auth", async ({ page }) => {
     const response = await page.goto("/");
@@ -12,13 +19,13 @@ test.describe("smoke", () => {
   }) => {
     await page.goto("/monitors");
     await expect(page).toHaveURL(/\/login$/);
-    await expect(page.getByPlaceholder("access code")).toBeVisible();
+    await expect(page.getByLabel("Access code", { exact: true })).toBeVisible();
   });
 
   test("login with invalid code shows error", async ({ page }) => {
     await page.goto("/login");
-    await page.getByPlaceholder("access code").fill("wrong-code");
-    await page.getByRole("button", { name: /enter/i }).click();
+    await page.getByLabel("Access code", { exact: true }).fill("wrong-code");
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page.getByText(/invalid access code/i)).toBeVisible();
     await expect(page).toHaveURL(/\/login$/);
   });

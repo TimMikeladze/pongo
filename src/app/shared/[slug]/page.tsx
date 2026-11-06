@@ -58,9 +58,8 @@ export async function generateMetadata({
 import { notFound } from "next/navigation";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { DashboardView } from "@/components/dashboard-view";
-import { IncidentsTimeline } from "@/components/incidents-timeline";
-import { SetPublicHeader } from "@/components/set-public-header";
-import { getActiveIncidents, getMonitors } from "@/lib/data";
+import { PublicDashboardHeader } from "@/components/public-dashboard-header";
+import { getMonitors } from "@/lib/data";
 import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 
 interface Props {
@@ -83,9 +82,6 @@ export default async function PublicDashboardPage({
     await timeRangeCache.parse(searchParams);
   const timeRange = getTimeRange({ preset, from, to });
 
-  const activeIncidents = await getActiveIncidents(dashboard.id);
-  const hasIssues = activeIncidents.length > 0;
-
   const allMonitors = await getMonitors();
   const dashboardMonitors = allMonitors.filter((m) =>
     dashboard.monitorIds.includes(m.id),
@@ -98,11 +94,7 @@ export default async function PublicDashboardPage({
   return (
     <>
       <AutoRefresh intervalSeconds={minRefreshInterval} />
-      <SetPublicHeader
-        name={dashboard.name}
-        description="status page"
-        hasIssues={hasIssues}
-      />
+      <PublicDashboardHeader dashboard={dashboard} />
 
       <DashboardView
         dashboardId={dashboard.id}
@@ -110,21 +102,6 @@ export default async function PublicDashboardPage({
         timeRange={timeRange}
         interval={interval}
       />
-
-      <div className="mt-8 space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground">
-            past incidents
-          </h3>
-          <a
-            href={`/shared/${slug}/incidents`}
-            className="text-[10px] text-muted-foreground hover:text-foreground"
-          >
-            view all
-          </a>
-        </div>
-        <IncidentsTimeline dashboardId={dashboard.id} limit={2} />
-      </div>
     </>
   );
 }

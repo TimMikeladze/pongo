@@ -52,17 +52,18 @@ function TimeRangePickerFallback({
   showTooltip?: boolean;
 }) {
   const button = (
-    <button
+    <Button
+      variant="outline"
       type="button"
       className={cn(
-        "flex items-center gap-2 px-2.5 py-1.5 text-xs rounded border border-border",
+        "control-button",
         "text-muted-foreground cursor-not-allowed",
       )}
       disabled
     >
       <CalendarIcon className="h-3 w-3" />
       <span>Last 24h</span>
-    </button>
+    </Button>
   );
 
   if (showTooltip) {
@@ -141,10 +142,12 @@ function TimeRangePickerInner() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
+        <Button
+          variant="outline"
           type="button"
+          aria-label="Reporting period"
           className={cn(
-            "flex items-center gap-2 px-2.5 py-1.5 text-xs rounded border border-border",
+            "control-button",
             "text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors",
           )}
         >
@@ -153,36 +156,45 @@ function TimeRangePickerInner() {
           <span className="text-muted-foreground/50">|</span>
           <Clock className="h-3 w-3" />
           <span>{formatIntervalLabel(interval)}</span>
-        </button>
+        </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="end">
+      <PopoverContent
+        className="w-auto max-w-[calc(100vw-2rem)] max-h-[var(--radix-popover-content-available-height)] overflow-y-auto p-0"
+        align="end"
+      >
         <div className="p-3 space-y-3">
           {/* Time Range Presets */}
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">
             Time range
           </div>
-          <div className="flex gap-1 flex-wrap">
+          <fieldset
+            className="flex gap-1 flex-wrap"
+            aria-label="Reporting range"
+          >
             {TIME_RANGE_PRESETS.map((p) => (
               <Button
                 key={p}
                 variant={!isCustom && preset === p ? "default" : "outline"}
                 size="sm"
-                className="text-xs h-7 px-2"
+                className="text-xs h-8 px-2"
                 onClick={() => handlePresetClick(p)}
               >
                 {formatPresetLabel(p)}
               </Button>
             ))}
-          </div>
+          </fieldset>
 
           {/* Divider */}
           <div className="border-t border-border" />
 
           {/* Interval Selection */}
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">
             Interval
           </div>
-          <div className="flex gap-1 flex-wrap">
+          <fieldset
+            className="flex gap-1 flex-wrap"
+            aria-label="Aggregation interval"
+          >
             {INTERVAL_OPTIONS.map((i) => {
               const allowed = isIntervalAllowed(i, currentDurationMs);
               const button = (
@@ -191,7 +203,7 @@ function TimeRangePickerInner() {
                   variant={interval === i ? "default" : "outline"}
                   size="sm"
                   className={cn(
-                    "text-xs h-7 px-2",
+                    "text-xs h-8 px-2",
                     !allowed && "opacity-40 cursor-not-allowed",
                   )}
                   onClick={() => allowed && handleIntervalClick(i)}
@@ -216,13 +228,13 @@ function TimeRangePickerInner() {
 
               return button;
             })}
-          </div>
+          </fieldset>
 
           {/* Divider */}
           <div className="border-t border-border" />
 
           {/* Custom range calendars */}
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">
             Custom range
           </div>
           <Calendar
@@ -238,7 +250,7 @@ function TimeRangePickerInner() {
             <div className="flex justify-end">
               <Button
                 size="sm"
-                className="text-xs h-7"
+                className="text-xs h-8"
                 onClick={handleCustomApply}
               >
                 Apply

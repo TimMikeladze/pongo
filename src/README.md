@@ -4,6 +4,8 @@
 
 pongo.sh is a self-hosted uptime monitoring and status page application built with Next.js, React, and Bun.
 
+For prompt-based setup, see the [agent setup guide](../docs/agent-setup.md). Public agent instructions live in [public/llms.txt](../public/llms.txt) and the installable [create-pongo skill](../public/skills/create-pongo/SKILL.md).
+
 ## Directory Structure
 
 ```
@@ -40,6 +42,7 @@ export default monitor({
     channels: ["slack"],
   }],
   async handler() {
+    const start = Date.now();
     const res = await fetch("https://api.example.com/health");
     return {
       status: res.ok ? "up" : "down",
@@ -164,8 +167,9 @@ S3_SECRET_ACCESS_KEY=...
 - `/monitors/[id]` - Monitor detail page
 - `/alerts` - Alert management
 - `/settings` - Configuration
-- `/public/[slug]` - Public status page (no auth)
-- `/shared/[slug]` - Shared dashboard (optional auth)
+- `/shared/[slug]` - Public status page (no auth, requires `public: true`)
+- `/llms.txt` - Setup entry point for coding agents
+- `/skills/create-pongo/SKILL.md` - Installable setup skill
 
 ### `/components` - UI Components
 
@@ -200,10 +204,13 @@ const isMobile = useIsMobile(); // true if viewport < 768px
 Cookie-based session authentication using iron-session.
 
 **Public Routes (no auth):**
-- `/public/*`
-- `/dashboards/shared/*`
+- `/`
+- `/shared/*`
 - `/login`
 - `/_next/*`
+- `/api/*` (individual endpoints enforce their own authentication)
+
+The agent instructions at `/llms.txt` and `/skills/create-pongo/SKILL.md` are also public.
 
 Set `ACCESS_CODE` environment variable to enable authentication.
 
@@ -219,6 +226,8 @@ pongo/
 ├── incidents/          # Incident reports (*.md)
 └── channels.ts         # Notification channels
 ```
+
+Register monitor and dashboard exports in their respective `index.ts` files. Registry keys determine IDs; dashboard monitor lists refer to those keys. Restart the scheduler after editing configuration.
 
 **Dashboard Config:**
 ```typescript
@@ -269,7 +278,7 @@ export default channels({
 | `DATABASE_URL` | Database connection string | - |
 | `DB_DRIVER` | `sqlite` or `pg` | `sqlite` |
 | `ACCESS_CODE` | UI password (optional) | - |
-| `REGION` | Region identifier | `default` |
+| `PONGO_REGION` | Region identifier | `default` |
 | `SCHEDULER_PORT` | Scheduler API port | `3001` |
 | `SCHEDULER_MAX_CONCURRENCY` | Parallel monitors | `10` |
 | `CRON_SECRET` | Vercel Cron auth token | - |
@@ -283,7 +292,10 @@ bun run scheduler     # Scheduler service
 bun run archiver      # Archiver service
 
 # Production
-bun run build && bun run start
+bun run db:sqlite:migrate  # or db:pg:migrate for PostgreSQL
+bunx next build
+bun run start
+# Run bun run scheduler in a separate process, using the same DATABASE_URL.
 ```
 
 ## Types Reference
@@ -295,7 +307,7 @@ type IncidentStatus = "investigating" | "identified" | "monitoring" | "resolved"
 
 interface MonitorResult {
   status: MonitorStatus;
-  responseTime?: number;
+  responseTime: number;
   statusCode?: number;
   message?: string;
 }

@@ -1,28 +1,33 @@
 import {
-  Activity,
-  Bell,
-  Code,
-  Database,
-  Globe,
-  Layout,
-  Terminal,
-  Zap,
+  ArrowUpRight,
+  CheckCircle2,
+  CircleHelp,
+  TriangleAlert,
 } from "lucide-react";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AutoRefresh } from "@/components/auto-refresh";
-import { Github } from "@/components/brand-icons";
 import { ChartCard } from "@/components/chart-card";
+import { dashboardMeasurements } from "@/components/dashboard-measurements";
+import { Disclosure } from "@/components/disclosure";
 import { ErrorRateChart } from "@/components/error-rate-chart";
+import { IncidentsTimeline } from "@/components/incidents-timeline";
 import { LatencyPercentilesChart } from "@/components/latency-percentiles-chart";
-import { MonitorCard } from "@/components/monitor-card";
+import { MonitorTable } from "@/components/monitor-table";
+import {
+  EmptyState,
+  MetricStrip,
+  PageHeading,
+  SectionHeading,
+} from "@/components/page-layout";
 import { PublicDashboardsList } from "@/components/public-dashboards-list";
 import { ResponseTimeChart } from "@/components/response-time-chart";
 import { StatsCard } from "@/components/stats-card";
 import { StatusDistributionChart } from "@/components/status-distribution-chart";
 import { ThroughputChart } from "@/components/throughput-chart";
+import { TimeRangePicker } from "@/components/time-range-picker";
+import { Button } from "@/components/ui/button";
 import { UptimeChart } from "@/components/uptime-chart";
 import { isAuthEnabled, isAuthenticated } from "@/lib/auth";
 import {
@@ -32,48 +37,18 @@ import {
   getAggregatedStatusDistributionData,
   getAggregatedThroughputChartData,
   getAggregatedUptimeChartData,
-  getAverageResponseTime,
+  getCheckResults,
   getDashboards,
-  getErrorRate,
+  getFiringAlerts,
   getLatestCheckResult,
   getMonitors,
-  getP95ResponseTime,
-  getP99ResponseTime,
-  getTotalChecks,
-  getUptimePercentage,
 } from "@/lib/data";
+import { summarizeHealth } from "@/lib/health";
 import { getTimeRange, timeRangeCache } from "@/lib/time-range";
 
 export const metadata: Metadata = {
   title: "Overview",
-  description:
-    "Self-hosted, file-driven uptime monitoring designed for developers who prefer configuration as code. Define monitors in TypeScript, commit to git, and deploy anywhere.",
-  keywords: [
-    "uptime monitoring",
-    "status page",
-    "self-hosted",
-    "open source",
-    "uptime",
-    "monitoring",
-    "developer tools",
-    "configuration as code",
-    "TypeScript",
-  ],
-  openGraph: {
-    title: "pongo.sh - Self-hosted uptime monitoring",
-    description:
-      "File-driven uptime monitoring for developers. Define monitors in TypeScript, commit to git, and deploy anywhere.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "pongo.sh - Self-hosted uptime monitoring",
-    description:
-      "File-driven uptime monitoring for developers. Define monitors in TypeScript, commit to git, and deploy anywhere.",
-  },
-  alternates: {
-    canonical: "/",
-  },
+  description: "Current monitor health, alerts and service performance",
 };
 
 interface Props {
@@ -81,412 +56,314 @@ interface Props {
 }
 
 export default async function OverviewPage({ searchParams }: Props) {
-  // When ACCESS_CODE is set and user is not authenticated, show public dashboards
   if (isAuthEnabled() && !(await isAuthenticated())) {
-    const dashboards = await getDashboards();
-    const publicDashboards = dashboards.filter((d) => d.isPublic);
-
-    // If only one public dashboard, redirect directly to it
-    if (publicDashboards.length === 1) {
+    const publicDashboards = (await getDashboards()).filter(
+      (dashboard) => dashboard.isPublic,
+    );
+    if (publicDashboards.length === 1)
       redirect(`/shared/${publicDashboards[0].slug}`);
-    }
-
-    // Show list of public dashboards
     return <PublicDashboardsList dashboards={publicDashboards} />;
   }
-
-  // Structured data for SEO (SoftwareApplication schema)
-  const softwareSchema = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: "pongo.sh",
-    applicationCategory: "DeveloperApplication",
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
-    },
-    operatingSystem: "Linux, macOS, Windows",
-  };
-
-  const showAbout = process.env.SHOW_ABOUT === "true";
   const monitors = await getMonitors();
-  const activeMonitors = monitors.filter((m) => m.isActive);
-  const monitorIds = monitors.map((m) => m.id);
-
+  const active = monitors.filter((monitor) => monitor.isActive);
+  const ids = active.map((monitor) => monitor.id);
   const { preset, from, to, interval } =
     await timeRangeCache.parse(searchParams);
   const timeRange = getTimeRange({ preset, from, to });
-
-  // Calculate overall stats
-  const [
-    overallUptime,
-    avgResponseTime,
-    errorRate,
-    p95Latency,
-    _p99Latency,
-    totalChecks,
-  ] =
-    monitors.length > 0
-      ? await Promise.all([
-          (async () => {
-            const uptimes = await Promise.all(
-              monitors.map((m) => getUptimePercentage(m.id, timeRange)),
-            );
-            return uptimes.reduce((acc, v) => acc + v, 0) / uptimes.length;
-          })(),
-          (async () => {
-            const responseTimes = await Promise.all(
-              monitors.map((m) => getAverageResponseTime(m.id, timeRange)),
-            );
-            return Math.round(
-              responseTimes.reduce((acc, v) => acc + v, 0) /
-                responseTimes.length,
-            );
-          })(),
-          (async () => {
-            const errorRates = await Promise.all(
-              monitors.map((m) => getErrorRate(m.id, timeRange)),
-            );
-            return (
-              errorRates.reduce((acc, v) => acc + v, 0) / errorRates.length
-            );
-          })(),
-          (async () => {
-            const p95s = await Promise.all(
-              monitors.map((m) => getP95ResponseTime(m.id, timeRange)),
-            );
-            return Math.round(
-              p95s.reduce((acc, v) => acc + v, 0) / p95s.length,
-            );
-          })(),
-          (async () => {
-            const p99s = await Promise.all(
-              monitors.map((m) => getP99ResponseTime(m.id, timeRange)),
-            );
-            return Math.round(
-              p99s.reduce((acc, v) => acc + v, 0) / p99s.length,
-            );
-          })(),
-          (async () => {
-            const checks = await Promise.all(
-              monitors.map((m) => getTotalChecks(m.id, timeRange)),
-            );
-            return checks.reduce((acc, v) => acc + v, 0);
-          })(),
-        ])
-      : [100, 0, 0, 0, 0, 0];
-
-  // Get down count
-  const latestResults = await Promise.all(
-    monitors.map((m) => getLatestCheckResult(m.id)),
+  const [latest, checks, firingAlerts] = await Promise.all([
+    Promise.all(active.map((monitor) => getLatestCheckResult(monitor.id))),
+    Promise.all(
+      active.map((monitor) => getCheckResults(monitor.id, { timeRange })),
+    ),
+    getFiringAlerts(),
+  ]);
+  const health = summarizeHealth(latest.map((result) => result?.status));
+  const measurements = dashboardMeasurements(checks);
+  const upCount = latest.filter((result) => result?.status === "up").length;
+  const affected = active.filter(
+    (_, index) =>
+      latest[index]?.status === "down" || latest[index]?.status === "degraded",
   );
-  const downCount = latestResults.filter((r) => r?.status === "down").length;
-
-  // Calculate minimum refresh interval
-  const minRefreshInterval =
-    monitors.length > 0
-      ? Math.min(...monitors.map((m) => m.intervalSeconds))
-      : 0;
-
-  // Get aggregated chart data server-side
+  const HealthIcon =
+    health === "up"
+      ? CheckCircle2
+      : health === "pending"
+        ? CircleHelp
+        : TriangleAlert;
   const [
     responseTimeData,
     uptimeData,
     errorRateData,
-    latencyPercentilesData,
+    latencyData,
     throughputData,
-    statusDistributionData,
-  ] =
-    monitors.length > 0
-      ? await Promise.all([
-          getAggregatedResponseTimeChartData(monitorIds, timeRange, interval),
-          getAggregatedUptimeChartData(monitorIds, timeRange, interval),
-          getAggregatedErrorRateChartData(monitorIds, timeRange, interval),
-          getAggregatedLatencyPercentilesChartData(
-            monitorIds,
-            timeRange,
-            interval,
-          ),
-          getAggregatedThroughputChartData(monitorIds, timeRange, interval),
-          getAggregatedStatusDistributionData(monitorIds, timeRange),
-        ])
-      : [[], [], [], [], [], { up: 0, degraded: 0, down: 0 }];
-
+    distribution,
+  ] = ids.length
+    ? await Promise.all([
+        getAggregatedResponseTimeChartData(ids, timeRange, interval),
+        getAggregatedUptimeChartData(ids, timeRange, interval),
+        getAggregatedErrorRateChartData(ids, timeRange, interval),
+        getAggregatedLatencyPercentilesChartData(ids, timeRange, interval),
+        getAggregatedThroughputChartData(ids, timeRange, interval),
+        getAggregatedStatusDistributionData(ids, timeRange),
+      ])
+    : [[], [], [], [], [], { up: 0, degraded: 0, down: 0 }];
   return (
-    <div>
-      {/* Structured data for search engines */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(softwareSchema),
-        }}
+    <div className="page-stack">
+      <AutoRefresh
+        intervalSeconds={
+          active.length
+            ? Math.min(...active.map((monitor) => monitor.intervalSeconds))
+            : 0
+        }
       />
-      <AutoRefresh intervalSeconds={minRefreshInterval} />
-      {/* About Section */}
-      {showAbout && (
-        <div className="mb-12 pt-6">
-          {/* Header & Hero */}
-          <div className="flex flex-col gap-6 mb-8">
-            <div className="flex items-start gap-4">
-              <Image
-                src="/banner.png"
-                alt="pongo.sh"
-                width={64}
-                height={64}
-                className="rounded-full flex-shrink-0"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-2">
-                  <h1 className="text-xl font-medium tracking-tight">
-                    pongo.sh
-                  </h1>
-                  <a
-                    href="https://github.com/TimMikeladze/pongo"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors bg-muted/50 px-2 py-1 rounded-md"
-                  >
-                    <Github className="h-3.5 w-3.5" />
-                    <span>View on GitHub</span>
-                  </a>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
-                  Self-hosted, file-driven uptime monitoring designed for
-                  developers who prefer configuration as code. Define monitors
-                  in TypeScript, commit to git, and deploy anywhere.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Feature Grid */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            <div className="border border-border rounded-lg p-4 bg-card/50 hover:bg-card transition-colors">
-              <div className="flex items-center gap-2 mb-2">
-                <Code className="h-4 w-4 text-primary" />
-                <h3 className="text-xs font-medium uppercase tracking-wider">
-                  Config as Code
-                </h3>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Define monitors, alerts, and pages as TypeScript files. Version
-                control your monitoring alongside your code.
-              </p>
-            </div>
-
-            <div className="border border-border rounded-lg p-4 bg-card/50 hover:bg-card transition-colors">
-              <div className="flex items-center gap-2 mb-2">
-                <Globe className="h-4 w-4 text-blue-500" />
-                <h3 className="text-xs font-medium uppercase tracking-wider">
-                  Multi-Region
-                </h3>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Deploy instances across multiple regions for redundant
-                monitoring. Supports custom consistency levels.
-              </p>
-            </div>
-
-            <div className="border border-border rounded-lg p-4 bg-card/50 hover:bg-card transition-colors">
-              <div className="flex items-center gap-2 mb-2">
-                <Layout className="h-4 w-4 text-green-500" />
-                <h3 className="text-xs font-medium uppercase tracking-wider">
-                  Status Pages
-                </h3>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Beautiful public and private status pages with historical
-                uptime, incident timeline, and RSS feeds.
-              </p>
-            </div>
-
-            <div className="border border-border rounded-lg p-4 bg-card/50 hover:bg-card transition-colors">
-              <div className="flex items-center gap-2 mb-2">
-                <Bell className="h-4 w-4 text-amber-500" />
-                <h3 className="text-xs font-medium uppercase tracking-wider">
-                  Smart Alerting
-                </h3>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Get notified via Slack, Discord, Email, or Webhooks. Configure
-                alert throttling and recovery thresholds.
-              </p>
-            </div>
-
-            <div className="border border-border rounded-lg p-4 bg-card/50 hover:bg-card transition-colors">
-              <div className="flex items-center gap-2 mb-2">
-                <Database className="h-4 w-4 text-purple-500" />
-                <h3 className="text-xs font-medium uppercase tracking-wider">
-                  Self-Hosted
-                </h3>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                No vendor lock-in. Runs on SQLite or PostgreSQL. Deploy to
-                Vercel, Railway, Docker, or bare metal.
-              </p>
-            </div>
-
-            <div className="border border-border rounded-lg p-4 bg-card/50 hover:bg-card transition-colors">
-              <div className="flex items-center gap-2 mb-2">
-                <Zap className="h-4 w-4 text-yellow-500" />
-                <h3 className="text-xs font-medium uppercase tracking-wider">
-                  Performance
-                </h3>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Built with Next.js and Bun for maximum efficiency. Lightweight,
-                fast, and optimized for real-time monitoring.
-              </p>
-            </div>
-          </div>
-
-          <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-10" />
+      <PageHeading
+        title="Overview"
+        description={`${monitors.length} configured monitors · ${active.length} active · ${monitors.length - active.length} paused`}
+        actions={
+          <>
+            <TimeRangePicker />
+            <Button asChild variant="outline">
+              <Link href="/dashboards" className="control-button">
+                Status pages
+                <ArrowUpRight className="size-3.5" />
+              </Link>
+            </Button>
+          </>
+        }
+      />
+      <section
+        className="notice"
+        aria-label="Current system health"
+        style={
+          health === "down" || health === "degraded"
+            ? {
+                background: "var(--status-degraded-bg)",
+                borderColor:
+                  "color-mix(in srgb, var(--status-degraded), var(--border) 65%)",
+              }
+            : undefined
+        }
+      >
+        <HealthIcon
+          className={`size-5 shrink-0 ${health === "up" ? "text-status-up" : health === "pending" ? "text-muted-foreground" : "text-status-degraded"}`}
+        />
+        <div className="flex-1 min-w-0">
+          <h2 className="text-sm font-semibold">
+            {affected.length
+              ? `${affected.length} ${affected.length === 1 ? "monitor needs" : "monitors need"} attention`
+              : health === "pending"
+                ? "Waiting for the first check results"
+                : "All monitors operational"}
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            {affected.length
+              ? `${affected.map((monitor) => monitor.name).join(", ")} · ${firingAlerts.length} firing ${firingAlerts.length === 1 ? "alert" : "alerts"}`
+              : health === "pending"
+                ? active.length
+                  ? "Run the scheduler to start collecting measurements."
+                  : "Configure and activate monitors to start collecting measurements."
+                : firingAlerts.length
+                  ? `${firingAlerts.length} firing alerts still need review.`
+                  : "No services are currently reporting an issue."}
+          </p>
         </div>
-      )}
-
-      {/* System Overview Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-2">
-          <Terminal className="h-4 w-4 text-primary" />
-          <div>
-            <h2 className="text-sm">system overview</h2>
-            <p className="text-[10px] text-muted-foreground mt-0.5">
-              monitoring {monitors.length} endpoints
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Primary KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-6">
+        <Button asChild variant="outline">
+          <Link
+            href={
+              affected.length
+                ? `/monitors/${affected[0].id}`
+                : health === "pending"
+                  ? "/settings"
+                  : "/alerts"
+            }
+            className="control-button"
+          >
+            {affected.length
+              ? "Investigate"
+              : health === "pending"
+                ? "View setup"
+                : "View alerts"}
+            <ArrowUpRight className="size-3.5" />
+          </Link>
+        </Button>
+      </section>
+      <MetricStrip>
         <StatsCard
-          title="uptime"
-          value={`${overallUptime.toFixed(1)}%`}
-          trend={
-            overallUptime >= 99.9
-              ? "up"
-              : overallUptime >= 99
-                ? "neutral"
-                : "down"
+          title="Availability"
+          value={
+            measurements.uptime === null
+              ? "—"
+              : `${measurements.uptime.toFixed(3)}%`
+          }
+          description={
+            measurements.checkCount
+              ? "Selected reporting period"
+              : "No check data"
           }
         />
         <StatsCard
-          title="monitors"
-          value={activeMonitors.length}
-          description={`${monitors.length} total`}
+          title="Average response"
+          value={
+            measurements.responseTime === null
+              ? "—"
+              : `${measurements.responseTime} ms`
+          }
+          description={
+            measurements.responseTime === null
+              ? "Not measured yet"
+              : "Across measured monitors"
+          }
         />
-        <StatsCard title="avg latency" value={`${avgResponseTime}ms`} />
-        <StatsCard title="p95" value={`${p95Latency}ms`} />
         <StatsCard
-          title="errors"
-          value={`${errorRate.toFixed(1)}%`}
-          trend={errorRate === 0 ? "up" : errorRate < 1 ? "neutral" : "down"}
+          title="Operational monitors"
+          value={`${upCount} / ${active.length}`}
+          description={
+            active.length ? "Current check status" : "No active monitors"
+          }
         />
-        <StatsCard title="checks" value={totalChecks} />
         <StatsCard
-          title="incidents"
-          value={downCount}
-          description="down"
-          trend={downCount === 0 ? "up" : "down"}
+          title="Firing alerts"
+          value={firingAlerts.length}
+          description={
+            firingAlerts.length ? "Review alert conditions" : "No alerts firing"
+          }
+          trend={firingAlerts.length ? "down" : "neutral"}
         />
-      </div>
-
-      {/* Primary Charts Row */}
-      <div className="grid md:grid-cols-2 gap-4 mb-6">
-        <ChartCard
-          title="response time"
-          icon="activity"
-          iconClassName="text-primary"
-          defaultChartType="line"
-        >
-          <ResponseTimeChart data={responseTimeData} height={140} />
-        </ChartCard>
-        <ChartCard
-          title="hourly uptime"
-          icon="check-circle"
-          iconClassName="text-status-up"
-          defaultChartType="bar"
-        >
-          <UptimeChart data={uptimeData} height={140} />
-        </ChartCard>
-      </div>
-
-      {/* Secondary Charts Row */}
-      <div className="grid md:grid-cols-3 gap-4 mb-6">
-        <ChartCard
-          title="error rate"
-          icon="alert-triangle"
-          iconClassName="text-status-down"
-          defaultChartType="bar"
-        >
-          <ErrorRateChart data={errorRateData} height={120} />
-        </ChartCard>
-        <ChartCard
-          title="latency percentiles"
-          icon="trending-up"
-          iconClassName="text-status-degraded"
-          defaultChartType="line"
-        >
-          <LatencyPercentilesChart data={latencyPercentilesData} height={120} />
-        </ChartCard>
-        <ChartCard
-          title="throughput"
-          icon="zap"
-          iconClassName="text-purple-500"
-          defaultChartType="line"
-        >
-          <ThroughputChart data={throughputData} height={120} />
-        </ChartCard>
-      </div>
-
-      {/* Status Distribution */}
-      <div className="mb-8">
-        <div className="border border-border rounded bg-card p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Activity className="h-3 w-3 text-muted-foreground" />
-            <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              status distribution
-            </h3>
-          </div>
-          <StatusDistributionChart data={statusDistributionData} height={100} />
-        </div>
-      </div>
-
-      {/* Monitors List */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs text-muted-foreground uppercase tracking-wider">
-            monitors
-          </h2>
-          <Link
-            href="/monitors"
-            className="text-[10px] text-muted-foreground hover:text-primary transition-colors"
-          >
-            view all →
-          </Link>
-        </div>
-
-        {monitors.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 border border-dashed border-border rounded">
-            <Terminal className="h-6 w-6 text-muted-foreground mb-3" />
-            <p className="text-xs text-muted-foreground mb-4">
-              no monitors configured
-            </p>
-          </div>
+      </MetricStrip>
+      <section aria-label="Monitors">
+        <SectionHeading
+          title="Monitors"
+          actions={
+            <Link
+              href="/monitors"
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              View all monitors <ArrowUpRight className="inline size-3.5" />
+            </Link>
+          }
+        />
+        {monitors.length ? (
+          <MonitorTable monitors={monitors} timeRange={timeRange} />
         ) : (
-          <div className="grid gap-3">
-            {monitors.slice(0, 5).map((monitor) => (
-              <MonitorCard
-                key={monitor.id}
-                monitor={monitor}
-                timeRange={timeRange}
-                interval={interval}
-              />
-            ))}
+          <div className="panel">
+            <EmptyState
+              variant="plain"
+              title="No monitors configured"
+              description="Define monitors in pongo/monitors/ and run the scheduler to collect checks."
+            >
+              <Button asChild variant="outline">
+                <Link href="/settings" className="control-button">
+                  Configuration
+                </Link>
+              </Button>
+            </EmptyState>
           </div>
         )}
-      </div>
+      </section>
+      <Disclosure
+        title="Performance"
+        description="Response times, availability and check volume"
+      >
+        <div className="page-stack">
+          <div className="grid gap-3 md:grid-cols-2">
+            <ChartCard
+              title="Response time"
+              icon="activity"
+              defaultChartType="line"
+            >
+              <ResponseTimeChart data={responseTimeData} height={160} />
+            </ChartCard>
+            <ChartCard
+              title="Availability"
+              icon="check-circle"
+              defaultChartType="bar"
+            >
+              <UptimeChart data={uptimeData} height={160} />
+            </ChartCard>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <ChartCard title="Error rate" icon="alert-triangle">
+              <ErrorRateChart data={errorRateData} height={150} />
+            </ChartCard>
+            <ChartCard title="Latency percentiles" icon="trending-up">
+              <LatencyPercentilesChart data={latencyData} height={150} />
+            </ChartCard>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <ChartCard title="Check throughput" icon="zap">
+              <ThroughputChart data={throughputData} height={150} />
+            </ChartCard>
+            <ChartCard
+              title="Status distribution"
+              icon="check-circle"
+              showToggle={false}
+            >
+              <StatusDistributionChart data={distribution} height={150} />
+            </ChartCard>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {measurements.checkCount.toLocaleString()} measured checks in the
+            selected period. Charts use the selected aggregation interval.
+          </p>
+        </div>
+      </Disclosure>
+      <section>
+        <SectionHeading
+          title="Recent incidents"
+          actions={
+            <Link
+              href="/dashboards"
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              Browse dashboards
+              <ArrowUpRight className="inline size-3.5" />
+            </Link>
+          }
+        />
+        <IncidentsTimeline limit={3} compactEmpty />
+      </section>
+      {process.env.SHOW_ABOUT === "true" && (
+        <Disclosure
+          title="About Pongo"
+          description="Configuration and deployment"
+        >
+          <div className="space-y-3 pb-4 text-sm text-muted-foreground max-w-prose">
+            <p>
+              Create a status page with your coding agent. Paste:{" "}
+              <code>https://pongo.sh Create a status page for Acme.</code>
+            </p>
+            <p>
+              Your agent asks for service URLs, configures Pongo, and checks the
+              running page. Read the{" "}
+              <a href="/llms.txt" className="underline">
+                agent instructions
+              </a>{" "}
+              or use the{" "}
+              <a href="/skills/create-pongo/SKILL.md" className="underline">
+                setup skill
+              </a>
+              .
+            </p>
+            <p>
+              Define monitors, dashboards and alerts in TypeScript and incidents
+              in Markdown. Commit configuration alongside your code.
+            </p>
+            <p>
+              Deploy with SQLite or PostgreSQL. Run schedulers in multiple
+              regions, deliver webhook alerts, and publish status pages with RSS
+              and Atom feeds.
+            </p>
+            <a
+              className="underline"
+              href="https://github.com/TimMikeladze/pongo#readme"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Read the configuration guide
+            </a>
+          </div>
+        </Disclosure>
+      )}
     </div>
   );
 }

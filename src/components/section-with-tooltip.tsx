@@ -18,7 +18,7 @@ export function SectionWithTooltip({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <h3 className="text-[10px] uppercase tracking-wide text-muted-foreground cursor-help">
+        <h3 className="text-xs uppercase tracking-wide text-muted-foreground cursor-help">
           {title}
         </h3>
       </TooltipTrigger>

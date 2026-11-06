@@ -1,0 +1,14 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Pongo//UI study example//EN
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+UID:pongo-ui-study-storage-upgrade@example.invalid
+DTSTAMP:20261102T164100Z
+DTSTART:20261108T050000Z
+DTEND:20261108T053000Z
+SUMMARY:[UI study] Database storage upgrade
+DESCRIPTION:Illustrative maintenance window. Data ingestion may be delayed.
+STATUS:TENTATIVE
+END:VEVENT
+END:VCALENDAR

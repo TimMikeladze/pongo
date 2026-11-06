@@ -1,78 +1,71 @@
-import { Bell, Database, Palette } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
+import { PageHeading, SectionHeading } from "@/components/page-layout";
+import { AppearanceControls } from "./appearance-controls";
 
 export const metadata: Metadata = {
   title: "Settings",
-  description: "Manage your uptime monitor configuration",
-  robots: {
-    index: false,
-    follow: false,
-  },
+  description: "Configuration and appearance for Pongo",
+  robots: { index: false, follow: false },
 };
-
-import Link from "next/link";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-const settingsLinks = [
-  {
-    title: "Notifications",
-    description: "Configure email, SMS, and webhook alerts",
-    href: "/settings/notifications",
-    icon: Bell,
-  },
-  {
-    title: "Appearance",
-    description: "Customize the look and feel",
-    href: "/settings/appearance",
-    icon: Palette,
-    disabled: true,
-  },
-  {
-    title: "Data & Storage",
-    description: "Manage data retention and backups",
-    href: "/settings/data",
-    icon: Database,
-    disabled: true,
-  },
-];
 
 export default function SettingsPage() {
   return (
-    <div className="p-8 max-w-3xl">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage your uptime monitor configuration
-        </p>
-      </div>
-
-      <div className="grid gap-4">
-        {settingsLinks.map((item) => (
-          <Card
-            key={item.href}
-            className={item.disabled ? "opacity-50 pointer-events-none" : ""}
-          >
-            <Link href={item.href}>
-              <CardHeader>
-                <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                    <item.icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-base">{item.title}</CardTitle>
-                    <CardDescription>{item.description}</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-            </Link>
-          </Card>
-        ))}
-      </div>
+    <div className="page-stack">
+      <PageHeading
+        title="Settings"
+        description="Monitoring configuration stays in code. Appearance is saved in this browser."
+      />
+      <section>
+        <SectionHeading
+          title="Configuration"
+          description="Review monitor and dashboard changes in git, then restart the scheduler to apply monitoring changes."
+        />
+        <div className="panel overflow-hidden">
+          <dl className="divide-y divide-border">
+            <div className="grid gap-1 px-3 py-2.5 sm:grid-cols-[180px_1fr]">
+              <dt className="text-sm font-medium">Monitors</dt>
+              <dd className="text-sm text-muted-foreground">
+                <code className="text-xs">pongo/monitors/</code>
+                <p className="mt-1">
+                  Check handlers, schedules, timeouts, and alert conditions.
+                </p>
+              </dd>
+            </div>
+            <div className="grid gap-1 px-3 py-2.5 sm:grid-cols-[180px_1fr]">
+              <dt className="text-sm font-medium">Dashboards</dt>
+              <dd className="text-sm text-muted-foreground">
+                <code className="text-xs">pongo/dashboards/</code>
+                <p className="mt-1">
+                  Monitor groups, public status pages, and SLA targets.
+                </p>
+              </dd>
+            </div>
+            <div className="grid gap-1 px-3 py-2.5 sm:grid-cols-[180px_1fr]">
+              <dt className="text-sm font-medium">Notifications</dt>
+              <dd className="text-sm text-muted-foreground">
+                <code className="text-xs">pongo/channels.ts</code>
+                <p className="mt-1">
+                  Webhook destinations referenced by alert rules.
+                </p>
+                <Link
+                  href="/settings/notifications"
+                  className="mt-2 inline-block text-foreground underline underline-offset-4"
+                >
+                  View channels and alert history
+                </Link>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+      <section>
+        <SectionHeading
+          title="Appearance"
+          description="These preferences apply across Pongo on this device."
+        />
+        <AppearanceControls />
+      </section>
     </div>
   );
 }

@@ -1,17 +1,19 @@
 import { getIncidents, getMonitors } from "@/lib/data";
 import { IncidentCard } from "./incident-card";
-import { Card, CardContent } from "./ui/card";
+import { EmptyState } from "./page-layout";
 
 interface IncidentsTimelineProps {
   dashboardId?: string;
   limit?: number;
   showResolved?: boolean;
+  compactEmpty?: boolean;
 }
 
 export async function IncidentsTimeline({
   dashboardId,
   limit,
   showResolved = true,
+  compactEmpty = false,
 }: IncidentsTimelineProps) {
   const [incidents, monitors] = await Promise.all([
     getIncidents(dashboardId),
@@ -27,16 +29,16 @@ export async function IncidentsTimeline({
 
   if (displayIncidents.length === 0) {
     return (
-      <Card className="bg-card">
-        <CardContent className="text-center py-8 text-[11px] text-muted-foreground">
-          No incidents reported
-        </CardContent>
-      </Card>
+      <EmptyState
+        variant={compactEmpty ? "compact" : "panel"}
+        title="No incidents reported"
+        description="Service incidents and their updates will appear here."
+      />
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="divide-y-0">
       {displayIncidents.map((incident) => (
         <IncidentCard
           key={incident.id}

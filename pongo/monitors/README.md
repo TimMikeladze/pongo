@@ -539,16 +539,16 @@ name: "My API"
 ```
 
 ### `interval` (optional)
-How often to run the check. Supports human-readable durations or cron expressions.
+How often to run the check. Use a human-readable duration in `interval`, or a cron expression in the separate `cron` field.
 
 ```typescript
 interval: "30s"   // Every 30 seconds
 interval: "5m"    // Every 5 minutes
 interval: "1h"    // Every hour
-interval: "*/5 * * * *"  // Cron: every 5 minutes
+cron: "*/5 * * * *"      // Every 5 minutes; use instead of interval
 ```
 
-Default: `1m`
+Set either `interval` or `cron` to schedule the monitor.
 
 ### `timeout` (optional)
 Maximum time the handler can run before being terminated.

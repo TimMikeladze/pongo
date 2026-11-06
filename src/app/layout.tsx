@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type React from "react";
 import "./globals.css";
@@ -7,11 +7,18 @@ import { AppShell } from "@/components/app-shell";
 import { PublicHeaderProvider } from "@/components/public-header-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { isAuthEnabled, isAuthenticated } from "@/lib/auth";
+import { isHowItWorksEnabled } from "@/lib/how-it-works";
 import { UmamiScript } from "@/lib/umami";
 
-const jetbrainsMono = JetBrains_Mono({
+const geist = Geist({
   subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-geist-sans",
+  display: "swap",
+});
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+  display: "swap",
 });
 
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "pongo.sh";
@@ -60,7 +67,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#080808",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+  ],
 };
 
 export default async function RootLayout({
@@ -90,6 +100,12 @@ export default async function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        <link
+          rel="alternate"
+          type="text/plain"
+          href="/llms.txt"
+          title="Pongo setup instructions for agents"
+        />
         {/* Blocking theme script - runs before paint to prevent FOUC */}
         <script
           dangerouslySetInnerHTML={{
@@ -97,7 +113,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className={`${jetbrainsMono.className} antialiased`}>
+      <body className={`${geist.variable} ${geistMono.variable}`}>
         {/* Structured data for search engines - using JSON.stringify with static data is safe */}
         <script
           type="application/ld+json"
@@ -111,6 +127,7 @@ export default async function RootLayout({
           <ThemeProvider defaultTheme="dark" storageKey="pongo-theme">
             <PublicHeaderProvider>
               <AppShell
+                showHowItWorks={isHowItWorksEnabled()}
                 headerLogo={headerLogo}
                 authEnabled={authEnabled}
                 isAuthenticated={authenticated}

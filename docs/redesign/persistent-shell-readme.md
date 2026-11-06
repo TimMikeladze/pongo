@@ -1,0 +1,13 @@
+# Persistent shell and How it works
+
+Keep the header, public status navigation and footer in a viewport-height flex layout. Only main content scrolls, with no overlapping fixed layers or hard-coded header/footer offsets. Retain full-width mode, zen recovery, keyboard access, dialogs and mobile wrapping. Reset main scroll on pathname changes while preserving position during reporting-range changes.
+
+Add a public How it works tab and `/shared/[slug]/how-it-works` page that renders the repository README using the existing Markdown dependencies. Gate both navigation and direct access with `SHOW_HOW_IT_WORKS`: development defaults on; production defaults off; explicit true/false overrides either default. Enable true only on the existing Pongo Vercel production project. Validate the shared dashboard as public before rendering. Bundle the local README for serverless deployment, sanitize raw HTML, preserve heading anchors and serve README screenshots from public assets.
+
+Check a failing scroll regression before editing the layout. Verify header/footer/navigation visibility at the start and end of long pages on phone, tablet and desktop, route navigation, existing dialog/zen behavior, Markdown images/anchors and flag defaults. Refresh the existing README screenshots after the layout changes.
+
+Hide scrollbar tracks on the content and public tabs while retaining wheel, touch and keyboard scrolling. Keep the active tab visible on narrow screens. Render code blocks with the existing Shiki/rehype-pretty-code dependency, separate high-contrast light and dark palettes, and wrapped long lines. Sanitize input HTML before generating token styles. The request proxy returns 404 for the disabled README route before any streamed page output.
+
+Verification: the initial scroll regression failed because the footer was outside the viewport. The viewport layout passes the regression at 390, 768 and 1440px. The full browser suite passes 25 tests. The production build includes the root README in its serverless trace. `SHOW_HOW_IT_WORKS=true` was set and read back on the linked Pongo Vercel project's production environment; deploying the code is still required for the live tab.
+
+Final checks passed 101 unit tests, 25 browser tests, an explicit-disabled browser check, TypeScript, scoped Biome checks and the production build. Production HTTP checks returned 404 with the flag false and 200 with it true; the enabled response included README anchors and syntax tokens. The design scan reported seven existing type/radius advisories and no non-advisory findings. Both README images were recaptured with the persistent shell.

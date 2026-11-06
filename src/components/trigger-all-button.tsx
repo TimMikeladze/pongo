@@ -63,7 +63,7 @@ export function TriggerAllButton({
         size="sm"
         onClick={handleTrigger}
         disabled={!enabled || isRunning || monitorIds.length === 0}
-        className="h-7 text-xs"
+        className="h-8 text-xs"
       >
         {isRunning ? (
           <>
@@ -77,7 +77,7 @@ export function TriggerAllButton({
           </>
         )}
       </Button>
-      <span className="text-[10px] text-muted-foreground h-4">
+      <span className="text-xs text-muted-foreground h-4">
         {result ? (
           result.error ? (
             <span className="text-destructive">{result.error}</span>

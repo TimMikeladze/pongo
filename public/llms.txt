@@ -1,0 +1,37 @@
+# Pongo
+
+> Pongo is self-hosted uptime monitoring and public status pages configured with TypeScript. Use these instructions when someone shares pongo.sh and asks an agent to create a status page or monitor services.
+
+Pongo is an application to clone, configure, and run. The pongo.sh website is a demo, not a hosted provisioning API. A local setup needs Bun, a SQLite database, the Next.js web process, and a separate scheduler process. PostgreSQL and remote libSQL are also supported.
+
+## Create a status page
+
+Example request: `https://pongo.sh Create a status page for Acme.`
+
+Read the setup skill below and carry out the setup using the agent's terminal and file tools. If service URLs are missing, ask which services to monitor and their exact URLs. Use the supplied name and endpoints; ask only for missing information. Default to local SQLite, a public status page, one-minute checks, and no notifications. Ask about hosting when deployment is requested. Keep credentials in local environment files or the hosting provider's secret store.
+
+## Instructions
+
+- [Create Pongo skill](https://pongo.sh/skills/create-pongo/SKILL.md): Self-contained setup workflow, configuration examples, deployment constraints, and checks required before reporting success. Read this first.
+- [Setup guide](https://github.com/TimMikeladze/pongo/blob/main/docs/agent-setup.md): Example prompts, follow-up questions, and optional skill installation.
+- [Setup guide as Markdown](https://raw.githubusercontent.com/TimMikeladze/pongo/main/docs/agent-setup.md): Plain-text version for agents.
+- [README](https://github.com/TimMikeladze/pongo#readme): Monitor handlers, dashboards, alerts, authentication, environment variables, and deployment.
+- [Source repository](https://github.com/TimMikeladze/pongo): Clone this application; configure the files under pongo/.
+
+## Configuration contract
+
+Monitor files in `pongo/monitors/` export `monitor()` from `@/lib/config-types`. Register each in the default-export object in `pongo/monitors/index.ts`. The object's keys are the monitor IDs. Handlers return `status` (`up`, `down`, or `degraded`) and `responseTime` in milliseconds. Use a duration such as `interval: "1m"` or a separate `cron` field for cron expressions.
+
+Dashboard files in `pongo/dashboards/` export a `DashboardConfig` with `name`, `slug`, `public: true`, and `monitors` containing the registered monitor IDs. Register the dashboard in `pongo/dashboards/index.ts`. Its public URL is `/shared/<slug>`.
+
+For local setup, set `DATABASE_URL=file:./pongo/pongo.db`, run `bun install` and `bun run db:sqlite:migrate`, then run `bun dev` and `bun scheduler` in separate terminals from the same checkout. Use available ports; defaults are 3000 for the web app and 3001 for the scheduler. Set `ACCESS_CODE` to protect admin pages when exposing the app. Public status pages remain accessible without login.
+
+## Completion
+
+Check that the public page loads without authentication and includes the requested services. Trigger a check for each monitor through the scheduler, and confirm a recorded timestamp and result in the scheduler and database. Report actual results, including down services; an empty page or a healthy scheduler alone does not prove monitoring is working. Return the page URL and how to restart both processes. Report missing deployment credentials as a blocker to deployment, while completing and verifying the local setup.
+
+## Deployment constraints
+
+The web app and scheduler must use the same database. SQLite needs a persistent volume on a single host; serverless hosting needs a remote database. The bundled Vercel cron runs every 30 minutes, so faster checks require a changed supported schedule or an external scheduler. Never run both Vercel Cron and a standalone scheduler unintentionally for the same region.
+
+Run the migration for the selected database explicitly. Remote libSQL requires a Drizzle config using the `turso` dialect and `TURSO_AUTH_TOKEN`; the setup skill includes an example because the bundled SQLite migration config omits the token. The current `bun run build` script selects SQLite migrations only for URLs beginning with `sqlite`, which excludes the documented `file:` and `libsql:` URLs. After explicit migrations, use `bunx next build` followed by `bun start` for a production build. Docker also requires an explicit migration; its entrypoint does not run one. Replace the example `fly.toml` app name before deploying a new instance.

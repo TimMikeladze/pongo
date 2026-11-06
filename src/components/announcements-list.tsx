@@ -1,5 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { AlertTriangle, CheckCircle, Info, Wrench } from "lucide-react";
+import { EmptyState } from "@/components/page-layout";
 import { getAnnouncements } from "@/lib/data";
 
 const typeIcons = {
@@ -10,13 +11,10 @@ const typeIcons = {
 };
 
 const typeStyles = {
-  info: "border-blue-500/30 bg-blue-500/5 text-blue-700 dark:text-blue-400",
-  warning:
-    "border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400",
-  success:
-    "border-emerald-500/30 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400",
-  maintenance:
-    "border-purple-500/30 bg-purple-500/5 text-purple-700 dark:text-purple-400",
+  info: "text-muted-foreground",
+  warning: "text-status-degraded",
+  success: "text-status-up",
+  maintenance: "text-muted-foreground",
 };
 
 interface AnnouncementsListProps {
@@ -35,9 +33,10 @@ export async function AnnouncementsList({
 
   if (displayAnnouncements.length === 0) {
     return (
-      <div className="text-center py-8 text-[11px] text-muted-foreground border border-border rounded-lg bg-card">
-        No announcements
-      </div>
+      <EmptyState
+        title="No updates posted"
+        description="Service announcements will appear here."
+      />
     );
   }
 
@@ -48,20 +47,22 @@ export async function AnnouncementsList({
         return (
           <div
             key={announcement.id}
-            className={`flex items-start gap-3 p-2 md:p-4 rounded-lg border ${typeStyles[announcement.type]}`}
+            className="panel flex items-start gap-3 p-3"
           >
-            <Icon className="h-4 w-4 mt-0.5 shrink-0" />
+            <Icon
+              className={`h-4 w-4 mt-0.5 shrink-0 ${typeStyles[announcement.type]}`}
+            />
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-xs font-medium">{announcement.title}</p>
-                <span className="text-[10px] opacity-60">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-medium">{announcement.title}</p>
+                <span className="text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(announcement.createdAt), {
                     addSuffix: true,
                   })}
                 </span>
               </div>
               <div
-                className="text-[11px] opacity-80 mt-1 prose prose-sm dark:prose-invert max-w-none"
+                className="text-sm text-muted-foreground mt-1 prose prose-sm dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: announcement.message }}
               />
             </div>

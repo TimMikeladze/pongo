@@ -1,70 +1,56 @@
-import { ExternalLink, Globe, LayoutDashboard } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { EmptyState, PageHeading } from "@/components/page-layout";
 import type { Dashboard } from "@/lib/types";
-import { PongoLogo } from "./pongo-logo";
 
-interface Props {
+export function PublicDashboardsList({
+  dashboards,
+}: {
   dashboards: Dashboard[];
-}
-
-export function PublicDashboardsList({ dashboards }: Props) {
-  if (dashboards.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] py-16">
-        <PongoLogo className="h-12 w-12 mb-4" />
-        <h1 className="text-lg font-medium mb-2">No Public Status Pages</h1>
-        <p className="text-sm text-muted-foreground mb-6">
-          There are no public status pages available.
-        </p>
-        <Link href="/login" className="text-xs text-primary hover:underline">
-          Sign in to access the dashboard
-        </Link>
-      </div>
-    );
-  }
-
+}) {
   return (
-    <div className="py-8">
-      <div className="flex flex-col items-center mb-8">
-        <PongoLogo className="h-10 w-10 mb-3" />
-        <h1 className="text-lg font-medium">Status Pages</h1>
-        <p className="text-xs text-muted-foreground mt-1">
-          Select a status page to view
-        </p>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto">
-        {dashboards.map((dashboard) => (
+    <div className="page-stack">
+      <PageHeading
+        title="Service status"
+        description="Choose a status page to view current service health and updates."
+        actions={
           <Link
-            key={dashboard.id}
-            href={`/shared/${dashboard.slug}`}
-            className="group border border-border rounded bg-card p-4 hover:border-primary/30 transition-colors"
+            href="/login"
+            className="inline-flex min-h-8 items-center rounded-md border border-border px-3 text-sm hover:bg-muted"
           >
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <LayoutDashboard className="h-4 w-4 text-primary" />
-                <span className="text-sm group-hover:text-primary transition-colors">
-                  {dashboard.name}
-                </span>
-              </div>
-              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              <Globe className="h-3 w-3" />
-              <span>/{dashboard.slug}</span>
-            </div>
+            Sign in
           </Link>
-        ))}
-      </div>
-
-      <div className="flex justify-center mt-8">
-        <Link
-          href="/login"
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+        }
+      />
+      {dashboards.length === 0 ? (
+        <EmptyState
+          title="No public status pages"
+          description="There are no public status pages available."
         >
-          Sign in for admin access
-        </Link>
-      </div>
+          <Link href="/login" className="text-sm underline underline-offset-4">
+            Sign in to access the dashboard
+          </Link>
+        </EmptyState>
+      ) : (
+        <div className="panel divide-y divide-border">
+          {dashboards.map((dashboard) => (
+            <Link
+              key={dashboard.id}
+              href={`/shared/${dashboard.slug}`}
+              className="flex items-center justify-between gap-3 px-3 py-2.5 hover:bg-muted/40"
+            >
+              <div>
+                <h2 className="text-sm font-medium">{dashboard.name}</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {dashboard.monitorIds.length} monitored services · /
+                  {dashboard.slug}
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

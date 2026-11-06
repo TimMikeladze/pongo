@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-11-02T16:56:28.139Z",
+  "base": "http://localhost:4317/ui-mockups/",
+  "checks": [
+    "status: 320, 390, 768, 1440, 1833px; no overflow; assets loaded",
+    "incidents: 320, 390, 768, 1440, 1833px; no overflow; assets loaded",
+    "maintenance: 320, 390, 768, 1440, 1833px; no overflow; assets loaded",
+    "overview: 320, 390, 768, 1440, 1833px; no overflow; assets loaded",
+    "History ranges, day inspection and arrow-key navigation work",
+    "Light/dark theme persists across reloads",
+    "Public healthy, active-incident and no-data states; incident deep link works",
+    "Incident expansion, search, service and date filters, reset and empty results work",
+    "Empty/scheduled maintenance, timezone, calendar download and RSS/Atom feeds work",
+    "Operator triage, search, filters, sorting, detail, preview silence/check and performance disclosure work",
+    "Operator no-data state uses unknown measurements and offers scheduler setup; healthy state has no alerts",
+    "Shared content/header/footer widths match across all four pages at all five viewport sizes",
+    "No browser JavaScript errors or HTTP asset failures"
+  ],
+  "browserErrors": []
+}

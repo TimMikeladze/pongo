@@ -1,11 +1,19 @@
 import { getIronSession } from "iron-session";
 import { type NextRequest, NextResponse } from "next/server";
 import { getSessionOptions, type SessionData } from "@/lib/auth";
+import { isHowItWorksEnabled } from "@/lib/how-it-works";
 
 const ACCESS_CODE = process.env.ACCESS_CODE;
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (
+    /^\/shared\/[^/]+\/how-it-works\/?$/.test(pathname) &&
+    !isHowItWorksEnabled()
+  ) {
+    return new NextResponse("Not found", { status: 404 });
+  }
 
   // Skip auth check if ACCESS_CODE is not set
   if (!ACCESS_CODE) {
@@ -16,9 +24,12 @@ export async function proxy(request: NextRequest) {
   const isPublicRoute =
     pathname === "/" ||
     pathname.startsWith("/shared/") ||
+    pathname.startsWith("/readme/") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
+    pathname === "/llms.txt" ||
+    pathname === "/skills/create-pongo/SKILL.md" ||
     pathname === "/favicon.ico" ||
     pathname === "/logo.png";
 
