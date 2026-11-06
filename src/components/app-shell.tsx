@@ -10,11 +10,11 @@ import {
   LogIn,
   LogOut,
   Maximize,
+  Menu,
   Minimize,
   Moon,
   Rss,
   Settings,
-  SlidersHorizontal,
   Sun,
   Terminal,
 } from "lucide-react";
@@ -127,20 +127,16 @@ export function AppShell({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [zen, toggleDensity]);
 
-  const themeControl = (
+  const renderThemeControl = (className: string) => (
     <Button
       variant="outline"
       type="button"
-      className="control-button"
+      className={className}
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
       aria-label={`Switch to ${mounted && resolvedTheme === "light" ? "dark" : "light"} theme`}
       title={`Theme: ${theme}`}
     >
-      {mounted && resolvedTheme === "light" ? (
-        <Moon className="size-4" />
-      ) : (
-        <Sun className="size-4" />
-      )}
+      {mounted && resolvedTheme === "light" ? <Moon /> : <Sun />}
     </Button>
   );
 
@@ -202,7 +198,6 @@ export function AppShell({
             </nav>
           )}
           <div className="header-controls">
-            {themeControl}
             {shared && publicBase && (
               <Popover>
                 <PopoverTrigger asChild>
@@ -257,84 +252,6 @@ export function AppShell({
                   </Link>
                 </Button>
               )}
-          </div>
-        </div>
-      </header>
-      {shared && publicBase && (
-        <nav
-          ref={publicNavRef}
-          className="public-nav shell-container"
-          aria-label="Status page navigation"
-        >
-          {publicTabs.map((tab) => (
-            <Link
-              key={tab.label}
-              href={`${publicBase}${tab.suffix}`}
-              aria-current={
-                pathname === `${publicBase}${tab.suffix}` ? "page" : undefined
-              }
-            >
-              {tab.label}
-            </Link>
-          ))}
-        </nav>
-      )}
-      <main
-        ref={mainRef}
-        id="main-content"
-        className="app-main shell-container"
-        data-testid="shell-main"
-        tabIndex={-1}
-      >
-        {children}
-      </main>
-      <footer className="app-footer">
-        <div className="shell-container" data-testid="shell-footer">
-          <div className="flex items-center gap-2 min-w-0">
-            {process.env.NEXT_PUBLIC_FOOTER_LOGO ? (
-              <Image
-                src={process.env.NEXT_PUBLIC_FOOTER_LOGO}
-                width={16}
-                height={16}
-                alt=""
-                unoptimized
-                className="rounded-full"
-              />
-            ) : (
-              <PongoLogo size={16} />
-            )}
-            <span>
-              {process.env.NEXT_PUBLIC_FOOTER_TITLE ??
-                process.env.NEXT_PUBLIC_SITE_NAME ??
-                "pongo.sh"}
-            </span>
-            <a
-              href={githubUrl || "https://github.com/TimMikeladze/pongo"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline border-l border-border pl-3 ml-1 hover:text-foreground hover:underline"
-            >
-              {process.env.NEXT_PUBLIC_FOOTER_CAPTION ??
-                "Open-source uptime monitoring"}
-            </a>
-          </div>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {showGithub && (
-              <Button asChild variant="outline" className={footerButton}>
-                <a href={githubUrl} target="_blank" rel="noopener noreferrer">
-                  <Github className="size-3.5" aria-hidden="true" />
-                  GitHub
-                </a>
-              </Button>
-            )}
-            {publicBase && (
-              <Button asChild variant="outline" className={footerButton}>
-                <Link href={`${publicBase}/feed.xml`} aria-label="RSS feed">
-                  <Rss className="size-3.5" />
-                  RSS
-                </Link>
-              </Button>
-            )}
             {!zen && (
               <Popover open={optionsOpen} onOpenChange={setOptionsOpen}>
                 <PopoverTrigger asChild>
@@ -342,15 +259,16 @@ export function AppShell({
                     variant="outline"
                     ref={optionsTrigger}
                     type="button"
-                    className={footerButton}
+                    className="control-button w-8 px-0 has-[>svg]:px-0"
+                    aria-label="More"
+                    title="More"
                   >
-                    <SlidersHorizontal className="size-3.5" />
-                    Page options
+                    <Menu className="size-4" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
                   align="end"
-                  side="top"
+                  side="bottom"
                   onCloseAutoFocus={(event) => {
                     const bounds =
                       optionsTrigger.current?.getBoundingClientRect();
@@ -442,6 +360,85 @@ export function AppShell({
             )}
           </div>
         </div>
+      </header>
+      {shared && publicBase && (
+        <nav
+          ref={publicNavRef}
+          className="public-nav shell-container"
+          aria-label="Status page navigation"
+        >
+          {publicTabs.map((tab) => (
+            <Link
+              key={tab.label}
+              href={`${publicBase}${tab.suffix}`}
+              aria-current={
+                pathname === `${publicBase}${tab.suffix}` ? "page" : undefined
+              }
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </nav>
+      )}
+      <main
+        ref={mainRef}
+        id="main-content"
+        className="app-main shell-container"
+        data-testid="shell-main"
+        tabIndex={-1}
+      >
+        {children}
+      </main>
+      <footer className="app-footer">
+        <div className="shell-container" data-testid="shell-footer">
+          <div className="flex items-center gap-2 min-w-0">
+            {process.env.NEXT_PUBLIC_FOOTER_LOGO ? (
+              <Image
+                src={process.env.NEXT_PUBLIC_FOOTER_LOGO}
+                width={16}
+                height={16}
+                alt=""
+                unoptimized
+                className="rounded-full"
+              />
+            ) : (
+              <PongoLogo size={16} />
+            )}
+            <span>
+              {process.env.NEXT_PUBLIC_FOOTER_TITLE ??
+                process.env.NEXT_PUBLIC_SITE_NAME ??
+                "pongo.sh"}
+            </span>
+            <a
+              href={githubUrl || "https://github.com/TimMikeladze/pongo"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline border-l border-border pl-3 ml-1 hover:text-foreground hover:underline"
+            >
+              {process.env.NEXT_PUBLIC_FOOTER_CAPTION ??
+                "Open-source uptime monitoring"}
+            </a>
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {showGithub && (
+              <Button asChild variant="outline" className={footerButton}>
+                <a href={githubUrl} target="_blank" rel="noopener noreferrer">
+                  <Github className="size-3.5" aria-hidden="true" />
+                  GitHub
+                </a>
+              </Button>
+            )}
+            {publicBase && (
+              <Button asChild variant="outline" className={footerButton}>
+                <Link href={`${publicBase}/feed.xml`} aria-label="RSS feed">
+                  <Rss className="size-3.5" />
+                  RSS
+                </Link>
+              </Button>
+            )}
+            {renderThemeControl(footerButton)}
+          </div>
+        </div>
       </footer>
       {zen && (
         <div
@@ -458,7 +455,7 @@ export function AppShell({
           >
             Exit zen <span className="text-muted-foreground">Esc</span>
           </Button>
-          {themeControl}
+          {renderThemeControl("control-button")}
           <Button
             variant="outline"
             type="button"

@@ -215,14 +215,14 @@ test("theme, full width, zen and chart expansion preserve recovery controls", as
   const fullWidth =
     (await page.getByTestId("shell-main").boundingBox())?.width ?? 0;
   expect(fullWidth).toBeGreaterThan(1120);
-  await page.getByRole("button", { name: "Page options", exact: true }).click();
+  await page.getByRole("button", { name: "More", exact: true }).click();
   await page
     .getByRole("button", { name: "Constrain width", exact: true })
     .click();
   expect((await page.getByTestId("shell-main").boundingBox())?.width).toBe(
     1120,
   );
-  await page.getByRole("button", { name: "Page options", exact: true }).click();
+  await page.getByRole("button", { name: "More", exact: true }).click();
   await page
     .getByRole("button", { name: "Enter zen mode", exact: true })
     .click();
@@ -388,7 +388,7 @@ test("support sharing stays within a short viewport and excludes collapsed field
   await expect(
     page.getByRole("heading", { name: "Awaiting service checks", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Page options", exact: true }).click();
+  await page.getByRole("button", { name: "More", exact: true }).click();
   await page
     .getByRole("button", { name: "Support Pongo", exact: true })
     .click();
@@ -419,7 +419,7 @@ test("support sharing stays within a short viewport and excludes collapsed field
     element.scrollTop = 0;
   });
   await expect(
-    page.getByRole("button", { name: "Page options", exact: true }),
+    page.getByRole("button", { name: "More", exact: true }),
   ).toHaveAttribute("aria-expanded", "false");
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 });

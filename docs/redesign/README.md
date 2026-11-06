@@ -31,7 +31,7 @@ Shared pages retain Status, Incidents, Maintenance and Updates navigation, brand
 
 Current health follows outage, degraded, pending, then operational precedence. Historical measurement helpers preserve unknown values rather than presenting synthetic uptime or latency; an empty monitor set stays pending. Public history supports pointer inspection, a single keyboard tab stop, arrow keys, Home and End. Paused monitors retain their label.
 
-The footer’s Page options retains view controls, documentation, support and authentication actions with visible labels. The Support dialog scrolls internally on short screens; collapsed sharing controls are inert. Mobile alert rows keep state and actions visible without horizontal scrolling.
+The header’s More menu (hamburger icon) retains view controls, documentation, support and authentication actions with visible labels. The Support dialog scrolls internally on short screens; collapsed sharing controls are inert. Mobile alert rows keep state and actions visible without horizontal scrolling.
 
 The shell applies the same width to every route and preserves theme, dense/zen and full-width controls. Preferences restore after hydration to keep server markup and controlled inputs consistent. Zen mode keeps a visible exit control, and chart dialogs restore focus after closing. Existing monitor execution, alert actions, range selection, dashboard content, feeds and authentication remain connected to application data and configuration.
 

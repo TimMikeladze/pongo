@@ -491,7 +491,7 @@ Overview puts affected monitors and firing alerts before performance charts. Sea
 
 Public status pages keep Status, Incidents, Maintenance and Updates in the header. Availability bars support pointer inspection and arrow-key navigation, with Home and End moving to either end. Long histories group adjacent periods so bars remain visible on phones; tooltips show the covered intervals and measured checks. The sparkline retains every interval. Missing measurements display an em dash instead of assuming 100% availability or zero response time.
 
-Settings controls theme, content width and view mode. The footer’s Page options also provides width and zen controls. Mobile status history also provides an inspector with a period slider and Previous/Next controls. Width applies to the header, content and footer together. Press Escape or use Exit zen to restore navigation. Preferences are saved in the browser.
+Settings controls theme, content width and view mode. The header’s More menu (hamburger icon) also provides width and zen controls. Mobile status history also provides an inspector with a period slider and Previous/Next controls. Width applies to the header, content and footer together. Press Escape or use Exit zen to restore navigation. Preferences are saved in the browser.
 
 ## Scheduler
 
@@ -597,8 +597,8 @@ When `ACCESS_CODE` is set:
 | `NEXT_PUBLIC_HEADER_CAPTION` | Secondary line beneath the header brand | `Demo deployment` |
 | `NEXT_PUBLIC_GITHUB_URL` | Repository URL shown as a GitHub link in the footer; omitted when unset | - |
 | `NEXT_PUBLIC_HIDE_GITHUB` | Set to `true` to hide the configured footer GitHub link | - |
-| `NEXT_PUBLIC_HIDE_DOCS` | Hide Documentation in Page options | - |
-| `NEXT_PUBLIC_HIDE_SUPPORT` | Hide Support in Page options | - |
+| `NEXT_PUBLIC_HIDE_DOCS` | Hide Documentation in the header More menu | - |
+| `NEXT_PUBLIC_HIDE_SUPPORT` | Hide Support in the header More menu | - |
 | `NEXT_PUBLIC_FAVICON` | Custom favicon image URL (e.g. `/custom-favicon.png`) | `/logo.png` |
 | `NEXT_PUBLIC_FOOTER_LOGO` | Custom footer logo image URL (e.g. `/custom-logo.png`) | pongo logo |
 | `NEXT_PUBLIC_FOOTER_TITLE` | Custom footer title text | `pongo.sh` |
