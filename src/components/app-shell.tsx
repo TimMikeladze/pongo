@@ -34,6 +34,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
+const footerButton =
+  "control-button h-7 gap-1.5 bg-transparent px-2 text-xs font-normal text-muted-foreground shadow-none hover:text-foreground has-[>svg]:px-2 dark:bg-transparent [&_svg:not([class*='size-'])]:size-3.5";
+
 const navigation = [
   { name: "Overview", href: "/", icon: Terminal },
   { name: "Monitors", href: "/monitors", icon: Activity },
@@ -315,27 +318,18 @@ export function AppShell({
                 "Open-source uptime monitoring"}
             </a>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {showGithub && (
-              <Button asChild variant="outline">
-                <a
-                  href={githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="control-button"
-                >
+              <Button asChild variant="outline" className={footerButton}>
+                <a href={githubUrl} target="_blank" rel="noopener noreferrer">
                   <Github className="size-3.5" aria-hidden="true" />
                   GitHub
                 </a>
               </Button>
             )}
             {publicBase && (
-              <Button asChild variant="outline">
-                <Link
-                  href={`${publicBase}/feed.xml`}
-                  className="control-button"
-                  aria-label="RSS feed"
-                >
+              <Button asChild variant="outline" className={footerButton}>
+                <Link href={`${publicBase}/feed.xml`} aria-label="RSS feed">
                   <Rss className="size-3.5" />
                   RSS
                 </Link>
@@ -348,7 +342,7 @@ export function AppShell({
                     variant="outline"
                     ref={optionsTrigger}
                     type="button"
-                    className="control-button"
+                    className={footerButton}
                   >
                     <SlidersHorizontal className="size-3.5" />
                     Page options

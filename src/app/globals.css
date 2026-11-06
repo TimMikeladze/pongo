@@ -1033,6 +1033,11 @@
       min-width: 44px;
     }
 
+    .app-footer .control-button {
+      min-height: 28px;
+      min-width: 0;
+    }
+
     .performance-disclosure .performance-trigger {
       align-items: center;
     }
