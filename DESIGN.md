@@ -2,34 +2,34 @@
 name: Pongo
 description: Dense service status and monitor triage for the Pongo web application.
 colors:
-  dark-background: "#111315"
-  dark-foreground: "#edf0f1"
-  dark-card: "#191c1f"
-  dark-muted: "#15181a"
-  dark-muted-foreground: "#a0a9b1"
-  dark-accent: "#202428"
-  dark-border: "#30363b"
-  dark-primary: "#e5e9e6"
-  dark-primary-foreground: "#18221c"
+  dark-background: "#000000"
+  dark-foreground: "#ededed"
+  dark-card: "#0a0a0a"
+  dark-muted: "#111111"
+  dark-muted-foreground: "#a1a1a1"
+  dark-accent: "#1a1a1a"
+  dark-border: "#262626"
+  dark-primary: "#ededed"
+  dark-primary-foreground: "#0a0a0a"
   dark-status-up: "#69c8a3"
-  dark-status-up-bg: "#18352c"
+  dark-status-up-bg: "#0f2a20"
   dark-status-down: "#f29696"
-  dark-status-down-bg: "#412526"
+  dark-status-down-bg: "#3a1a1c"
   dark-status-degraded: "#edc078"
-  dark-status-degraded-bg: "#3d311e"
-  dark-status-pending: "#a0a9b1"
-  dark-status-pending-bg: "#202428"
+  dark-status-degraded-bg: "#33270f"
+  dark-status-pending: "#a1a1a1"
+  dark-status-pending-bg: "#1a1a1a"
   dark-status-scheduled: "#a9baf3"
-  dark-status-scheduled-bg: "#273045"
+  dark-status-scheduled-bg: "#1c2440"
   dark-bar: "#419d7b"
-  light-background: "#f7f8f8"
-  light-foreground: "#202925"
+  light-background: "#ffffff"
+  light-foreground: "#0a0a0a"
   light-card: "#ffffff"
-  light-muted: "#f0f3f2"
-  light-muted-foreground: "#56655e"
-  light-accent: "#f1f4f2"
-  light-border: "#d9dfdc"
-  light-primary: "#243e30"
+  light-muted: "#fafafa"
+  light-muted-foreground: "#666666"
+  light-accent: "#f2f2f2"
+  light-border: "#e5e5e5"
+  light-primary: "#171717"
   light-primary-foreground: "#ffffff"
   light-status-up: "#237251"
   light-status-up-bg: "#e5f3eb"
@@ -37,8 +37,8 @@ colors:
   light-status-down-bg: "#fdecef"
   light-status-degraded: "#865b17"
   light-status-degraded-bg: "#fff2d9"
-  light-status-pending: "#56655e"
-  light-status-pending-bg: "#f0f3f2"
+  light-status-pending: "#666666"
+  light-status-pending-bg: "#f2f2f2"
   light-status-scheduled: "#45619c"
   light-status-scheduled-bg: "#ebeffb"
   light-bar: "#3e9976"
@@ -167,11 +167,11 @@ The implemented direction comes from the user-approved mockups and the denser fu
 
 ## Colors
 
-The palette uses dark charcoal or pale neutral surfaces, with restrained semantic colors. The frontmatter records the current dark and light values; `src/app/globals.css` implements them through the same semantic CSS properties.
+The dark theme sits on pure black (#000000) and the light theme on pure white (#ffffff), with untinted neutral grays for surfaces and borders and restrained semantic colors. The frontmatter records the current dark and light values; `src/app/globals.css` implements them through the same semantic CSS properties.
 
 ### Primary
 
-The primary action surface is a light neutral in dark mode and deep green in light mode. Primary text inverts against that surface. The focus ring and text caret use the operational green.
+The primary action surface is near-white in dark mode and near-black in light mode. Primary text inverts against that surface. The focus ring and text caret use the operational green.
 
 ### Secondary
 
