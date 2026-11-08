@@ -16,6 +16,10 @@
 /test-results
 /playwright/.cache
 
+# generated social content
+/artifacts/social/
+/docs/social-content-*.md
+
 # next.js
 /.next/
 /.next-e2e/
